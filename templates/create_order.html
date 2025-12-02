@@ -1,0 +1,280 @@
+{% extends "base.html" %}
+
+{% block title %}Order Service - {{ service.title }}{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto py-8">
+  <!-- Header -->
+  <div class="text-center mb-8">
+    <h1 class="text-4xl font-bold text-white mb-4">Order Service</h1>
+    <p class="text-xl text-gray-300">Place your order for "{{ service.title }}"</p>
+  </div>
+
+  <!-- Service Summary -->
+  <div class="bg-gradient-to-r from-blue-900 to-purple-900 rounded-2xl p-6 mb-8">
+    <div class="flex items-center gap-6">
+      {% if service.image_list %}
+        <img src="{{ url_for('static', filename='uploads/services/' ~ service.image_list[0]) }}"
+             alt="{{ service.title }}" class="w-24 h-24 object-cover rounded-lg">
+      {% endif %}
+      <div class="flex-1">
+        <h2 class="text-2xl font-bold text-white mb-2">{{ service.title }}</h2>
+        <p class="text-gray-300 mb-2">{{ service.description[:200] }}...</p>
+        <div class="flex items-center gap-4">
+          <span class="text-green-400 font-semibold text-lg">
+            {{ service.price }} {{ service.currency }}
+          </span>
+          <span class="text-gray-400">by {{ service.user.display_name() }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Order Form -->
+  <div class="modern-form-container">
+    <form method="POST" id="orderForm">
+      <!-- Requirements -->
+      <div class="form-card">
+        <h2 class="card-title">
+          <i class="fas fa-clipboard-list"></i>
+          Project Requirements
+        </h2>
+
+        <div class="form-row">
+          <div class="form-field">
+            <label class="field-label">Describe Your Project</label>
+            <textarea
+              name="requirements"
+              class="field-textarea"
+              rows="6"
+              placeholder="Please provide detailed requirements for your project..."
+              required
+            ></textarea>
+            <p class="text-sm text-gray-400 mt-2">
+              Be specific about what you need, deadlines, and any special requirements.
+            </p>
+          </div>
+        </div>
+
+        <!-- Delivery Timeline -->
+        <div class="form-row">
+          <div class="quick-info-grid">
+            <div class="info-item">
+              <label class="info-label">Delivery Timeline</label>
+              <select name="deadline_days" class="info-select" required>
+                <option value="1">1 day (Rush)</option>
+                <option value="3" selected>3 days</option>
+                <option value="7">1 week</option>
+                <option value="14">2 weeks</option>
+                <option value="30">1 month</option>
+                <option value="60">2 months</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Order Summary -->
+      <div class="form-card">
+        <h2 class="card-title">
+          <i class="fas fa-calculator"></i>
+          Order Summary
+        </h2>
+
+        <div class="space-y-4">
+          <div class="flex justify-between">
+            <span class="text-gray-300">Service Price:</span>
+            <span class="text-white font-semibold">{{ service.price }} {{ service.currency }}</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-gray-300">Platform Fee (10%):</span>
+            <span class="text-white font-semibold">{{ "%.2f"|format(service.price * 0.1) }} {{ service.currency }}</span>
+          </div>
+          <hr class="border-gray-600">
+          <div class="flex justify-between text-lg">
+            <span class="text-white font-bold">Total:</span>
+            <span class="text-green-400 font-bold">{{ "%.2f"|format(service.price * 1.1) }} {{ service.currency }}</span>
+          </div>
+        </div>
+
+        <div class="mt-6 p-4 bg-blue-900/30 rounded-lg">
+          <p class="text-sm text-blue-300">
+            <i class="fas fa-info-circle mr-2"></i>
+            Payment will be held securely until work is completed and approved.
+          </p>
+        </div>
+      </div>
+
+      <!-- Submit -->
+      <div class="submit-section">
+        <button type="submit" class="submit-btn">
+          <i class="fas fa-shopping-cart"></i>
+          Place Order & Proceed to Payment
+        </button>
+        <a href="{{ url_for('service_detail', service_id=service.id) }}" class="cancel-btn">
+          <i class="fas fa-times"></i>
+          Cancel
+        </a>
+      </div>
+    </form>
+  </div>
+</div>
+
+<style>
+.modern-form-container {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 24px;
+  padding: 2rem;
+}
+
+.form-card {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  padding: 2rem;
+  margin-bottom: 2rem;
+}
+
+.card-title {
+  color: #00d4ff;
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.form-row {
+  margin-bottom: 1.5rem;
+}
+
+.field-label {
+  color: #e0e0e0;
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+  font-size: 0.95rem;
+}
+
+.field-textarea {
+  background: linear-gradient(145deg, #2a2a2a, #1f1f1f);
+  border: 2px solid #404040;
+  border-radius: 12px;
+  padding: 1rem;
+  color: #ffffff;
+  font-size: 1rem;
+  width: 100%;
+  resize: vertical;
+  transition: all 0.3s ease;
+}
+
+.field-textarea:focus {
+  outline: none;
+  border-color: #00d4ff;
+  box-shadow: 0 0 20px rgba(0, 212, 255, 0.3);
+}
+
+.quick-info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.info-item {
+  display: flex;
+  flex-direction: column;
+}
+
+.info-label {
+  color: #e0e0e0;
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.info-select {
+  background: linear-gradient(145deg, #333333, #2a2a2a);
+  border: 2px solid #555555;
+  border-radius: 10px;
+  padding: 0.75rem;
+  color: #ffffff;
+  font-size: 0.95rem;
+  transition: all 0.3s ease;
+}
+
+.info-select:focus {
+  border-color: #00d4ff;
+  outline: none;
+  box-shadow: 0 0 15px rgba(0, 212, 255, 0.3);
+}
+
+.submit-section {
+  text-align: center;
+  margin-top: 2rem;
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+}
+
+.submit-btn {
+  background: linear-gradient(135deg, #00d4ff, #0099cc);
+  color: white;
+  border: none;
+  padding: 1rem 3rem;
+  border-radius: 12px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 20px rgba(0, 212, 255, 0.4);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.submit-btn:hover {
+  background: linear-gradient(135deg, #00b8e6, #0088bb);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 30px rgba(0, 212, 255, 0.5);
+}
+
+.cancel-btn {
+  background: linear-gradient(135deg, #666666, #555555);
+  color: white;
+  border: none;
+  padding: 1rem 2rem;
+  border-radius: 12px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.cancel-btn:hover {
+  background: linear-gradient(135deg, #777777, #666666);
+  transform: translateY(-2px);
+  color: white;
+}
+
+@media (max-width: 768px) {
+  .modern-form-container {
+    padding: 1.5rem;
+  }
+
+  .quick-info-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .submit-section {
+    flex-direction: column;
+    align-items: center;
+  }
+}
+</style>
+{% endblock %}

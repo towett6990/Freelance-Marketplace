@@ -1,0 +1,33 @@
+<!-- templates/messages.html -->
+{% extends "base.html" %}
+{% block title %}Conversations - Messages{% endblock %}
+{% block content %}
+<section class="panel">
+  <h1>Conversations</h1>
+  {% if chats %}
+    <ul class="convo-list">
+      {% for c in chats %}
+        <li class="convo-item">
+          <a href="{{ url_for('chat', username=c.username) }}" class="convo-link">
+            <span class="convo-name">{{ c.username }}</span>
+            {% if c.unread_count and c.unread_count > 0 %}
+              <span class="badge">{{ c.unread_count }}</span>
+            {% endif %}
+          </a>
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p>No conversations yet. Message a seller to start.</p>
+  {% endif %}
+</section>
+
+<style>
+.panel { max-width:900px; margin:20px auto; padding:16px; background:#151515; border-radius:8px; }
+.convo-list { list-style:none; padding:0; margin:0; }
+.convo-item { border-bottom:1px solid #222; }
+.convo-link { display:flex; justify-content:space-between; padding:12px; color:#eee; text-decoration:none; }
+.convo-link:hover { background:#1b1b1b; }
+.badge { background:#007bff; color:#fff; padding:4px 8px; border-radius:999px; font-size:0.9rem; }
+</style>
+{% endblock %}

@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Choose Role</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <h2>Welcome, {{ current_user.name or current_user.email }}</h2>
+    <p>Select how you want to continue:</p>
+
+    <div>
+        <a href="{{ url_for('buyer_dashboard') }}">Proceed as Buyer</a> |
+        <a href="{{ url_for('seller_dashboard') }}">Proceed as Seller</a>
+    </div>
+
+    <br>
+    <a href="{{ url_for('logout') }}">Logout</a>
+</body>
+</html>

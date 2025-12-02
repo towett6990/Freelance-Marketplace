@@ -1,0 +1,207 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-12">
+            <h2 class="mb-4">
+                <i class="fas fa-user-check"></i> Review ID for {{ user.username }}
+            </h2>
+
+            <!-- User Info Card -->
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">User Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>Username:</strong> {{ user.username }}</p>
+                            <p><strong>Email:</strong> {{ user.email }}</p>
+                            <p><strong>Role:</strong> <span class="badge bg-info">{{ user.role }}</span></p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Submitted:</strong> 
+                                {% if user.last_id_upload_at %}
+                                    {{ user.last_id_upload_at.strftime('%Y-%m-%d %H:%M:%S') }}
+                                {% else %}
+                                    N/A
+                                {% endif %}
+                            </p>
+                            <p><strong>AI Confidence Score:</strong> 
+                                {% if user.id_confidence_score %}
+                                    <span class="badge 
+                                        {% if user.id_confidence_score >= 0.7 %}bg-success
+                                        {% elif user.id_confidence_score >= 0.4 %}bg-warning
+                                        {% else %}bg-danger{% endif %}">
+                                        {{ "%.2f"|format(user.id_confidence_score) }}
+                                    </span>
+                                {% else %}
+                                    <span class="badge bg-secondary">N/A</span>
+                                {% endif %}
+                            </p>
+                            <p><strong>Retry Count:</strong> {{ user.id_retry_count or 0 }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ID Images -->
+            <div class="row mb-4">
+                <!-- Front ID -->
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header bg-info text-white">
+                            <h5 class="mb-0"><i class="fas fa-id-card"></i> Front ID</h5>
+                        </div>
+                        <div class="card-body text-center">
+                            {% if user.id_front_document %}
+                                <img src="{{ url_for('static', filename='uploads/ids/' + user.id_front_document) }}" 
+                                     class="img-fluid rounded shadow" 
+                                     style="max-height: 400px; cursor: pointer;"
+                                     onclick="window.open(this.src, '_blank')"
+                                     alt="Front ID">
+                                <p class="mt-2 text-muted">
+                                    <small>Click image to view full size</small>
+                                </p>
+                            {% else %}
+                                <div class="alert alert-warning">
+                                    <i class="fas fa-exclamation-triangle"></i> No front ID uploaded
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Back ID -->
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header bg-info text-white">
+                            <h5 class="mb-0"><i class="fas fa-id-card-alt"></i> Back ID</h5>
+                        </div>
+                        <div class="card-body text-center">
+                            {% if user.id_back_document %}
+                                <img src="{{ url_for('static', filename='uploads/ids/' + user.id_back_document) }}" 
+                                     class="img-fluid rounded shadow" 
+                                     style="max-height: 400px; cursor: pointer;"
+                                     onclick="window.open(this.src, '_blank')"
+                                     alt="Back ID">
+                                <p class="mt-2 text-muted">
+                                    <small>Click image to view full size</small>
+                                </p>
+                            {% else %}
+                                <div class="alert alert-warning">
+                                    <i class="fas fa-exclamation-triangle"></i> No back ID uploaded
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- User Avatar (for comparison) -->
+            {% if user.avatar %}
+            <div class="card mb-4">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0"><i class="fas fa-user-circle"></i> User Profile Photo (for comparison)</h5>
+                </div>
+                <div class="card-body text-center">
+                    <img src="{{ url_for('static', filename='uploads/avatars/' + user.avatar) }}" 
+                         class="rounded-circle shadow" 
+                         style="width: 200px; height: 200px; object-fit: cover;"
+                         alt="User Avatar">
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Review Form -->
+            <div class="card mb-4 shadow-lg">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0"><i class="fas fa-clipboard-check"></i> Make Your Decision</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" id="reviewForm">
+                        <div class="mb-3">
+                            <label for="notes" class="form-label"><strong>Review Notes:</strong></label>
+                            <textarea name="notes" id="notes" class="form-control" rows="4" 
+                                      placeholder="Add notes about your decision (optional)..."></textarea>
+                            <small class="text-muted">These notes will be saved for audit purposes and shown to the user if rejected.</small>
+                        </div>
+
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-start">
+                            <button type="submit" name="action" value="approve" 
+                                    class="btn btn-success btn-lg me-md-2" 
+                                    onclick="return confirm('Are you sure you want to APPROVE this ID? The user will be marked as verified.')">
+                                <i class="fas fa-check-circle"></i> Approve ID
+                            </button>
+                            
+                            <button type="submit" name="action" value="reject" 
+                                    class="btn btn-danger btn-lg" 
+                                    onclick="return confirm('Are you sure you want to REJECT this ID? The user will need to resubmit.')">
+                                <i class="fas fa-times-circle"></i> Reject ID
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Review Guidelines -->
+            <div class="card mb-4">
+                <div class="card-header bg-dark text-white">
+                    <h5 class="mb-0"><i class="fas fa-info-circle"></i> Review Guidelines</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6 class="text-success"><i class="fas fa-check"></i> Approve if:</h6>
+                            <ul>
+                                <li>ID photo is clear and readable</li>
+                                <li>All text and details are visible</li>
+                                <li>ID appears genuine (not tampered)</li>
+                                <li>Face matches profile photo (if available)</li>
+                                <li>ID is a valid government-issued document</li>
+                                <li>Document appears current (not expired)</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="text-danger"><i class="fas fa-times"></i> Reject if:</h6>
+                            <ul>
+                                <li>Image is blurry or unreadable</li>
+                                <li>ID appears fake or tampered</li>
+                                <li>Face doesn't match profile photo</li>
+                                <li>ID is expired or damaged</li>
+                                <li>Uploaded file is not an ID document</li>
+                                <li>Important details are obscured</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Navigation -->
+            <div class="mt-4 mb-5">
+                <a href="{{ url_for('admin_manual_reviews') }}" class="btn btn-secondary btn-lg">
+                    <i class="fas fa-arrow-left"></i> Back to Reviews List
+                </a>
+                <a href="{{ url_for('admin_dashboard') }}" class="btn btn-outline-secondary btn-lg ms-2">
+                    <i class="fas fa-tachometer-alt"></i> Admin Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.img-fluid {
+    transition: transform 0.3s ease;
+}
+
+.img-fluid:hover {
+    transform: scale(1.05);
+}
+
+.shadow-lg {
+    box-shadow: 0 1rem 3rem rgba(0,0,0,.175)!important;
+}
+</style>
+{% endblock %}

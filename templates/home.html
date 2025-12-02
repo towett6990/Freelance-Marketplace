@@ -1,0 +1,171 @@
+{% extends "base.html" %}
+{% block title %}Home - Freelance Marketplace{% endblock %}
+
+{% block content %}
+<section class="bg-gradient-to-br from-blue-600 via-purple-600 to-indigo-700 text-white py-20">
+  <div class="max-w-6xl mx-auto px-6 text-center">
+    <h1 class="text-5xl font-bold mb-6">Find the Perfect Freelancer</h1>
+    <p class="text-xl text-blue-100 mb-12">Connect with talented professionals for your next project</p>
+
+    <!-- Search Bar -->
+    <div class="max-w-2xl mx-auto mb-12">
+      <form method="GET" action="{{ url_for('list_services') }}" class="flex gap-4">
+        <input type="text"
+               name="q"
+               placeholder="What service are you looking for?"
+               class="flex-1 px-6 py-4 rounded-xl text-gray-800 text-lg focus:outline-none focus:ring-2 focus:ring-blue-300">
+        <button type="submit" class="bg-green-500 hover:bg-green-600 px-8 py-4 rounded-xl font-semibold transition duration-300">
+          <i class="fas fa-search mr-2"></i>Search
+        </button>
+      </form>
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto">
+      <div class="bg-white bg-opacity-10 backdrop-blur-sm rounded-2xl p-6">
+        <div class="text-4xl font-bold mb-2">{{ total_services or 0 }}</div>
+        <div class="text-blue-100">Services Available</div>
+      </div>
+      <div class="bg-white bg-opacity-10 backdrop-blur-sm rounded-2xl p-6">
+        <div class="text-4xl font-bold mb-2">{{ total_users or 0 }}</div>
+        <div class="text-blue-100">Active Freelancers</div>
+      </div>
+      <div class="bg-white bg-opacity-10 backdrop-blur-sm rounded-2xl p-6">
+        <div class="text-4xl font-bold mb-2">{{ total_orders or 0 }}</div>
+        <div class="text-blue-100">Projects Completed</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Categories Section -->
+<section class="py-16 bg-gray-50">
+  <div class="max-w-6xl mx-auto px-6">
+    <div class="text-center mb-12">
+      <h2 class="text-3xl font-bold text-gray-800 mb-4">Browse by Category</h2>
+      <p class="text-gray-600">Find the right service for your needs</p>
+    </div>
+
+    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+      <a href="{{ url_for('list_services', category='Web Development') }}"
+         class="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition duration-300 text-center group">
+        <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-blue-200 transition duration-300">
+          <i class="fas fa-code text-blue-600 text-2xl"></i>
+        </div>
+        <h3 class="font-semibold text-gray-800 mb-2">Web Development</h3>
+        <p class="text-sm text-gray-600">Build modern websites</p>
+      </a>
+
+      <a href="{{ url_for('list_services', category='Graphic Design') }}"
+         class="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition duration-300 text-center group">
+        <div class="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-purple-200 transition duration-300">
+          <i class="fas fa-palette text-purple-600 text-2xl"></i>
+        </div>
+        <h3 class="font-semibold text-gray-800 mb-2">Graphic Design</h3>
+        <p class="text-sm text-gray-600">Creative visual solutions</p>
+      </a>
+
+      <a href="{{ url_for('list_services', category='Writing & Content') }}"
+         class="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition duration-300 text-center group">
+        <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-green-200 transition duration-300">
+          <i class="fas fa-pen-fancy text-green-600 text-2xl"></i>
+        </div>
+        <h3 class="font-semibold text-gray-800 mb-2">Writing & Content</h3>
+        <p class="text-sm text-gray-600">Professional content creation</p>
+      </a>
+
+      <a href="{{ url_for('list_services', category='Digital Marketing') }}"
+         class="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition duration-300 text-center group">
+        <div class="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-orange-200 transition duration-300">
+          <i class="fas fa-bullhorn text-orange-600 text-2xl"></i>
+        </div>
+        <h3 class="font-semibold text-gray-800 mb-2">Digital Marketing</h3>
+        <p class="text-sm text-gray-600">Grow your online presence</p>
+      </a>
+
+      <a href="{{ url_for('list_services', category='Video & Animation') }}"
+         class="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition duration-300 text-center group">
+        <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-red-200 transition duration-300">
+          <i class="fas fa-video text-red-600 text-2xl"></i>
+        </div>
+        <h3 class="font-semibold text-gray-800 mb-2">Video & Animation</h3>
+        <p class="text-sm text-gray-600">Engaging visual content</p>
+      </a>
+
+      <a href="{{ url_for('list_services', category='Mobile Development') }}"
+         class="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition duration-300 text-center group">
+        <div class="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-indigo-200 transition duration-300">
+          <i class="fas fa-mobile-alt text-indigo-600 text-2xl"></i>
+        </div>
+        <h3 class="font-semibold text-gray-800 mb-2">Mobile Development</h3>
+        <p class="text-sm text-gray-600">iOS & Android apps</p>
+      </a>
+
+      <a href="{{ url_for('list_services', category='Photography') }}"
+         class="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition duration-300 text-center group">
+        <div class="w-16 h-16 bg-pink-100 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-pink-200 transition duration-300">
+          <i class="fas fa-camera text-pink-600 text-2xl"></i>
+        </div>
+        <h3 class="font-semibold text-gray-800 mb-2">Photography</h3>
+        <p class="text-sm text-gray-600">Professional photo services</p>
+      </a>
+
+      <a href="{{ url_for('list_services') }}"
+         class="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition duration-300 text-center group">
+        <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-gray-200 transition duration-300">
+          <i class="fas fa-th-large text-gray-600 text-2xl"></i>
+        </div>
+        <h3 class="font-semibold text-gray-800 mb-2">View All</h3>
+        <p class="text-sm text-gray-600">Explore all services</p>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- Featured Services Section -->
+<section class="py-16 bg-white">
+  <div class="max-w-6xl mx-auto px-6">
+    <div class="text-center mb-12">
+      <h2 class="text-3xl font-bold text-gray-800 mb-4">Featured Services</h2>
+      <p class="text-gray-600">Check out some of our top-rated services</p>
+    </div>
+
+    {% if services %}
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+      {% for service in services[:6] %}
+      <div class="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition duration-300 border border-gray-100">
+        <div class="aspect-w-16 aspect-h-9 bg-gray-200">
+          {% if service.image_list %}
+            <img src="{{ url_for('static', filename='uploads/services/' ~ service.image_list[0]) }}"
+                 class="w-full h-48 object-cover"
+                 alt="{{ service.title }}">
+          {% else %}
+            <div class="w-full h-48 bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center">
+              <i class="fas fa-image text-gray-400 text-3xl"></i>
+            </div>
+          {% endif %}
+        </div>
+        <div class="p-6">
+          <h3 class="text-xl font-bold text-gray-800 mb-2">{{ service.title }}</h3>
+          <p class="text-gray-600 text-sm mb-4 line-clamp-2">{{ service.description[:120] }}{% if service.description|length > 120 %}...{% endif %}</p>
+          <div class="flex items-center justify-between">
+            <div class="text-2xl font-bold text-green-600">
+              ${{ "%.2f"|format(service.price) }}
+            </div>
+            <a href="{{ url_for('service_detail', service_id=service.id) }}"
+               class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition duration-300 text-sm font-medium">
+              View Details
+            </a>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="text-center py-12">
+      <p class="text-gray-600">No services available yet.</p>
+    </div>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}

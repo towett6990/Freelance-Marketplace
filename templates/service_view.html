@@ -1,0 +1,283 @@
+{% extends "base.html" %}
+{% block content %}
+
+<!-- DEBUG: Service Info -->
+<div style="background: red; color: white; padding: 20px; margin: 20px; border-radius: 10px; font-size: 16px; font-weight: bold; border: 3px solid yellow;">
+  <h2 style="margin: 0 0 15px 0; font-size: 20px;">🔍 DEBUG INFORMATION</h2>
+  <div style="background: white; color: black; padding: 10px; border-radius: 5px; margin: 5px 0;">
+    <strong>Service Details:</strong><br>
+    • Service ID: {{ service.id }}<br>
+    • Title: "{{ service.title }}"<br>
+    • Price: {{ service.price }} {{ service.currency }}<br>
+    • Posted by User ID: {{ service.user_id }}<br>
+    • Service User Object: {{ service.user.display_name() if service.user else 'None' }}
+  </div>
+  <div style="background: white; color: black; padding: 10px; border-radius: 5px; margin: 5px 0;">
+    <strong>Current User Status:</strong><br>
+    • Authenticated: {{ current_user.is_authenticated if current_user else False }}<br>
+    {% if current_user %}
+    • Current User ID: {{ current_user.id }}<br>
+    • Current Username: {{ current_user.username or current_user.email }}<br>
+    • Is Service Owner: {{ 'YES' if current_user.id == service.user_id else 'NO' }}
+    {% else %}
+    • No user logged in
+    {% endif %}
+  </div>
+  <div style="background: yellow; color: black; padding: 10px; border-radius: 5px; margin: 5px 0;">
+    <strong>Payment Button Logic:</strong><br>
+    • Should show payment section: ALWAYS (for all visitors)<br>
+    • Should show action buttons: {{ 'ONLY if logged in AND not owner' if current_user and current_user.id != service.user_id else 'NO (login required or is owner)' }}
+  </div>
+</div>
+<div class="max-w-6xl mx-auto py-8">
+
+  <!-- Service Header -->
+  <div class="service-detail-header">
+    <h1 class="service-title">{{ service.title }}</h1>
+    <div class="service-meta">
+      <span><i class="fas fa-user"></i> {{ service.user.display_name() if service.user else 'Anonymous' }}</span>
+      {% if service.category %}
+      <span class="service-category-badge">
+        <i class="fas fa-tag"></i>
+        <a href="{{ url_for('list_services', category=service.category) }}" class="category-link">{{ service.category }}</a>
+      </span>
+      {% endif %}
+      <span><i class="fas fa-calendar"></i> {{ service.created_at.strftime('%Y-%m-%d') }}</span>
+    </div>
+  </div>
+
+  <!-- Media Gallery -->
+  <div class="media-section">
+    <h2 class="section-title"><i class="fas fa-photo-video"></i> Media Gallery</h2>
+    <div class="media-grid">
+      {% if images %}
+        {% for img in images %}
+        <div class="media-item">
+          <img src="{{ url_for('static', filename='uploads/services/' ~ img) }}" alt="Image" />
+        </div>
+        {% endfor %}
+      {% endif %}
+      {% if videos %}
+        {% for vid in videos %}
+        <div class="media-item">
+          <video src="{{ url_for('static', filename='uploads/services/' ~ vid) }}" controls></video>
+        </div>
+        {% endfor %}
+      {% endif %}
+      {% if not images and not videos %}
+        <p class="text-gray-400">No media available</p>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Description -->
+  <div class="description-section">
+    <h2 class="section-title"><i class="fas fa-info-circle"></i> Description</h2>
+    <p>{{ service.description or "No description provided." }}</p>
+  </div>
+
+  <!-- Seller Info -->
+  <div class="seller-section">
+    <h2 class="section-title"><i class="fas fa-user"></i> Seller Info</h2>
+    <div class="seller-card">
+      <img src="{{ url_for('static', filename='uploads/avatars/' ~ service.user.avatar) if service.user and service.user.avatar else url_for('static', filename='default-avatar.png') }}" alt="Avatar" />
+      <div class="seller-details">
+        <p class="seller-name">{{ service.user.display_name() if service.user else 'Anonymous' }}</p>
+        {% if service.contact %}
+        <p class="seller-contact">
+          <i class="fas fa-phone text-blue-400"></i>
+          Contact: {{ service.contact }}
+        </p>
+        {% endif %}
+        {% if seller_stats %}
+          <div class="seller-stats">
+            <p class="seller-rating">
+              <i class="fas fa-star text-yellow-400"></i>
+              {{ "%.1f"|format(seller_stats.avg_rating) }} ({{ seller_stats.total_reviews }} reviews)
+            </p>
+            <p class="seller-orders">
+              <i class="fas fa-shopping-cart text-green-400"></i>
+              {{ seller_stats.total_orders }} orders completed
+            </p>
+          </div>
+        {% endif %}
+      </div>
+      <div class="seller-actions">
+        <!-- Always show payment section for buyers -->
+        <div class="payment-section">
+          <div class="price-display">
+            <span class="price-label">Price:</span>
+            <span class="price-amount">{{ service.currency }} {{ "%.2f"|format(service.price) }}</span>
+          </div>
+          <button type="button" onclick="initiatePayment({{ service.id }}, '{{ service.title }}', {{ service.price }}, '{{ service.currency }}')" class="pay-btn">
+            <i class="fas fa-mobile-alt"></i>
+            Pay with M-Pesa
+          </button>
+        </div>
+        <div class="contact-section">
+          <a href="{{ url_for('chat', username=service.user.username) }}" class="contact-btn">
+            <i class="fas fa-envelope"></i>
+            Contact Seller
+          </a>
+        </div>
+        <div class="action-buttons">
+          {% if current_user.is_authenticated %}
+            {% if current_user.id != service.user_id %}
+              <a href="{{ url_for('create_order', service_id=service.id) }}" class="order-btn">
+                <i class="fas fa-shopping-cart"></i>
+                Order Now
+              </a>
+              <a href="{{ url_for('chat', username=service.user.username) }}" class="contact-btn">
+                <i class="fas fa-envelope"></i>
+                Contact Seller
+              </a>
+            {% else %}
+              <span class="owner-notice">This is your service</span>
+            {% endif %}
+          {% else %}
+            <a href="{{ url_for('login') }}" class="order-btn">
+              <i class="fas fa-sign-in-alt"></i>
+              Login to Order
+            </a>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Reviews Placeholder -->
+  <div class="reviews-section">
+    <h2 class="section-title"><i class="fas fa-comments"></i> Reviews</h2>
+    <p class="text-gray-400">Reviews will appear here.</p>
+  </div>
+
+</div>
+
+<style>
+/* Dark Theme Styles */
+body { background-color: #121212; color: #e0e0e0; }
+.service-detail-header { background: rgba(255,255,255,0.05); padding: 2rem; border-radius: 12px; margin-bottom: 2rem; }
+.service-title { font-size: 2rem; color: #00d4ff; margin-bottom: 0.5rem; }
+.service-meta span { margin-right: 1rem; font-size: 0.95rem; color: #c0c0c0; }
+.service-category-badge { margin-right: 1rem; font-size: 0.95rem; }
+.category-link { color: #00d4ff; text-decoration: none; font-weight: 500; }
+.category-link:hover { text-decoration: underline; }
+.media-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+.media-item img, .media-item video { width: 100%; height: 200px; object-fit: cover; border-radius: 8px; background: #1e1e1e; }
+.description-section, .seller-section, .reviews-section { background: rgba(255,255,255,0.05); padding: 1.5rem; border-radius: 12px; margin-bottom: 2rem; }
+.seller-card { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
+.seller-card img { width: 80px; height: 80px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
+.seller-details { flex: 1; min-width: 200px; }
+.seller-name { font-size: 1.25rem; font-weight: 600; color: #ffffff; margin-bottom: 0.5rem; }
+.seller-contact { font-size: 0.9rem; color: #00d4ff; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem; }
+.seller-stats { display: flex; flex-direction: column; gap: 0.25rem; margin-bottom: 1rem; }
+.seller-rating, .seller-orders { font-size: 0.9rem; color: #d1d5db; display: flex; align-items: center; gap: 0.5rem; }
+.seller-actions { display: flex; flex-direction: column; gap: 1rem; }
+.payment-section { text-align: center; padding: 1rem; background: rgba(37, 211, 102, 0.1); border-radius: 12px; border: 1px solid rgba(37, 211, 102, 0.3); }
+.price-display { margin-bottom: 1rem; }
+.price-label { font-size: 0.9rem; color: #c0c0c0; margin-right: 0.5rem; }
+.price-amount { font-size: 1.5rem; font-weight: bold; color: #25d366; }
+.action-buttons { display: flex; gap: 0.75rem; flex-wrap: wrap; justify-content: center; }
+.order-btn, .contact-btn {
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 0.3s ease;
+}
+.pay-btn {
+  background: linear-gradient(135deg, #25d366, #128c7e);
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  margin-bottom: 0.5rem;
+}
+.pay-btn:hover {
+  background: linear-gradient(135deg, #128c7e, #0f6b5f);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 15px rgba(37, 211, 102, 0.4);
+}
+.order-btn {
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: white;
+}
+.order-btn:hover { background: linear-gradient(135deg, #059669, #047857); transform: translateY(-1px); }
+.contact-btn {
+  background: #00d4ff;
+  color: #000;
+}
+.contact-btn:hover { background: #00b8e6; transform: translateY(-1px); }
+.contact-section { margin-top: 1rem; }
+.contact-section .contact-btn { width: 100%; justify-content: center; }
+.owner-notice { font-size: 0.9rem; color: #c0c0c0; font-style: italic; padding: 0.5rem; background: rgba(255,255,255,0.05); border-radius: 8px; }
+</style>
+
+<script>
+// M-Pesa Payment Integration
+function initiatePayment(serviceId, serviceTitle, amount, currency) {
+    // Show loading state
+    const button = event.target.closest('button');
+    const originalText = button.innerHTML;
+    button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+    button.disabled = true;
+
+    // Get phone number from user
+    const phone = prompt(`Enter your M-Pesa phone number (format: 254XXXXXXXXX) to pay ${currency} ${amount} for "${serviceTitle}":`);
+
+    if (!phone) {
+        // Restore button
+        button.innerHTML = originalText;
+        button.disabled = false;
+        return;
+    }
+
+    // Validate phone number format
+    const phoneRegex = /^254[0-9]{9}$/;
+    if (!phoneRegex.test(phone.replace(/\s+/g, ''))) {
+        alert('Please enter a valid phone number in format: 254XXXXXXXXX');
+        button.innerHTML = originalText;
+        button.disabled = false;
+        return;
+    }
+
+    // Send payment request to server
+    fetch('/pay/' + serviceId, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: 'phone=' + encodeURIComponent(phone)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.ResponseCode === '0') {
+            alert('✅ M-Pesa payment request sent! Please check your phone and enter your PIN to complete the payment.');
+            button.innerHTML = '<i class="fas fa-check"></i> Payment Sent';
+            button.style.background = 'linear-gradient(135deg, #10b981, #059669)';
+        } else {
+            alert('❌ Payment failed: ' + (data.ResponseDescription || 'Unknown error'));
+            button.innerHTML = originalText;
+            button.disabled = false;
+        }
+    })
+    .catch(error => {
+        console.error('Payment error:', error);
+        alert('❌ Payment failed. Please try again.');
+        button.innerHTML = originalText;
+        button.disabled = false;
+    });
+}
+</script>
+
+{% endblock %}

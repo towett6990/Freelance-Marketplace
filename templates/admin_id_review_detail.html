@@ -1,0 +1,281 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-gray-900 via-gray-950 to-black text-gray-100 py-10">
+  <div class="max-w-6xl mx-auto px-4">
+    
+    <!-- Header -->
+    <div class="mb-6">
+      <a href="{{ url_for('admin_id_reviews') }}" class="text-blue-400 hover:text-blue-300 mb-2 inline-block">
+        ← Back to Dashboard
+      </a>
+      <h1 class="text-3xl font-bold text-white">ID Verification Review</h1>
+      <p class="text-gray-400">Detailed analysis for {{ user.username or user.email }}</p>
+    </div>
+
+    <div class="grid lg:grid-cols-2 gap-6">
+      
+      <!-- Left Column: ID Document & User Info -->
+      <div class="space-y-6">
+        
+        <!-- User Info Card -->
+        <div class="bg-gray-800/80 rounded-xl p-6">
+          <h2 class="text-xl font-semibold text-white mb-4">User Information</h2>
+          <div class="space-y-3">
+            <div class="flex justify-between">
+              <span class="text-gray-400">Username:</span>
+              <span class="text-white">{{ user.username or "Not set" }}</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-gray-400">Email:</span>
+              <span class="text-white">{{ user.email }}</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-gray-400">Role:</span>
+              <span class="text-white capitalize">{{ user.role }}</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-gray-400">Submitted:</span>
+              <span class="text-white">{{ user.last_id_upload_at.strftime("%Y-%m-%d %H:%M") if user.last_id_upload_at else "Unknown" }}</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-gray-400">Retry Count:</span>
+              <span class="text-white">{{ user.id_retry_count }}/3</span>
+            </div>
+            {% if user.manual_reviewed_by %}
+            <div class="flex justify-between">
+              <span class="text-gray-400">Current Reviewer:</span>
+              <span class="text-white">{{ user.admin_reviewer.username or "Admin" }}</span>
+            </div>
+            {% endif %}
+          </div>
+        </div>
+
+        <!-- ID Document Display -->
+        {% if user.id_document_path %}
+        <div class="bg-gray-800/80 rounded-xl p-6">
+          <h2 class="text-xl font-semibold text-white mb-4">ID Document</h2>
+          <div class="bg-gray-900 rounded-lg p-4 text-center">
+            <img src="{{ url_for('static', filename='uploads/ids/' + user.id_document) }}" 
+                 alt="ID Document" class="max-w-full h-auto rounded border border-gray-600 mx-auto">
+            <p class="text-gray-400 text-sm mt-2">Click image to view full size</p>
+          </div>
+        </div>
+        {% endif %}
+
+        <!-- Extracted Fields -->
+        {% if user.id_fields_extracted %}
+        <div class="bg-gray-800/80 rounded-xl p-6">
+          <h2 class="text-xl font-semibold text-white mb-4">Extracted Information</h2>
+          {% set fields = user.id_fields_extracted | safe | tojson | fromjson %}
+          <div class="space-y-2">
+            {% if fields.name %}
+            <div class="flex justify-between">
+              <span class="text-gray-400">Name:</span>
+              <span class="text-white">{{ fields.name }}</span>
+            </div>
+            {% endif %}
+            {% if fields.id_number %}
+            <div class="flex justify-between">
+              <span class="text-gray-400">ID Number:</span>
+              <span class="text-white">{{ fields.id_number }}</span>
+            </div>
+            {% endif %}
+            {% if fields.dob %}
+            <div class="flex justify-between">
+              <span class="text-gray-400">Date of Birth:</span>
+              <span class="text-white">{{ fields.dob }}</span>
+            </div>
+            {% endif %}
+          </div>
+        </div>
+        {% endif %}
+
+      </div>
+
+      <!-- Right Column: Analysis & Actions -->
+      <div class="space-y-6">
+        
+        <!-- Analysis Scores -->
+        <div class="bg-gray-800/80 rounded-xl p-6">
+          <h2 class="text-xl font-semibold text-white mb-4">Analysis Scores</h2>
+          <div class="space-y-4">
+            
+            {% set confidence_percent = (user.id_confidence_score * 100)|round|int %}
+            {% set content_percent = ((user.id_content_score or 0) * 100)|round|int %}
+            {% set integrity_percent = ((user.id_integrity_score or 0) * 100)|round|int %}
+            {% set quality_percent = ((user.id_quality_score or 0) * 100)|round|int %}
+            
+            <div>
+              <div class="flex justify-between mb-1">
+                <span class="text-gray-400">Overall Confidence</span>
+                <span class="text-white">{{ "%.2f"|format(user.id_confidence_score) }}/1.00 ({{ confidence_percent }}%)</span>
+              </div>
+            </div>
+
+            <div>
+              <div class="flex justify-between mb-1">
+                <span class="text-gray-400">Content Score</span>
+                <span class="text-white">{{ "%.2f"|format(user.id_content_score or 0) }}/1.00 ({{ content_percent }}%)</span>
+              </div>
+            </div>
+
+            <div>
+              <div class="flex justify-between mb-1">
+                <span class="text-gray-400">Integrity Score</span>
+                <span class="text-white">{{ "%.2f"|format(user.id_integrity_score or 0) }}/1.00 ({{ integrity_percent }}%)</span>
+              </div>
+            </div>
+
+            <div>
+              <div class="flex justify-between mb-1">
+                <span class="text-gray-400">Quality Score</span>
+                <span class="text-white">{{ "%.2f"|format(user.id_quality_score or 0) }}/1.00 ({{ quality_percent }}%)</span>
+              </div>
+            </div>
+
+            {% if user.id_face_score %}
+            {% set face_percent = (user.id_face_score * 100)|round|int %}
+            <div>
+              <div class="flex justify-between mb-1">
+                <span class="text-gray-400">Face Match Score</span>
+                <span class="text-white">{{ "%.2f"|format(user.id_face_score) }}/1.00 ({{ face_percent }}%)</span>
+              </div>
+            </div>
+            {% endif %}
+
+          </div>
+        </div>
+
+        <!-- Validation Reasons -->
+        {% if user.id_validation_reasons %}
+        <div class="bg-gray-800/80 rounded-xl p-6">
+          <h2 class="text-xl font-semibold text-white mb-4">Validation Analysis</h2>
+          {% set reasons = user.id_validation_reasons | safe | tojson | fromjson %}
+          <div class="space-y-2">
+            {% for reason in reasons %}
+            <div class="flex items-start">
+              <span class="text-green-400 mr-2">✓</span>
+              <span class="text-gray-300">{{ reason }}</span>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+        {% endif %}
+
+        <!-- Integrity Issues -->
+        {% if user.id_integrity_issues %}
+        <div class="bg-gray-800/80 rounded-xl p-6">
+          <h2 class="text-xl font-semibold text-white mb-4">Integrity Issues</h2>
+          {% set issues = user.id_integrity_issues | safe | tojson | fromjson %}
+          <div class="space-y-2">
+            {% for issue in issues %}
+            <div class="flex items-start">
+              <span class="text-red-400 mr-2">⚠</span>
+              <span class="text-gray-300">{{ issue }}</span>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+        {% endif %}
+
+        <!-- Review Actions -->
+        <div class="bg-gray-800/80 rounded-xl p-6">
+          <h2 class="text-xl font-semibold text-white mb-4">Review Actions</h2>
+          
+          <!-- Approve Form -->
+          <form method="POST" action="{{ url_for('admin_approve_id', user_id=user.id) }}" class="mb-4">
+            <div class="mb-3">
+              <label class="block text-gray-400 text-sm font-medium mb-2">Admin Notes (Optional)</label>
+              <textarea name="admin_notes" rows="3" 
+                        class="w-full bg-gray-700 text-white rounded-lg px-3 py-2 border border-gray-600 focus:border-blue-500 focus:outline-none"
+                        placeholder="Add any notes about this approval..."></textarea>
+            </div>
+            <button type="submit" 
+                    class="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-lg transition-colors">
+              ✅ Approve ID Verification
+            </button>
+          </form>
+
+          <!-- Reject Form -->
+          <form method="POST" action="{{ url_for('admin_reject_id', user_id=user.id) }}" class="mb-4">
+            <div class="mb-3">
+              <label class="block text-gray-400 text-sm font-medium mb-2">Rejection Reason *</label>
+              <select name="rejection_reason" required 
+                      class="w-full bg-gray-700 text-white rounded-lg px-3 py-2 border border-gray-600 focus:border-red-500 focus:outline-none">
+                <option value="">Select reason...</option>
+                <option value="Document appears forged">Document appears forged</option>
+                <option value="Document is damaged/unreadable">Document is damaged/unreadable</option>
+                <option value="Document format not recognized">Document format not recognized</option>
+                <option value="Information doesn't match user profile">Information doesn't match user profile</option>
+                <option value="Document has expired">Document has expired</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+            <div class="mb-3">
+              <label class="block text-gray-400 text-sm font-medium mb-2">Additional Notes</label>
+              <textarea name="admin_notes" rows="2" 
+                        class="w-full bg-gray-700 text-white rounded-lg px-3 py-2 border border-gray-600 focus:border-red-500 focus:outline-none"
+                        placeholder="Additional rejection details..."></textarea>
+            </div>
+            <button type="submit" 
+                    class="w-full bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded-lg transition-colors">
+              ❌ Reject ID Verification
+            </button>
+          </form>
+
+          <!-- Request Resubmission -->
+          <form method="POST" action="{{ url_for('admin_request_resubmission', user_id=user.id) }}">
+            <div class="mb-3">
+              <label class="block text-gray-400 text-sm font-medium mb-2">Resubmission Instructions</label>
+              <textarea name="resubmission_notes" rows="2" 
+                        class="w-full bg-gray-700 text-white rounded-lg px-3 py-2 border border-gray-600 focus:border-yellow-500 focus:outline-none"
+                        placeholder="Provide specific instructions for resubmission..."></textarea>
+            </div>
+            <button type="submit" 
+                    class="w-full bg-yellow-600 hover:bg-yellow-700 text-white font-medium py-2 px-4 rounded-lg transition-colors">
+              📋 Request Resubmission
+            </button>
+          </form>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Audit Trail -->
+    {% if audit_trail %}
+    <div class="mt-8 bg-gray-800/80 rounded-xl p-6">
+      <h2 class="text-xl font-semibold text-white mb-4">Audit Trail</h2>
+      <div class="space-y-3">
+        {% for audit in audit_trail %}
+        <div class="flex items-start space-x-4 p-3 bg-gray-700/30 rounded-lg">
+          <div class="flex-shrink-0">
+            {% if audit.verification_type == 'auto' %}
+            <span class="w-2 h-2 bg-blue-500 rounded-full mt-2"></span>
+            {% elif audit.verification_type == 'manual' %}
+            <span class="w-2 h-2 bg-green-500 rounded-full mt-2"></span>
+            {% else %}
+            <span class="w-2 h-2 bg-yellow-500 rounded-full mt-2"></span>
+            {% endif %}
+          </div>
+          <div class="flex-1">
+            <div class="flex items-center justify-between">
+              <div>
+                <span class="text-white font-medium capitalize">{{ audit.verification_type }}</span>
+                <span class="text-gray-400 ml-2">• Confidence: {{ "%.2f"|format(audit.confidence_score) }}</span>
+              </div>
+              <span class="text-gray-400 text-sm">{{ audit.created_at.strftime("%Y-%m-%d %H:%M") }}</span>
+            </div>
+            <p class="text-gray-300 text-sm mt-1">{{ audit.decision_reason }}</p>
+            {% if audit.notes %}
+            <p class="text-gray-400 text-xs mt-1 italic">{{ audit.notes }}</p>
+            {% endif %}
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
+  </div>
+</div>
+{% endblock %}

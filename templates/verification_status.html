@@ -1,0 +1,195 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header 
+                    {% if current_user.is_verified %}bg-success
+                    {% elif current_user.verification_status == 'pending' %}bg-warning
+                    {% elif current_user.verification_status == 'rejected' %}bg-danger
+                    {% else %}bg-secondary{% endif %} text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-shield-alt"></i> Your Verification Status
+                    </h4>
+                </div>
+                <div class="card-body">
+                    {% if current_user.is_verified %}
+                        <!-- VERIFIED -->
+                        <div class="alert alert-success">
+                            <h5><i class="fas fa-check-circle"></i> Verified Account</h5>
+                            <p class="mb-0">Your ID has been verified successfully! You have full access to the marketplace.</p>
+                        </div>
+                        {% if current_user.id_confidence_score %}
+                        <p><strong>Confidence Score:</strong> 
+                            <span class="badge bg-success">{{ "%.2f"|format(current_user.id_confidence_score) }}</span>
+                        </p>
+                        {% endif %}
+                        {% if current_user.manual_reviewed_at %}
+                        <p class="text-muted">
+                            <small><i class="fas fa-calendar"></i> Verified on: {{ current_user.manual_reviewed_at.strftime('%Y-%m-%d %H:%M') }}</small>
+                        </p>
+                        {% endif %}
+
+                    {% elif current_user.verification_status == 'pending' %}
+                        <!-- PENDING REVIEW -->
+                        <div class="alert alert-warning">
+                            <h5><i class="fas fa-clock"></i> Pending Manual Review</h5>
+                            <p>Your ID has been submitted and is currently being reviewed by our team.</p>
+                            <p class="mb-0"><strong>Expected review time:</strong> 24-48 hours</p>
+                        </div>
+                        
+                        <div class="row mt-3">
+                            <div class="col-md-6">
+                                {% if current_user.id_confidence_score %}
+                                <div class="card bg-light">
+                                    <div class="card-body text-center">
+                                        <h6>AI Review Score</h6>
+                                        <h3 class="mb-0">
+                                            <span class="badge 
+                                                {% if current_user.id_confidence_score >= 0.7 %}bg-success
+                                                {% elif current_user.id_confidence_score >= 0.4 %}bg-warning
+                                                {% else %}bg-danger{% endif %}">
+                                                {{ "%.2f"|format(current_user.id_confidence_score) }}
+                                            </span>
+                                        </h3>
+                                    </div>
+                                </div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card bg-light">
+                                    <div class="card-body text-center">
+                                        <h6>Submitted</h6>
+                                        <p class="mb-0">
+                                            {% if current_user.last_id_upload_at %}
+                                                {{ current_user.last_id_upload_at.strftime('%Y-%m-%d') }}<br>
+                                                <small class="text-muted">{{ current_user.last_id_upload_at.strftime('%H:%M') }}</small>
+                                            {% else %}
+                                                N/A
+                                            {% endif %}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="alert alert-info mt-3">
+                            <i class="fas fa-info-circle"></i> 
+                            <strong>What happens next?</strong><br>
+                            Our verification team will review your ID document and notify you once the review is complete.
+                        </div>
+
+                    {% elif current_user.verification_status == 'rejected' %}
+                        <!-- REJECTED -->
+                        <div class="alert alert-danger">
+                            <h5><i class="fas fa-times-circle"></i> Verification Rejected</h5>
+                            <p>Unfortunately, your ID verification was not approved.</p>
+                            {% if current_user.manual_review_notes %}
+                            <hr>
+                            <p class="mb-0"><strong>Admin Notes:</strong><br>{{ current_user.manual_review_notes }}</p>
+                            {% endif %}
+                        </div>
+
+                        <div class="card border-info mb-3">
+                            <div class="card-header bg-info text-white">
+                                <h6 class="mb-0"><i class="fas fa-lightbulb"></i> Tips for Successful Verification</h6>
+                            </div>
+                            <div class="card-body">
+                                <ul class="mb-0">
+                                    <li><strong>Good Lighting:</strong> Take photos in a well-lit area</li>
+                                    <li><strong>Flat Surface:</strong> Place ID on a flat, contrasting surface</li>
+                                    <li><strong>All Corners Visible:</strong> Ensure entire ID is in frame</li>
+                                    <li><strong>No Glare:</strong> Avoid reflections from lights or flash</li>
+                                    <li><strong>Clear Focus:</strong> Make sure text is sharp and readable</li>
+                                    <li><strong>Valid Document:</strong> Use a current, government-issued ID</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <a href="{{ url_for('upload_id') }}" class="btn btn-primary btn-lg">
+                                <i class="fas fa-redo"></i> Upload New ID
+                            </a>
+                        </div>
+
+                    {% else %}
+                        <!-- NOT SUBMITTED -->
+                        <div class="alert alert-info">
+                            <h5><i class="fas fa-info-circle"></i> Not Yet Verified</h5>
+                            <p>You haven't uploaded your ID verification documents yet.</p>
+                            <p class="mb-0">Verification is required to access certain marketplace features.</p>
+                        </div>
+
+                        <div class="card bg-light mt-3">
+                            <div class="card-body">
+                                <h6><i class="fas fa-check-circle text-success"></i> Benefits of Verification:</h6>
+                                <ul>
+                                    <li>Increased trust from clients</li>
+                                    <li>Access to premium features</li>
+                                    <li>Higher visibility in search results</li>
+                                    <li>Ability to bid on high-value projects</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="d-grid gap-2 mt-3">
+                            <a href="{{ url_for('upload_id') }}" class="btn btn-primary btn-lg">
+                                <i class="fas fa-upload"></i> Start Verification Process
+                            </a>
+                        </div>
+                    {% endif %}
+
+                    <!-- Retry Count (if applicable) -->
+                    {% if current_user.id_retry_count and current_user.id_retry_count > 0 %}
+                    <hr>
+                    <div class="text-center text-muted">
+                        <small><i class="fas fa-history"></i> Verification attempts: {{ current_user.id_retry_count }}</small>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <div class="card-footer bg-light">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <a href="{{ url_for('profile', username=current_user.username) }}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Back to Profile
+                        </a>
+                        
+                        {% if current_user.verification_status == 'pending' or not current_user.is_verified %}
+                        <a href="{{ url_for('upload_id') }}" class="btn btn-outline-primary">
+                            <i class="fas fa-question-circle"></i> Need Help?
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Additional Info Card -->
+            <div class="card mt-3">
+                <div class="card-body">
+                    <h6 class="card-title"><i class="fas fa-shield-alt"></i> About ID Verification</h6>
+                    <p class="card-text text-muted mb-0">
+                        <small>
+                            We use a combination of AI-powered analysis and manual review to ensure the security 
+                            and authenticity of all verified accounts on our platform. Your ID information is 
+                            encrypted and stored securely.
+                        </small>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.card {
+    transition: transform 0.2s;
+}
+
+.badge {
+    font-size: 1em;
+    padding: 0.5em 0.8em;
+}
+</style>
+{% endblock %}

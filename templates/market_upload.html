@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}Upload Service{% endblock %}
+{% block content %}
+<div class="max-w-lg mx-auto p-6">
+  <h2 class="text-2xl font-bold mb-4 text-center">Upload Your Service</h2>
+  <form method="POST" action="{{ url_for('upload_service') }}" enctype="multipart/form-data" class="bg-gray-800 p-6 rounded-lg shadow-lg">
+    <div class="mb-4">
+      <label class="block text-gray-300 mb-2">Service Title</label>
+      <input type="text" name="title" required class="w-full p-2 rounded bg-gray-700 border border-gray-600 text-white">
+    </div>
+    <div class="mb-4">
+      <label class="block text-gray-300 mb-2">Description</label>
+      <textarea name="description" required rows="3" class="w-full p-2 rounded bg-gray-700 border border-gray-600 text-white"></textarea>
+    </div>
+    <div class="mb-4">
+      <label class="block text-gray-300 mb-2">Price</label>
+      <input type="number" step="0.01" name="price" required class="w-full p-2 rounded bg-gray-700 border border-gray-600 text-white">
+    </div>
+    <div class="mb-4">
+      <label class="block text-gray-300 mb-2">Upload Image</label>
+      <input type="file" name="image" accept="image/*" class="w-full text-gray-300">
+    </div>
+    <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+      Submit Service
+    </button>
+  </form>
+</div>
+{% endblock %}

@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="min-h-screen bg-gray-900 text-gray-100 py-10">
+  <div class="max-w-xl mx-auto bg-gray-800 p-8 rounded-2xl shadow-lg">
+    <h1 class="text-2xl font-bold mb-6 text-center">Edit Your Profile</h1>
+
+    <form method="POST" action="{{ url_for('edit_profile') }}" enctype="multipart/form-data">
+      <div class="mb-4">
+        <label class="block text-gray-300 mb-2">Username</label>
+        <input type="text" name="username" value="{{ current_user.username }}"
+               class="w-full p-2 rounded bg-gray-700 border border-gray-600 text-white focus:ring-2 focus:ring-indigo-500">
+      </div>
+
+      <div class="mb-4">
+        <label class="block text-gray-300 mb-2">Bio</label>
+        <textarea name="bio" rows="3"
+                  class="w-full p-2 rounded bg-gray-700 border border-gray-600 text-white focus:ring-2 focus:ring-indigo-500">{{ current_user.bio or '' }}</textarea>
+      </div>
+
+      <div class="mb-4">
+        <label class="block text-gray-300 mb-2">Avatar Image</label>
+        {% if current_user.avatar %}
+          <img src="{{ url_for('static', filename='uploads/avatars/' + current_user.avatar) }}"
+               class="w-24 h-24 rounded-full object-cover mb-3 border border-gray-600">
+        {% endif %}
+        <input type="file" name="avatar" accept="image/*"
+               class="w-full text-gray-300 bg-gray-700 border border-gray-600 rounded p-2 cursor-pointer">
+      </div>
+
+      <button type="submit"
+              class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 rounded transition">
+        Save Changes
+      </button>
+    </form>
+  </div>
+</div>
+{% endblock %}

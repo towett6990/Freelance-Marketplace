@@ -1,0 +1,246 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="max-w-4xl mx-auto py-8">
+  <!-- Header Section -->
+  <div class="text-center mb-8">
+    <h1 class="text-4xl font-bold text-white mb-2">
+      {{ "Create New Service" if action == "create" else "Edit Service" }}
+    </h1>
+    <p class="text-gray-400">Fill in the details below to {{ "post" if action == "create" else "update" }} your service</p>
+  </div>
+
+  <!-- Main Form Container -->
+  <div class="service-form-container">
+    <form
+      method="post"
+      enctype="multipart/form-data"
+      action="{% if action == 'edit' and service %}{{ url_for('edit_service', id=service.id) }}{% else %}{{ url_for('create_service') }}{% endif %}"
+      class="service-form"
+    >
+      <!-- Basic Information Section -->
+      <div class="form-section">
+        <h3 class="section-title">
+          <i class="fas fa-info-circle mr-2"></i>Basic Information
+        </h3>
+        
+        <div class="form-group">
+          <label for="title" class="form-label">Service Title *</label>
+          <input
+            type="text"
+            id="title"
+            name="title"
+            value="{{ service.title if service else '' }}"
+            class="form-input"
+            placeholder="Enter a descriptive title for your service"
+            required
+          >
+        </div>
+
+        <div class="form-group">
+          <label for="description" class="form-label">Description *</label>
+          <textarea
+            id="description"
+            name="description"
+            rows="6"
+            class="form-textarea"
+            placeholder="Describe your service in detail. What do you offer? What makes it special?"
+          >{{ service.description if service else '' }}</textarea>
+        </div>
+
+        <div class="form-group">
+          <label for="category" class="form-label">Category</label>
+          <select id="category" name="category" class="form-select">
+            <option value="">Select a category</option>
+            <option value="Web Development" {% if service and service.category == 'Web Development' %}selected{% endif %}>Web Development</option>
+            <option value="Graphic Design" {% if service and service.category == 'Graphic Design' %}selected{% endif %}>Graphic Design</option>
+            <option value="Writing" {% if service and service.category == 'Writing' %}selected{% endif %}>Writing</option>
+            <option value="Marketing" {% if service and service.category == 'Marketing' %}selected{% endif %}>Marketing</option>
+            <option value="Consulting" {% if service and service.category == 'Consulting' %}selected{% endif %}>Consulting</option>
+            <option value="Other" {% if service and service.category == 'Other' %}selected{% endif %}>Other</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Pricing Section -->
+      <div class="form-section">
+        <h3 class="section-title">
+          <i class="fas fa-dollar-sign mr-2"></i>Pricing Details
+        </h3>
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div class="form-group">
+            <label for="price" class="form-label">Price *</label>
+            <div class="price-input-wrapper">
+              <input
+                type="number"
+                id="price"
+                name="price"
+                step="0.01"
+                min="0"
+                value="{{ service.price if service else '' }}"
+                class="form-input"
+                placeholder="0.00"
+                required
+              >
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="currency" class="form-label">Currency</label>
+            <select id="currency" name="currency" class="form-select">
+              <option value="KES" {% if service and service.currency == 'KES' %}selected{% endif %}>KES (Kenyan Shilling)</option>
+              <option value="USD" {% if service and service.currency == 'USD' %}selected{% endif %}>USD (US Dollar)</option>
+              <option value="EUR" {% if service and service.currency == 'EUR' %}selected{% endif %}>EUR (Euro)</option>
+              <option value="GBP" {% if service and service.currency == 'GBP' %}selected{% endif %}>GBP (British Pound)</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="quality" class="form-label">Service Level</label>
+            <select id="quality" name="quality" class="form-select">
+              <option value="">Select level</option>
+              <option value="New" {% if service and service.quality == 'New' %}selected{% endif %}>Premium/Professional</option>
+              <option value="Used-Good" {% if service and service.quality == 'Used-Good' %}selected{% endif %}>Standard/Good Quality</option>
+              <option value="Used-Fair" {% if service and service.quality == 'Used-Fair' %}selected{% endif %}>Basic/Fair Quality</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Images Section -->
+      <div class="form-section">
+        <h3 class="section-title">
+          <i class="fas fa-images mr-2"></i>Service Images
+        </h3>
+        
+        <div class="form-group">
+          <label for="images" class="form-label">Upload Photos (max {{ max_images or 6 }})</label>
+          <div class="file-upload-area">
+            <input
+              type="file"
+              name="images"
+              id="images"
+              multiple
+              accept="image/*"
+              class="file-input"
+            >
+            <div class="file-upload-text">
+              <i class="fas fa-cloud-upload-alt text-4xl mb-4"></i>
+              <p class="text-lg font-medium">Click to upload or drag and drop</p>
+              <p class="text-sm text-gray-400">PNG, JPG, GIF, WEBP supported</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Existing Photos -->
+        {% if images %}
+        <div class="form-group">
+          <label class="form-label">Current Photos</label>
+          <div id="existing-photos" class="photo-grid">
+            {% for img in images %}
+            <div class="photo-item">
+              <img src="{{ url_for('static', filename='uploads/services/' ~ img) }}" alt="Service photo">
+              <div class="photo-overlay">
+                <label class="photo-remove">
+                  <input type="checkbox" name="remove_images" value="{{ img }}">
+                  <i class="fas fa-trash"></i>
+                </label>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+        {% endif %}
+
+        <!-- Image Preview -->
+        <div class="form-group">
+          <div id="preview" class="photo-grid"></div>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="form-actions">
+        <button type="submit" class="btn-submit">
+          <i class="fas fa-save mr-2"></i>
+          {{ "Post Service" if action == "create" else "Save Changes" }}
+        </button>
+        {% if service %}
+        <a href="{{ url_for('service_view', id=service.id) }}" class="btn-cancel">
+          <i class="fas fa-times mr-2"></i>Cancel
+        </a>
+        {% endif %}
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Font Awesome for icons -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+<script>
+document.getElementById('images').addEventListener('change', function(e){
+  const preview = document.getElementById('preview');
+  preview.innerHTML = '';
+  
+  if (e.target.files.length > 0) {
+    // Add preview title
+    const title = document.createElement('h4');
+    title.className = 'preview-title';
+    title.innerHTML = '<i class="fas fa-eye mr-2"></i>New Upload Preview';
+    preview.appendChild(title);
+  }
+  
+  Array.from(e.target.files).slice(0, 6).forEach((file, index) => {
+    const url = URL.createObjectURL(file);
+    const photoItem = document.createElement('div');
+    photoItem.className = 'photo-item preview-item';
+    photoItem.innerHTML = `
+      <img src="${url}" alt="Preview ${index + 1}">
+      <div class="photo-info">
+        <span class="photo-name">${file.name.substring(0, 20)}${file.name.length > 20 ? '...' : ''}</span>
+        <span class="photo-size">${(file.size / 1024 / 1024).toFixed(1)} MB</span>
+      </div>
+    `;
+    preview.appendChild(photoItem);
+  });
+});
+
+// Drag and drop functionality
+const fileUploadArea = document.querySelector('.file-upload-area');
+const fileInput = document.getElementById('images');
+
+['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+  fileUploadArea.addEventListener(eventName, preventDefaults, false);
+});
+
+function preventDefaults(e) {
+  e.preventDefault();
+  e.stopPropagation();
+}
+
+['dragenter', 'dragover'].forEach(eventName => {
+  fileUploadArea.addEventListener(eventName, highlight, false);
+});
+
+['dragleave', 'drop'].forEach(eventName => {
+  fileUploadArea.addEventListener(eventName, unhighlight, false);
+});
+
+function highlight(e) {
+  fileUploadArea.classList.add('drag-over');
+}
+
+function unhighlight(e) {
+  fileUploadArea.classList.remove('drag-over');
+}
+
+fileUploadArea.addEventListener('drop', handleDrop, false);
+
+function handleDrop(e) {
+  const dt = e.dataTransfer;
+  const files = dt.files;
+  fileInput.files = files;
+  fileInput.dispatchEvent(new Event('change'));
+}
+</script>
+{% endblock %}

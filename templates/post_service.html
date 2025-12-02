@@ -1,0 +1,630 @@
+{% extends "base.html" %}
+
+{% block title %}Post New Service{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto py-8">
+  <!-- Hero Section -->
+  <div class="text-center mb-12">
+    <div class="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full mb-6">
+      <i class="fas fa-plus-circle text-3xl text-white"></i>
+    </div>
+    <h1 class="text-5xl font-bold text-white mb-4">
+      Post Your Service
+    </h1>
+    <p class="text-xl text-gray-300">Showcase your skills with photos and videos</p>
+  </div>
+
+  <!-- Main Form -->
+  <div class="modern-form-container">
+    <form method="POST" enctype="multipart/form-data" id="serviceForm">
+      {{ form.hidden_tag() }}
+
+      <!-- Service Details -->
+      <div class="form-card">
+        <h2 class="card-title">
+          <i class="fas fa-info-circle"></i>
+          Service Details
+        </h2>
+        
+        <div class="form-row">
+          <div class="form-field">
+            {{ form.title.label(class="field-label") }}
+            {{ form.title(class="field-input", placeholder="Service title") }}
+            {% for error in form.title.errors %}
+              <span class="error-text">{{ error }}</span>
+            {% endfor %}
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-field">
+            {{ form.description.label(class="field-label") }}
+            {{ form.description(class="field-textarea", placeholder="Brief description") }}
+            {% for error in form.description.errors %}
+              <span class="error-text">{{ error }}</span>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+
+      <!-- Media Upload -->
+      <div class="form-card">
+        <h2 class="card-title">
+          <i class="fas fa-photo-video"></i>
+          Upload Media
+        </h2>
+        
+        <!-- Media Type Selector -->
+        <div class="media-type-selector">
+          <div class="selector-option" data-type="image">
+            <i class="fas fa-image"></i>
+            <span>Photos</span>
+          </div>
+          <div class="selector-option" data-type="video">
+            <i class="fas fa-video"></i>
+            <span>Videos</span>
+          </div>
+        </div>
+
+        <!-- Upload Area -->
+        <div class="upload-zone" id="uploadZone">
+          <input type="file" id="mediaInput" multiple accept="image/*,video/*" style="display: none;">
+          <div class="upload-content">
+            <div class="upload-icon">
+              <i class="fas fa-cloud-upload-alt"></i>
+            </div>
+            <h3>Drop files here or click to browse</h3>
+            <p>Support: JPG, PNG, MP4, MOV (Max 50MB each)</p>
+          </div>
+        </div>
+
+        <!-- Media Preview Grid -->
+        <div class="media-grid" id="mediaGrid">
+          <div class="grid-placeholder" id="gridPlaceholder">
+            <div class="placeholder-icon">
+              <i class="fas fa-images"></i>
+            </div>
+            <h3>Your uploaded media will appear here</h3>
+            <p>Each photo/video will have its own individual price field</p>
+            <div class="price-example">
+              <span>💰 Set different prices for each media</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Submit -->
+      <div class="submit-section">
+        <button type="submit" class="submit-btn">
+          <i class="fas fa-rocket"></i>
+          Post Service
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Font Awesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+<style>
+/* Modern Form Styling */
+.modern-form-container {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 24px;
+  padding: 2rem;
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+}
+
+.form-card {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  padding: 2rem;
+  margin-bottom: 2rem;
+}
+
+.card-title {
+  color: #00d4ff;
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.form-row {
+  margin-bottom: 1.5rem;
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+}
+
+.field-label {
+  color: #e0e0e0;
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+  font-size: 0.95rem;
+}
+
+.field-input,
+.field-textarea {
+  background: linear-gradient(145deg, #2a2a2a, #1f1f1f);
+  border: 2px solid #404040;
+  border-radius: 12px;
+  padding: 1rem;
+  color: #ffffff;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+}
+
+.field-input:focus,
+.field-textarea:focus {
+  outline: none;
+  border-color: #00d4ff;
+  box-shadow: 0 0 20px rgba(0, 212, 255, 0.3);
+  transform: translateY(-2px);
+}
+
+.field-textarea {
+  resize: vertical;
+  min-height: 100px;
+}
+
+/* Media Type Selector */
+.media-type-selector {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.selector-option {
+  background: linear-gradient(145deg, #2a2a2a, #1f1f1f);
+  border: 2px solid #404040;
+  border-radius: 12px;
+  padding: 1.5rem;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.selector-option:hover {
+  border-color: #00d4ff;
+  transform: translateY(-2px);
+}
+
+.selector-option.active {
+  border-color: #00d4ff;
+  background: linear-gradient(145deg, #00d4ff20, #0099cc20);
+}
+
+.selector-option i {
+  font-size: 2rem;
+  color: #00d4ff;
+}
+
+.selector-option span {
+  color: #ffffff;
+  font-weight: 500;
+}
+
+/* Upload Zone */
+.upload-zone {
+  border: 2px dashed #404040;
+  border-radius: 16px;
+  padding: 3rem 2rem;
+  text-align: center;
+  background: linear-gradient(145deg, #2a2a2a, #1f1f1f);
+  transition: all 0.3s ease;
+  cursor: pointer;
+  margin-bottom: 2rem;
+}
+
+.upload-zone:hover,
+.upload-zone.dragover {
+  border-color: #00d4ff;
+  background: linear-gradient(145deg, #333333, #262626);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 30px rgba(0, 212, 255, 0.2);
+}
+
+.upload-content h3 {
+  color: #ffffff;
+  font-size: 1.2rem;
+  margin: 1rem 0 0.5rem 0;
+}
+
+.upload-content p {
+  color: #999999;
+  font-size: 0.9rem;
+}
+
+.upload-icon i {
+  font-size: 3rem;
+  color: #00d4ff;
+  margin-bottom: 1rem;
+}
+
+/* Media Grid */
+.media-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.5rem;
+  margin-top: 2rem;
+}
+
+.media-item {
+  background: #2a2a2a;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  transition: all 0.3s ease;
+}
+
+.media-item:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+}
+
+.media-preview {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  display: block;
+}
+
+.media-info {
+  padding: 1rem;
+}
+
+.media-name {
+  color: #ffffff;
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.media-size {
+  color: #999999;
+  font-size: 0.8rem;
+  margin-bottom: 1rem;
+}
+
+/* Price Input Field */
+.price-input {
+  background: linear-gradient(145deg, #333333, #2a2a2a);
+  border: 2px solid #555555;
+  border-radius: 10px;
+  padding: 0.75rem;
+  color: #ffffff;
+  width: 100%;
+  font-size: 0.95rem;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  margin-top: 0.5rem;
+}
+
+.price-input:focus {
+  border-color: #00d4ff;
+  outline: none;
+  box-shadow: 0 0 15px rgba(0, 212, 255, 0.3);
+  transform: translateY(-1px);
+}
+
+.price-input::placeholder {
+  color: #999999;
+  font-weight: 400;
+}
+
+/* Grid Placeholder */
+.grid-placeholder {
+  text-align: center;
+  padding: 3rem 2rem;
+  color: #888888;
+  grid-column: 1 / -1;
+}
+
+.placeholder-icon i {
+  font-size: 3rem;
+  color: #555555;
+  margin-bottom: 1rem;
+}
+
+.grid-placeholder h3 {
+  color: #999999;
+  font-size: 1.2rem;
+  margin: 1rem 0 0.5rem 0;
+}
+
+.grid-placeholder p {
+  color: #777777;
+  font-size: 0.9rem;
+  margin-bottom: 1rem;
+}
+
+.price-example {
+  background: rgba(0, 212, 255, 0.1);
+  border: 1px solid rgba(0, 212, 255, 0.3);
+  border-radius: 8px;
+  padding: 0.75rem;
+  margin-top: 1rem;
+  display: inline-block;
+}
+
+.price-example span {
+  color: #00d4ff;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+/* Submit Section */
+.submit-section {
+  text-align: center;
+  margin-top: 2rem;
+}
+
+.submit-btn {
+  background: linear-gradient(135deg, #00d4ff, #0099cc);
+  color: white;
+  border: none;
+  padding: 1rem 3rem;
+  border-radius: 12px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 20px rgba(0, 212, 255, 0.4);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.submit-btn:hover {
+  background: linear-gradient(135deg, #00b8e6, #0088bb);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 30px rgba(0, 212, 255, 0.5);
+}
+
+/* Error Styling */
+.error-text {
+  color: #ff4757;
+  font-size: 0.85rem;
+  margin-top: 0.25rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .modern-form-container {
+    padding: 1.5rem;
+  }
+  
+  .media-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .media-type-selector {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Animations */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.form-card {
+  animation: fadeInUp 0.6s ease forwards;
+}
+
+.form-card:nth-child(2) {
+  animation-delay: 0.1s;
+}
+</style>
+
+<script>
+let mediaItems = [];
+let currentMediaType = 'image';
+
+// Initialize
+document.addEventListener('DOMContentLoaded', function() {
+  // Default to image type
+  setActiveMediaType('image');
+  
+  // Set up media type selector
+  document.querySelectorAll('.selector-option').forEach(option => {
+    option.addEventListener('click', function() {
+      const type = this.dataset.type;
+      setActiveMediaType(type);
+    });
+  });
+  
+  // Set up upload zone
+  const uploadZone = document.getElementById('uploadZone');
+  const mediaInput = document.getElementById('mediaInput');
+  
+  uploadZone.addEventListener('click', () => mediaInput.click());
+  uploadZone.addEventListener('dragover', handleDragOver);
+  uploadZone.addEventListener('dragleave', handleDragLeave);
+  uploadZone.addEventListener('drop', handleDrop);
+  
+  mediaInput.addEventListener('change', handleFileSelect);
+});
+
+function setActiveMediaType(type) {
+  currentMediaType = type;
+  
+  // Update selector
+  document.querySelectorAll('.selector-option').forEach(option => {
+    option.classList.remove('active');
+    if (option.dataset.type === type) {
+      option.classList.add('active');
+    }
+  });
+  
+  // Update input accept attribute
+  const mediaInput = document.getElementById('mediaInput');
+  mediaInput.accept = type === 'image' ? 'image/*' : 'video/*';
+  
+  // Clear existing media
+  mediaItems = [];
+  updateMediaGrid();
+}
+
+function handleDragOver(e) {
+  e.preventDefault();
+  document.getElementById('uploadZone').classList.add('dragover');
+}
+
+function handleDragLeave(e) {
+  e.preventDefault();
+  document.getElementById('uploadZone').classList.remove('dragover');
+}
+
+function handleDrop(e) {
+  e.preventDefault();
+  document.getElementById('uploadZone').classList.remove('dragover');
+  
+  const files = Array.from(e.dataTransfer.files);
+  processFiles(files);
+}
+
+function handleFileSelect(e) {
+  const files = Array.from(e.target.files);
+  processFiles(files);
+}
+
+function processFiles(files) {
+  files.forEach(file => {
+    if (validateFile(file)) {
+      const mediaItem = {
+        id: Date.now() + Math.random(),
+        file: file,
+        url: URL.createObjectURL(file),
+        name: file.name,
+        size: file.size,
+        type: currentMediaType,
+        price: 0
+      };
+      mediaItems.push(mediaItem);
+    }
+  });
+  
+  updateMediaGrid();
+}
+
+function validateFile(file) {
+  const maxSize = 50 * 1024 * 1024; // 50MB
+  const allowedTypes = currentMediaType === 'image'
+    ? ['image/jpeg', 'image/png', 'image/gif', 'image/webp']
+    : ['video/mp4', 'video/mov', 'video/avi', 'video/quicktime'];
+    
+  if (file.size > maxSize) {
+    alert(`${file.name} is too large. Maximum size is 50MB.`);
+    return false;
+  }
+  
+  if (!allowedTypes.includes(file.type)) {
+    alert(`${file.name} is not a supported ${currentMediaType} format.`);
+    return false;
+  }
+  
+  return true;
+}
+
+function updateMediaGrid() {
+  const grid = document.getElementById('mediaGrid');
+  grid.innerHTML = '';
+  
+  if (mediaItems.length === 0) {
+    return;
+  }
+  
+  mediaItems.forEach(item => {
+    const mediaElement = document.createElement('div');
+    mediaElement.className = 'media-item';
+    
+    const isVideo = item.type === 'video';
+    const mediaHTML = isVideo
+      ? `<video src="${item.url}" class="media-preview" controls></video>`
+      : `<img src="${item.url}" class="media-preview" alt="${item.name}">`;
+    
+    mediaElement.innerHTML = `
+      ${mediaHTML}
+      <div class="media-info">
+        <div class="media-name">${truncateFileName(item.name)}</div>
+        <div class="media-size">${formatFileSize(item.size)}</div>
+        <input
+          type="number"
+          class="price-input"
+          placeholder="Price (KES)"
+          value="${item.price}"
+          onchange="updatePrice(${item.id}, this.value)"
+        >
+      </div>
+    `;
+    
+    grid.appendChild(mediaElement);
+  });
+}
+
+function updatePrice(itemId, price) {
+  const item = mediaItems.find(item => item.id === itemId);
+  if (item) {
+    item.price = parseFloat(price) || 0;
+  }
+}
+
+function truncateFileName(name) {
+  return name.length > 20 ? name.substring(0, 20) + '...' : name;
+}
+
+function formatFileSize(bytes) {
+  if (bytes === 0) return '0 Bytes';
+  const k = 1024;
+  const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+}
+
+// Form submission - simplified for backend compatibility
+document.getElementById('serviceForm').addEventListener('submit', function(e) {
+  // Add hidden inputs for each media item
+  if (mediaItems.length > 0) {
+    const form = this;
+    
+    // Create a single file input with all files
+    const fileInput = document.createElement('input');
+    fileInput.type = 'file';
+    fileInput.name = 'media';
+    fileInput.multiple = true;
+    fileInput.files = createFileList(mediaItems.map(item => item.file));
+    fileInput.style.display = 'none';
+    form.appendChild(fileInput);
+  }
+});
+
+function createFileList(files) {
+  const dataTransfer = new DataTransfer();
+  files.forEach(file => dataTransfer.items.add(file));
+  return dataTransfer.files;
+}
+</script>
+{% endblock %}

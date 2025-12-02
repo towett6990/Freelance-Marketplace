@@ -1,0 +1,273 @@
+2025-11-19 10:58:54,247 - werkzeug - INFO -  * Restarting with stat
+2025-11-19 10:59:01,049 - werkzeug - WARNING -  * Debugger is active!
+2025-11-19 10:59:01,066 - werkzeug - INFO -  * Debugger PIN: 132-198-294
+2025-11-19 11:12:28,376 - werkzeug - INFO -  * Restarting with stat
+2025-11-19 11:12:35,368 - werkzeug - WARNING -  * Debugger is active!
+2025-11-19 11:12:35,382 - werkzeug - INFO -  * Debugger PIN: 132-198-294
+2025-11-19 11:47:55,787 - werkzeug - INFO -  * Restarting with stat
+2025-11-19 11:48:08,082 - werkzeug - WARNING -  * Debugger is active!
+2025-11-19 11:48:08,096 - werkzeug - INFO -  * Debugger PIN: 132-198-294
+2025-11-19 11:50:31,490 - werkzeug - INFO -  * Detected change in 'C:\\Users\\user\\OneDrive\\Documents\\IT\\Desktop\\Freelance_marketplace\\test_db.py', reloading
+2025-11-19 11:50:32,188 - werkzeug - INFO -  * Restarting with stat
+2025-11-19 11:50:50,285 - werkzeug - WARNING -  * Debugger is active!
+2025-11-19 11:50:50,307 - werkzeug - INFO -  * Debugger PIN: 132-198-294
+2025-11-19 11:57:13,285 - werkzeug - INFO -  * Detected change in 'C:\\Users\\user\\OneDrive\\Documents\\IT\\Desktop\\Freelance_marketplace\\fix_payment_table.py', reloading
+2025-11-19 11:57:15,135 - werkzeug - INFO -  * Restarting with stat
+2025-11-19 11:57:40,197 - werkzeug - WARNING -  * Debugger is active!
+2025-11-19 11:57:40,214 - werkzeug - INFO -  * Debugger PIN: 132-198-294
+2025-11-19 12:32:39,632 - werkzeug - INFO -  * Restarting with stat
+2025-11-19 12:32:53,640 - werkzeug - WARNING -  * Debugger is active!
+2025-11-19 12:32:53,656 - werkzeug - INFO -  * Debugger PIN: 132-198-294
+2025-11-19 12:34:08,273 - flask_wtf.csrf - INFO - The CSRF token is missing.
+2025-11-19 12:38:18,706 - werkzeug - INFO -  * Restarting with stat
+2025-11-19 12:38:41,098 - werkzeug - WARNING -  * Debugger is active!
+2025-11-19 12:38:41,114 - werkzeug - INFO -  * Debugger PIN: 132-198-294
+2025-11-20 10:23:17,678 - werkzeug - INFO -  * Restarting with stat
+2025-11-20 10:23:24,906 - werkzeug - WARNING -  * Debugger is active!
+2025-11-20 10:23:24,918 - werkzeug - INFO -  * Debugger PIN: 132-198-294
+2025-11-20 10:56:03,045 - werkzeug - INFO -  * Detected change in 'C:\\Users\\user\\OneDrive\\Documents\\IT\\Desktop\\Freelance_marketplace\\enhanced_id_verification.py', reloading
+2025-11-20 10:56:10,600 - werkzeug - INFO -  * Restarting with stat
+2025-11-20 10:57:07,255 - werkzeug - WARNING -  * Debugger is active!
+2025-11-20 10:57:07,282 - werkzeug - INFO -  * Debugger PIN: 132-198-294
+2025-11-20 10:57:53,371 - werkzeug - INFO -  * Detected change in 'C:\\Users\\user\\OneDrive\\Documents\\IT\\Desktop\\Freelance_marketplace\\app.py', reloading
+2025-11-20 10:57:58,510 - werkzeug - INFO -  * Restarting with stat
+2025-11-20 10:58:47,253 - werkzeug - WARNING -  * Debugger is active!
+2025-11-20 10:58:47,261 - werkzeug - INFO -  * Debugger PIN: 132-198-294
+2025-11-20 11:06:11,467 - werkzeug - INFO -  * Detected change in 'C:\\Users\\user\\OneDrive\\Documents\\IT\\Desktop\\Freelance_marketplace\\app.py', reloading
+2025-11-20 11:06:15,584 - werkzeug - INFO -  * Restarting with stat
+2025-11-20 12:14:30,281 - flask_migrate - ERROR - Error: Directory migrations already exists and is not empty
+2025-11-20 12:15:32,694 - werkzeug - INFO -  * Restarting with stat
+2025-11-20 12:15:50,766 - werkzeug - WARNING -  * Debugger is active!
+2025-11-20 12:15:50,788 - werkzeug - INFO -  * Debugger PIN: 132-198-294
+2025-11-20 13:05:56,891 - werkzeug - INFO -  * Restarting with stat
+2025-11-20 13:06:32,509 - werkzeug - WARNING -  * Debugger is active!
+2025-11-20 13:06:32,536 - werkzeug - INFO -  * Debugger PIN: 132-198-294
+2025-11-20 13:31:49,441 - werkzeug - INFO -  * Detected change in 'C:\\Users\\user\\OneDrive\\Documents\\IT\\Desktop\\Freelance_marketplace\\app.py', reloading
+2025-11-20 13:31:58,785 - werkzeug - INFO -  * Restarting with stat
+2025-11-20 13:32:30,201 - werkzeug - WARNING -  * Debugger is active!
+2025-11-20 13:32:30,253 - werkzeug - INFO -  * Debugger PIN: 132-198-294
+2025-11-20 13:36:17,307 - werkzeug - INFO -  * Detected change in 'C:\\Users\\user\\OneDrive\\Documents\\IT\\Desktop\\Freelance_marketplace\\app.py', reloading
+2025-11-20 13:36:20,419 - werkzeug - INFO -  * Restarting with stat
+2025-11-20 13:38:35,795 - werkzeug - WARNING -  * Debugger is active!
+2025-11-20 13:38:35,811 - werkzeug - INFO -  * Debugger PIN: 132-198-294
+2025-11-20 22:40:48,686 - werkzeug - INFO -  * Restarting with stat
+2025-11-20 22:40:54,489 - werkzeug - WARNING -  * Debugger is active!
+2025-11-20 22:40:54,502 - werkzeug - INFO -  * Debugger PIN: 372-512-712
+2025-11-21 00:04:00,746 - werkzeug - INFO -  * Restarting with stat
+2025-11-21 00:04:10,356 - werkzeug - WARNING -  * Debugger is active!
+2025-11-21 00:04:10,372 - werkzeug - INFO -  * Debugger PIN: 372-512-712
+2025-11-21 00:21:26,485 - werkzeug - INFO -  * Restarting with stat
+2025-11-21 00:21:35,921 - werkzeug - WARNING -  * Debugger is active!
+2025-11-21 00:21:35,933 - werkzeug - INFO -  * Debugger PIN: 372-512-712
+2025-11-21 00:29:17,133 - werkzeug - INFO -  * Detected change in 'C:\\Users\\user\\OneDrive\\Documents\\IT\\Desktop\\Freelance_marketplace\\app.py', reloading
+2025-11-21 00:29:21,046 - werkzeug - INFO -  * Restarting with stat
+2025-11-21 00:29:56,403 - werkzeug - WARNING -  * Debugger is active!
+2025-11-21 00:29:56,419 - werkzeug - INFO -  * Debugger PIN: 372-512-712
+2025-11-21 01:29:41,494 - werkzeug - INFO -  * Detected change in 'C:\\Users\\user\\OneDrive\\Documents\\IT\\Desktop\\Freelance_marketplace\\app.py', reloading
+2025-11-21 01:29:43,302 - werkzeug - INFO -  * Restarting with stat
+2025-11-21 01:29:58,933 - werkzeug - WARNING -  * Debugger is active!
+2025-11-21 01:29:58,944 - werkzeug - INFO -  * Debugger PIN: 372-512-712
+2025-11-21 01:31:28,888 - werkzeug - INFO -  * Detected change in 'C:\\Users\\user\\OneDrive\\Documents\\IT\\Desktop\\Freelance_marketplace\\app.py', reloading
+2025-11-21 01:31:31,570 - werkzeug - INFO -  * Restarting with stat
+2025-11-21 01:34:53,440 - werkzeug - INFO -  * Restarting with stat
+2025-11-21 01:35:04,915 - werkzeug - WARNING -  * Debugger is active!
+2025-11-21 01:35:04,927 - werkzeug - INFO -  * Debugger PIN: 372-512-712
+2025-11-21 01:39:01,323 - werkzeug - INFO -  * Restarting with stat
+2025-11-21 01:39:10,465 - werkzeug - WARNING -  * Debugger is active!
+2025-11-21 01:39:10,476 - werkzeug - INFO -  * Debugger PIN: 372-512-712
+2025-11-21 01:51:16,437 - werkzeug - INFO -  * Detected change in 'C:\\Users\\user\\OneDrive\\Documents\\IT\\Desktop\\Freelance_marketplace\\app.py', reloading
+2025-11-21 01:51:18,401 - werkzeug - INFO -  * Restarting with stat
+2025-11-21 01:51:34,593 - werkzeug - WARNING -  * Debugger is active!
+2025-11-21 01:51:34,625 - werkzeug - INFO -  * Debugger PIN: 372-512-712
+2025-11-21 01:55:03,296 - werkzeug - INFO -  * Detected change in 'C:\\Users\\user\\OneDrive\\Documents\\IT\\Desktop\\Freelance_marketplace\\app.py', reloading
+2025-11-21 01:55:05,119 - werkzeug - INFO -  * Restarting with stat
+2025-11-21 01:55:20,952 - werkzeug - WARNING -  * Debugger is active!
+2025-11-21 01:55:20,968 - werkzeug - INFO -  * Debugger PIN: 372-512-712
+2025-11-21 01:57:42,290 - werkzeug - INFO -  * Detected change in 'C:\\Users\\user\\OneDrive\\Documents\\IT\\Desktop\\Freelance_marketplace\\app.py', reloading
+2025-11-21 01:57:47,067 - werkzeug - INFO -  * Restarting with stat
+2025-11-21 01:58:33,424 - werkzeug - WARNING -  * Debugger is active!
+2025-11-21 01:58:33,440 - werkzeug - INFO -  * Debugger PIN: 372-512-712
+2025-11-21 02:01:04,904 - werkzeug - INFO -  * Detected change in 'C:\\Users\\user\\OneDrive\\Documents\\IT\\Desktop\\Freelance_marketplace\\app.py', reloading
+2025-11-21 02:01:07,957 - werkzeug - INFO -  * Restarting with stat
+2025-11-21 02:01:44,456 - werkzeug - WARNING -  * Debugger is active!
+2025-11-21 02:01:44,476 - werkzeug - INFO -  * Debugger PIN: 372-512-712
+2025-11-21 02:02:19,711 - werkzeug - INFO -  * Detected change in 'C:\\Users\\user\\OneDrive\\Documents\\IT\\Desktop\\Freelance_marketplace\\app.py', reloading
+2025-11-21 02:02:25,446 - werkzeug - INFO -  * Restarting with stat
+2025-11-21 02:02:57,524 - werkzeug - WARNING -  * Debugger is active!
+2025-11-21 02:02:57,538 - werkzeug - INFO -  * Debugger PIN: 372-512-712
+2025-11-21 02:07:21,404 - werkzeug - INFO -  * Detected change in 'C:\\Users\\user\\OneDrive\\Documents\\IT\\Desktop\\Freelance_marketplace\\app.py', reloading
+2025-11-21 02:07:25,102 - werkzeug - INFO -  * Restarting with stat
+2025-11-21 02:08:23,771 - werkzeug - WARNING -  * Debugger is active!
+2025-11-21 02:08:23,920 - werkzeug - INFO -  * Debugger PIN: 372-512-712
+2025-11-21 02:08:57,386 - werkzeug - INFO -  * Detected change in 'C:\\Users\\user\\OneDrive\\Documents\\IT\\Desktop\\Freelance_marketplace\\app.py', reloading
+2025-11-21 02:09:00,674 - werkzeug - INFO -  * Restarting with stat
+2025-11-21 02:09:41,307 - werkzeug - WARNING -  * Debugger is active!
+2025-11-21 02:09:41,322 - werkzeug - INFO -  * Debugger PIN: 372-512-712
+2025-11-21 02:11:42,695 - werkzeug - INFO -  * Detected change in 'C:\\Users\\user\\OneDrive\\Documents\\IT\\Desktop\\Freelance_marketplace\\app.py', reloading
+2025-11-21 02:11:45,376 - werkzeug - INFO -  * Restarting with stat
+2025-11-21 02:12:48,347 - werkzeug - WARNING -  * Debugger is active!
+2025-11-21 02:12:48,363 - werkzeug - INFO -  * Debugger PIN: 372-512-712
+2025-11-21 02:15:05,509 - werkzeug - INFO -  * Detected change in 'C:\\Users\\user\\OneDrive\\Documents\\IT\\Desktop\\Freelance_marketplace\\app.py', reloading
+2025-11-21 02:15:10,367 - werkzeug - INFO -  * Restarting with stat
+2025-11-21 02:15:45,241 - werkzeug - WARNING -  * Debugger is active!
+2025-11-21 02:15:45,258 - werkzeug - INFO -  * Debugger PIN: 372-512-712
+2025-11-21 08:11:00,597 - werkzeug - INFO -  * Restarting with stat
+2025-11-21 08:11:34,604 - werkzeug - WARNING -  * Debugger is active!
+2025-11-21 08:11:34,625 - werkzeug - INFO -  * Debugger PIN: 372-512-712
+2025-11-21 08:27:07,330 - werkzeug - INFO -  * Detected change in 'C:\\Users\\user\\OneDrive\\Documents\\IT\\Desktop\\Freelance_marketplace\\app.py', reloading
+2025-11-21 08:27:08,465 - werkzeug - INFO -  * Restarting with stat
+2025-11-21 08:27:23,956 - werkzeug - WARNING -  * Debugger is active!
+2025-11-21 08:27:23,971 - werkzeug - INFO -  * Debugger PIN: 372-512-712
+2025-11-21 08:49:15,631 - werkzeug - INFO -  * Restarting with stat
+2025-11-21 08:49:23,349 - werkzeug - WARNING -  * Debugger is active!
+2025-11-21 08:49:23,359 - werkzeug - INFO -  * Debugger PIN: 372-512-712
+2025-11-21 09:21:29,537 - werkzeug - INFO -  * Detected change in 'C:\\Users\\user\\OneDrive\\Documents\\IT\\Desktop\\Freelance_marketplace\\mpesa.py', reloading
+2025-11-21 09:21:31,851 - werkzeug - INFO -  * Restarting with stat
+2025-11-21 09:21:44,757 - werkzeug - WARNING -  * Debugger is active!
+2025-11-21 09:21:44,765 - werkzeug - INFO -  * Debugger PIN: 372-512-712
+2025-11-21 09:24:58,873 - werkzeug - INFO -  * Detected change in 'C:\\Users\\user\\OneDrive\\Documents\\IT\\Desktop\\Freelance_marketplace\\test_mpesa.py', reloading
+2025-11-21 09:25:00,140 - werkzeug - INFO -  * Restarting with stat
+2025-11-21 09:25:18,191 - werkzeug - WARNING -  * Debugger is active!
+2025-11-21 09:25:18,207 - werkzeug - INFO -  * Debugger PIN: 372-512-712
+2025-11-21 09:36:22,541 - werkzeug - INFO -  * Detected change in 'C:\\Users\\user\\OneDrive\\Documents\\IT\\Desktop\\Freelance_marketplace\\test_stk_push.py', reloading
+2025-11-21 09:36:24,410 - werkzeug - INFO -  * Restarting with stat
+2025-11-21 09:36:47,858 - werkzeug - WARNING -  * Debugger is active!
+2025-11-21 09:36:47,875 - werkzeug - INFO -  * Debugger PIN: 372-512-712
+2025-11-21 09:38:50,042 - werkzeug - INFO -  * Detected change in 'C:\\Users\\user\\OneDrive\\Documents\\IT\\Desktop\\Freelance_marketplace\\test_stk_push_fixed.py', reloading
+2025-11-21 09:38:53,039 - werkzeug - INFO -  * Restarting with stat
+2025-11-21 09:39:20,472 - werkzeug - WARNING -  * Debugger is active!
+2025-11-21 09:39:20,480 - werkzeug - INFO -  * Debugger PIN: 372-512-712
+2025-11-21 09:40:37,833 - werkzeug - INFO -  * Detected change in 'C:\\Users\\user\\OneDrive\\Documents\\IT\\Desktop\\Freelance_marketplace\\test_real_stk_push.py', reloading
+2025-11-21 09:40:39,282 - werkzeug - INFO -  * Restarting with stat
+2025-11-21 09:41:01,045 - werkzeug - WARNING -  * Debugger is active!
+2025-11-21 09:41:01,107 - werkzeug - INFO -  * Debugger PIN: 372-512-712
+2025-11-21 09:47:41,459 - werkzeug - INFO -  * Detected change in 'C:\\Users\\user\\OneDrive\\Documents\\IT\\Desktop\\Freelance_marketplace\\test_working_stk.py', reloading
+2025-11-21 09:47:42,804 - werkzeug - INFO -  * Restarting with stat
+2025-11-21 09:47:59,660 - werkzeug - WARNING -  * Debugger is active!
+2025-11-21 09:47:59,674 - werkzeug - INFO -  * Debugger PIN: 372-512-712
+2025-11-24 00:12:43,744 - werkzeug - INFO -  * Restarting with stat
+2025-11-24 00:13:03,337 - werkzeug - WARNING -  * Debugger is active!
+2025-11-24 00:13:03,356 - werkzeug - INFO -  * Debugger PIN: 139-158-288
+2025-11-24 00:32:34,597 - werkzeug - INFO -  * Detected change in 'C:\\Users\\user\\OneDrive\\Documents\\IT\\Desktop\\Freelance_marketplace\\face_recognition.py', reloading
+2025-11-24 00:32:38,066 - werkzeug - INFO -  * Restarting with stat
+2025-11-24 00:32:52,046 - werkzeug - WARNING -  * Debugger is active!
+2025-11-24 00:32:52,069 - werkzeug - INFO -  * Debugger PIN: 139-158-288
+2025-11-24 00:37:32,842 - werkzeug - INFO -  * Detected change in 'C:\\Users\\user\\OneDrive\\Documents\\IT\\Desktop\\Freelance_marketplace\\test_image_upload.py', reloading
+2025-11-24 00:37:33,725 - werkzeug - INFO -  * Restarting with stat
+2025-11-24 00:37:43,180 - werkzeug - WARNING -  * Debugger is active!
+2025-11-24 00:37:43,222 - werkzeug - INFO -  * Debugger PIN: 139-158-288
+2025-11-24 00:37:50,644 - werkzeug - INFO -  * Detected change in 'C:\\Users\\user\\OneDrive\\Documents\\IT\\Desktop\\Freelance_marketplace\\test_image_upload.py', reloading
+2025-11-24 00:37:51,486 - werkzeug - INFO -  * Restarting with stat
+2025-11-24 00:38:15,940 - werkzeug - WARNING -  * Debugger is active!
+2025-11-24 00:38:15,958 - werkzeug - INFO -  * Debugger PIN: 139-158-288
+2025-11-24 00:38:25,322 - werkzeug - INFO -  * Detected change in 'C:\\Users\\user\\OneDrive\\Documents\\IT\\Desktop\\Freelance_marketplace\\test_image_upload.py', reloading
+2025-11-24 00:38:26,023 - werkzeug - INFO -  * Restarting with stat
+2025-11-24 00:38:35,263 - werkzeug - WARNING -  * Debugger is active!
+2025-11-24 00:38:35,281 - werkzeug - INFO -  * Debugger PIN: 139-158-288
+2025-11-24 00:40:47,058 - werkzeug - INFO -  * Detected change in 'C:\\Users\\user\\OneDrive\\Documents\\IT\\Desktop\\Freelance_marketplace\\test_image_upload.py', reloading
+2025-11-24 00:40:48,193 - werkzeug - INFO -  * Restarting with stat
+2025-11-24 00:41:09,684 - werkzeug - WARNING -  * Debugger is active!
+2025-11-24 00:41:09,697 - werkzeug - INFO -  * Debugger PIN: 139-158-288
+2025-11-24 00:52:27,797 - werkzeug - INFO -  * Detected change in 'C:\\Users\\user\\OneDrive\\Documents\\IT\\Desktop\\Freelance_marketplace\\app.py', reloading
+2025-11-24 00:52:30,109 - werkzeug - INFO -  * Restarting with stat
+2025-11-24 00:52:57,357 - werkzeug - WARNING -  * Debugger is active!
+2025-11-24 00:52:57,525 - werkzeug - INFO -  * Debugger PIN: 139-158-288
+2025-11-24 01:12:44,238 - werkzeug - INFO -  * Detected change in 'C:\\Users\\user\\OneDrive\\Documents\\IT\\Desktop\\Freelance_marketplace\\test_db.py', reloading
+2025-11-24 01:12:49,551 - werkzeug - INFO -  * Restarting with stat
+2025-11-24 01:13:03,474 - werkzeug - WARNING -  * Debugger is active!
+2025-11-24 01:13:03,555 - werkzeug - INFO -  * Debugger PIN: 139-158-288
+2025-11-24 01:18:19,497 - werkzeug - INFO -  * Detected change in 'C:\\Users\\user\\OneDrive\\Documents\\IT\\Desktop\\Freelance_marketplace\\cv2.py', reloading
+2025-11-24 01:18:21,040 - werkzeug - INFO -  * Restarting with stat
+2025-11-24 01:18:33,938 - werkzeug - WARNING -  * Debugger is active!
+2025-11-24 01:18:33,953 - werkzeug - INFO -  * Debugger PIN: 139-158-288
+2025-12-02 08:11:39,134 - werkzeug - INFO -  * Restarting with stat
+2025-12-02 08:11:42,432 - werkzeug - WARNING -  * Debugger is active!
+2025-12-02 08:11:42,440 - werkzeug - INFO -  * Debugger PIN: 139-158-288
+2025-12-02 08:14:45,687 - app - DEBUG - Processing payment for service 2: land sale
+2025-12-02 08:14:45,691 - app - DEBUG - Converted phone number to: 254796363294
+2025-12-02 08:15:44,051 - app - DEBUG - Processing payment for service 2: land sale
+2025-12-02 08:15:44,056 - app - DEBUG - Converted phone number to: 254796363294
+2025-12-02 11:01:53,523 - werkzeug - INFO -  * Restarting with stat
+2025-12-02 11:01:59,135 - werkzeug - WARNING -  * Debugger is active!
+2025-12-02 11:01:59,149 - werkzeug - INFO -  * Debugger PIN: 139-158-288
+2025-12-02 11:04:34,054 - werkzeug - INFO -  * Restarting with stat
+2025-12-02 11:04:38,519 - werkzeug - WARNING -  * Debugger is active!
+2025-12-02 11:04:38,526 - werkzeug - INFO -  * Debugger PIN: 139-158-288
+2025-12-02 11:31:26,132 - werkzeug - INFO -  * Restarting with stat
+2025-12-02 11:31:31,910 - werkzeug - WARNING -  * Debugger is active!
+2025-12-02 11:31:31,922 - werkzeug - INFO -  * Debugger PIN: 139-158-288
+2025-12-02 11:32:11,309 - werkzeug - INFO -  * Restarting with stat
+2025-12-02 11:32:17,806 - werkzeug - WARNING -  * Debugger is active!
+2025-12-02 11:32:17,817 - werkzeug - INFO -  * Debugger PIN: 139-158-288
+2025-12-02 11:33:18,355 - werkzeug - INFO -  * Restarting with stat
+2025-12-02 11:33:24,360 - werkzeug - WARNING -  * Debugger is active!
+2025-12-02 11:33:24,373 - werkzeug - INFO -  * Debugger PIN: 139-158-288
+2025-12-02 11:38:10,951 - werkzeug - INFO -  * Restarting with stat
+2025-12-02 11:38:31,710 - werkzeug - WARNING -  * Debugger is active!
+2025-12-02 11:38:31,722 - werkzeug - INFO -  * Debugger PIN: 139-158-288
+2025-12-02 11:57:31,513 - werkzeug - INFO -  * Restarting with stat
+2025-12-02 11:58:03,971 - werkzeug - WARNING -  * Debugger is active!
+2025-12-02 11:58:04,409 - werkzeug - INFO -  * Debugger PIN: 139-158-288
+2025-12-02 12:05:38,290 - werkzeug - INFO -  * Restarting with stat
+2025-12-02 12:06:08,575 - werkzeug - WARNING -  * Debugger is active!
+2025-12-02 12:06:08,669 - werkzeug - INFO -  * Debugger PIN: 139-158-288
+2025-12-02 12:11:32,459 - flask_wtf.csrf - INFO - The CSRF token is missing.
+2025-12-02 12:13:46,259 - app - DEBUG - Processing payment for service 2: land sale
+2025-12-02 12:13:46,282 - app - DEBUG - Converted phone number to: 254718226596
+2025-12-02 12:19:40,773 - werkzeug - INFO -  * Restarting with stat
+2025-12-02 12:19:55,316 - werkzeug - WARNING -  * Debugger is active!
+2025-12-02 12:19:55,340 - werkzeug - INFO -  * Debugger PIN: 139-158-288
+2025-12-02 12:35:40,500 - werkzeug - INFO -  * Restarting with stat
+2025-12-02 12:35:46,560 - werkzeug - WARNING -  * Debugger is active!
+2025-12-02 12:35:46,575 - werkzeug - INFO -  * Debugger PIN: 139-158-288
+2025-12-02 13:18:23,056 - werkzeug - INFO -  * Restarting with stat
+2025-12-02 13:18:28,348 - werkzeug - WARNING -  * Debugger is active!
+2025-12-02 13:18:28,362 - werkzeug - INFO -  * Debugger PIN: 139-158-288
+2025-12-02 13:18:42,852 - werkzeug - INFO -  * Restarting with stat
+2025-12-02 13:18:50,995 - werkzeug - WARNING -  * Debugger is active!
+2025-12-02 13:18:51,009 - werkzeug - INFO -  * Debugger PIN: 139-158-288
+2025-12-02 13:20:17,955 - werkzeug - INFO -  * Restarting with stat
+2025-12-02 13:20:33,222 - werkzeug - WARNING -  * Debugger is active!
+2025-12-02 13:20:33,379 - werkzeug - INFO -  * Debugger PIN: 139-158-288
+2025-12-02 13:25:25,408 - werkzeug - INFO -  * Restarting with stat
+2025-12-02 13:25:34,508 - werkzeug - WARNING -  * Debugger is active!
+2025-12-02 13:25:34,545 - werkzeug - INFO -  * Debugger PIN: 139-158-288
+2025-12-02 13:36:55,319 - werkzeug - INFO -  * Restarting with stat
+2025-12-02 13:37:14,614 - werkzeug - WARNING -  * Debugger is active!
+2025-12-02 13:37:14,630 - werkzeug - INFO -  * Debugger PIN: 139-158-288
+2025-12-02 13:46:46,491 - werkzeug - INFO -  * Restarting with stat
+2025-12-02 13:47:07,164 - werkzeug - WARNING -  * Debugger is active!
+2025-12-02 13:47:07,186 - werkzeug - INFO -  * Debugger PIN: 139-158-288
+2025-12-02 14:33:52,790 - werkzeug - INFO -  * Restarting with stat
+2025-12-02 14:33:57,450 - werkzeug - WARNING -  * Debugger is active!
+2025-12-02 14:33:57,462 - werkzeug - INFO -  * Debugger PIN: 139-158-288
+2025-12-02 15:31:17,198 - werkzeug - INFO -  * Restarting with stat
+2025-12-02 15:31:20,693 - werkzeug - WARNING -  * Debugger is active!
+2025-12-02 15:31:20,704 - werkzeug - INFO -  * Debugger PIN: 139-158-288
+2025-12-02 15:32:24,795 - flask_wtf.csrf - INFO - The CSRF token is missing.
+2025-12-02 15:59:58,486 - werkzeug - INFO -  * Detected change in 'C:\\Users\\user\\OneDrive\\Documents\\IT\\Desktop\\Freelance_marketplace\\app.py', reloading
+2025-12-02 16:00:01,566 - werkzeug - INFO -  * Restarting with stat
+2025-12-02 16:10:47,911 - werkzeug - INFO -  * Restarting with stat
+2025-12-02 16:10:54,741 - werkzeug - WARNING -  * Debugger is active!
+2025-12-02 16:10:54,758 - werkzeug - INFO -  * Debugger PIN: 139-158-288
+2025-12-02 16:29:28,107 - flask_migrate - ERROR - Error: Directory migrations already exists and is not empty
+2025-12-02 16:43:51,090 - werkzeug - INFO -  * Restarting with stat
+2025-12-02 16:43:55,183 - werkzeug - WARNING -  * Debugger is active!
+2025-12-02 16:43:55,193 - werkzeug - INFO -  * Debugger PIN: 139-158-288
+2025-12-02 16:47:38,928 - flask_wtf.csrf - INFO - The CSRF token is missing.
+2025-12-02 16:56:08,869 - werkzeug - INFO -  * Restarting with stat
+2025-12-02 16:56:17,272 - werkzeug - WARNING -  * Debugger is active!
+2025-12-02 16:56:17,283 - werkzeug - INFO -  * Debugger PIN: 139-158-288
+2025-12-02 16:59:41,239 - werkzeug - INFO -  * Restarting with stat
+2025-12-02 16:59:47,561 - werkzeug - WARNING -  * Debugger is active!
+2025-12-02 16:59:47,575 - werkzeug - INFO -  * Debugger PIN: 139-158-288
+2025-12-02 17:09:17,768 - app - DEBUG - save_service_image: Processing WhatsApp_Image_2025-12-02_at_17.06.40_b8a44c4e.jpg (ext: jpg)
+2025-12-02 17:09:17,820 - app - DEBUG - save_service_image: Target directory: C:\Users\user\OneDrive\Documents\IT\Desktop\Freelance_marketplace\static\uploads\services
+2025-12-02 17:09:17,884 - app - DEBUG - save_service_image: File size: 161745 bytes (0.15MB)
+2025-12-02 17:09:17,913 - app - DEBUG - save_service_image: Will save to: C:\Users\user\OneDrive\Documents\IT\Desktop\Freelance_marketplace\static\uploads\services\3_1764673757_70ae6cf6f4f14ed3be0a72522cbf5416.jpg
+2025-12-02 17:09:17,915 - app - DEBUG - save_service_image: Directory exists: True
+2025-12-02 17:09:17,916 - app - DEBUG - save_service_image: Directory writable: True
+2025-12-02 17:09:18,337 - app - DEBUG - save_service_image: Image opened successfully: (1280, 960)
+2025-12-02 17:09:18,359 - app - DEBUG - save_service_image: Saving image to disk...
+2025-12-02 17:09:18,430 - app - DEBUG - save_service_image: Image saved successfully to 3_1764673757_70ae6cf6f4f14ed3be0a72522cbf5416.jpg
+2025-12-02 17:09:18,885 - app - DEBUG - save_service_image: File exists after save: True

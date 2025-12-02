@@ -1,0 +1,500 @@
+{% extends "base.html" %}
+
+{% block title %}Order #{{ order.id }} - {{ order.title }}{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto py-8">
+  <!-- Header -->
+  <div class="flex justify-between items-center mb-8">
+    <div>
+      <h1 class="text-4xl font-bold text-white mb-2">Order #{{ order.id }}</h1>
+      <p class="text-xl text-gray-300">{{ order.title }}</p>
+    </div>
+    <div class="text-right">
+      <div class="text-2xl font-bold text-green-400">{{ order.price }} {{ order.currency }}</div>
+      <div class="text-sm text-gray-400">Status: <span class="status-badge status-{{ order.status }}">{{ order.status.title() }}</span></div>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <!-- Main Content -->
+    <div class="lg:col-span-2 space-y-6">
+      <!-- Order Progress -->
+      <div class="bg-gradient-to-r from-gray-800 to-gray-900 rounded-2xl p-6">
+        <h2 class="text-2xl font-bold text-white mb-6">Order Progress</h2>
+        <div class="progress-timeline">
+          {% set steps = [
+            ('pending', 'Order Placed', order.created_at),
+            ('paid', 'Payment Confirmed', order.paid_at),
+            ('in_progress', 'Work Started', order.started_at),
+            ('completed', 'Work Delivered', order.completed_at)
+          ] %}
+          {% for step_status, step_name, step_date in steps %}
+            <div class="progress-step {% if order.status == step_status or (step_status == 'paid' and order.status in ['in_progress', 'completed']) or (step_status == 'in_progress' and order.status == 'completed') %}completed{% endif %}">
+              <div class="step-circle">
+                <i class="fas fa-check"></i>
+              </div>
+              <div class="step-content">
+                <h3 class="step-title">{{ step_name }}</h3>
+                {% if step_date %}
+                  <p class="step-date">{{ step_date.strftime('%B %d, %Y at %I:%M %p') }}</p>
+                {% endif %}
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- Order Details -->
+      <div class="bg-gradient-to-r from-blue-900 to-purple-900 rounded-2xl p-6">
+        <h2 class="text-2xl font-bold text-white mb-6">Order Details</h2>
+        <div class="space-y-4">
+          <div class="flex justify-between">
+            <span class="text-gray-300">Service:</span>
+            <a href="{{ url_for('service_detail', service_id=order.service_id) }}" class="text-blue-400 hover:text-blue-300">
+              {{ order.service.title }}
+            </a>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-gray-300">Seller:</span>
+            <a href="{{ url_for('profile', username=order.seller.username) }}" class="text-blue-400 hover:text-blue-300">
+              {{ order.seller.display_name() }}
+            </a>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-gray-300">Buyer:</span>
+            <a href="{{ url_for('profile', username=order.buyer.username) }}" class="text-blue-400 hover:text-blue-300">
+              {{ order.buyer.display_name() }}
+            </a>
+          </div>
+          {% if order.deadline %}
+            <div class="flex justify-between">
+              <span class="text-gray-300">Deadline:</span>
+              <span class="text-white">{{ order.deadline.strftime('%B %d, %Y') }}</span>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Requirements & Deliverables -->
+      <div class="bg-gradient-to-r from-green-900 to-teal-900 rounded-2xl p-6">
+        <h2 class="text-2xl font-bold text-white mb-6">Project Requirements</h2>
+        <div class="bg-black/20 rounded-lg p-4 mb-6">
+          <p class="text-gray-200 whitespace-pre-line">{{ order.description or order.buyer_instructions or "No specific requirements provided." }}</p>
+        </div>
+
+        {% if order.deliverables %}
+          <h3 class="text-xl font-semibold text-white mb-4">Deliverables</h3>
+          <div class="bg-black/20 rounded-lg p-4">
+            <p class="text-gray-200 whitespace-pre-line">{{ order.deliverables }}</p>
+          </div>
+        {% endif %}
+      </div>
+
+      <!-- Messages -->
+      <div class="bg-gradient-to-r from-purple-900 to-pink-900 rounded-2xl p-6">
+        <h2 class="text-2xl font-bold text-white mb-6">Messages</h2>
+        <div id="messages-container" class="space-y-4 mb-6 max-h-96 overflow-y-auto">
+          {% for message in order.messages %}
+            <div class="message-item {% if message.sender_id == current_user.id %}sent{% else %}received{% endif %}">
+              <div class="message-header">
+                <span class="message-sender">{{ message.sender.display_name() }}</span>
+                <span class="message-time">{{ message.timestamp.strftime('%b %d, %I:%M %p') }}</span>
+              </div>
+              <div class="message-content">{{ message.content }}</div>
+              {% if message.file_path %}
+                <div class="message-file">
+                  <a href="{{ url_for('uploaded_file', filename=message.file_path) }}" class="file-link">
+                    <i class="fas fa-paperclip"></i> {{ message.file_path.split('/')[-1] }}
+                  </a>
+                </div>
+              {% endif %}
+            </div>
+          {% endfor %}
+        </div>
+
+        <!-- Send Message -->
+        <form method="POST" action="{{ url_for('send_order_message', order_id=order.id) }}" enctype="multipart/form-data">
+          <div class="flex gap-4">
+            <div class="flex-1">
+              <textarea name="content" class="message-input" placeholder="Type your message..." rows="3"></textarea>
+            </div>
+            <div class="flex flex-col gap-2">
+              <input type="file" name="file" id="file-input" class="hidden">
+              <label for="file-input" class="file-btn">
+                <i class="fas fa-paperclip"></i>
+              </label>
+              <button type="submit" class="send-btn">
+                <i class="fas fa-paper-plane"></i>
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="space-y-6">
+      <!-- Actions -->
+      <div class="bg-gradient-to-r from-orange-900 to-red-900 rounded-2xl p-6">
+        <h2 class="text-2xl font-bold text-white mb-6">Actions</h2>
+        <div class="space-y-4">
+          {% if current_user.id == order.buyer_id %}
+            <!-- Buyer Actions -->
+            {% if order.status == 'pending' %}
+              <a href="{{ url_for('pay_order', order_id=order.id) }}" class="action-btn primary">
+                <i class="fas fa-credit-card"></i>
+                Pay Now
+              </a>
+            {% endif %}
+            {% if order.status == 'completed' and not order.review %}
+              <a href="{{ url_for('review_order', order_id=order.id) }}" class="action-btn secondary">
+                <i class="fas fa-star"></i>
+                Leave Review
+              </a>
+            {% endif %}
+            {% if order.status == 'delivered' %}
+              <a href="{{ url_for('accept_order', order_id=order.id) }}" class="action-btn success">
+                <i class="fas fa-check"></i>
+                Accept Delivery
+              </a>
+              <a href="{{ url_for('file_dispute', order_id=order.id) }}" class="action-btn danger">
+                <i class="fas fa-exclamation-triangle"></i>
+                File Dispute
+              </a>
+            {% endif %}
+          {% elif current_user.id == order.seller_id %}
+            <!-- Seller Actions -->
+            {% if order.status == 'paid' %}
+              <a href="{{ url_for('start_order', order_id=order.id) }}" class="action-btn primary">
+                <i class="fas fa-play"></i>
+                Start Work
+              </a>
+            {% endif %}
+            {% if order.status == 'in_progress' %}
+              <a href="{{ url_for('deliver_order', order_id=order.id) }}" class="action-btn success">
+                <i class="fas fa-upload"></i>
+                Deliver Work
+              </a>
+            {% endif %}
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Payment Info -->
+      {% if order.payments %}
+        <div class="bg-gradient-to-r from-green-900 to-emerald-900 rounded-2xl p-6">
+          <h2 class="text-2xl font-bold text-white mb-6">Payment Details</h2>
+          {% for payment in order.payments %}
+            <div class="payment-item">
+              <div class="flex justify-between mb-2">
+                <span class="text-gray-300">Amount:</span>
+                <span class="text-white font-semibold">{{ payment.amount }} {{ payment.currency }}</span>
+              </div>
+              <div class="flex justify-between mb-2">
+                <span class="text-gray-300">Method:</span>
+                <span class="text-white">{{ payment.payment_method.title() }}</span>
+              </div>
+              <div class="flex justify-between mb-2">
+                <span class="text-gray-300">Status:</span>
+                <span class="status-badge status-{{ payment.status }}">{{ payment.status.title() }}</span>
+              </div>
+              {% if payment.mpesa_receipt_number %}
+                <div class="flex justify-between">
+                  <span class="text-gray-300">M-Pesa Receipt:</span>
+                  <span class="text-white font-mono">{{ payment.mpesa_receipt_number }}</span>
+                </div>
+              {% endif %}
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+
+      <!-- Review -->
+      {% if order.review %}
+        <div class="bg-gradient-to-r from-yellow-900 to-amber-900 rounded-2xl p-6">
+          <h2 class="text-2xl font-bold text-white mb-6">Review</h2>
+          <div class="review-stars mb-4">
+            {% for i in range(5) %}
+              <i class="fas fa-star {% if i < order.review.rating %}filled{% endif %}"></i>
+            {% endfor %}
+            <span class="ml-2 text-white">{{ order.review.rating }}/5</span>
+          </div>
+          {% if order.review.comment %}
+            <p class="text-gray-200 mb-4">{{ order.review.comment }}</p>
+          {% endif %}
+          {% if order.review.seller_response %}
+            <div class="seller-response">
+              <h4 class="text-white font-semibold mb-2">Seller Response:</h4>
+              <p class="text-gray-300">{{ order.review.seller_response }}</p>
+            </div>
+          {% endif %}
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<style>
+/* Progress Timeline */
+.progress-timeline {
+  position: relative;
+}
+
+.progress-timeline::before {
+  content: '';
+  position: absolute;
+  left: 20px;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: #374151;
+}
+
+.progress-step {
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: 2rem;
+  position: relative;
+}
+
+.progress-step.completed .step-circle {
+  background: #10b981;
+  border-color: #10b981;
+}
+
+.step-circle {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #374151;
+  border: 3px solid #4b5563;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 0.8rem;
+  margin-right: 1rem;
+  z-index: 1;
+  position: relative;
+}
+
+.step-content {
+  flex: 1;
+}
+
+.step-title {
+  color: #e5e7eb;
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+}
+
+.step-date {
+  color: #9ca3af;
+  font-size: 0.875rem;
+}
+
+/* Status Badges */
+.status-badge {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.status-pending { background: #fbbf24; color: #92400e; }
+.status-paid { background: #3b82f6; color: white; }
+.status-in_progress { background: #f59e0b; color: #92400e; }
+.status-completed { background: #10b981; color: white; }
+.status-cancelled { background: #ef4444; color: white; }
+.status-disputed { background: #8b5cf6; color: white; }
+
+/* Messages */
+.message-item {
+  padding: 1rem;
+  border-radius: 12px;
+  margin-bottom: 1rem;
+}
+
+.message-item.sent {
+  background: rgba(59, 130, 246, 0.1);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  margin-left: 2rem;
+}
+
+.message-item.received {
+  background: rgba(107, 114, 128, 0.1);
+  border: 1px solid rgba(107, 114, 128, 0.3);
+  margin-right: 2rem;
+}
+
+.message-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.message-sender {
+  font-weight: 600;
+  color: #e5e7eb;
+}
+
+.message-time {
+  font-size: 0.75rem;
+  color: #9ca3af;
+}
+
+.message-content {
+  color: #f3f4f6;
+  line-height: 1.5;
+}
+
+.message-file {
+  margin-top: 0.5rem;
+}
+
+.file-link {
+  color: #3b82f6;
+  text-decoration: none;
+  font-size: 0.875rem;
+}
+
+.file-link:hover {
+  text-decoration: underline;
+}
+
+/* Message Input */
+.message-input {
+  width: 100%;
+  background: rgba(31, 41, 55, 0.8);
+  border: 1px solid #374151;
+  border-radius: 8px;
+  padding: 0.75rem;
+  color: white;
+  resize: vertical;
+}
+
+.message-input:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* Buttons */
+.action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  width: 100%;
+  justify-content: center;
+  margin-bottom: 0.5rem;
+}
+
+.action-btn.primary {
+  background: #3b82f6;
+  color: white;
+}
+
+.action-btn.primary:hover {
+  background: #2563eb;
+  transform: translateY(-1px);
+}
+
+.action-btn.secondary {
+  background: #6b7280;
+  color: white;
+}
+
+.action-btn.secondary:hover {
+  background: #4b5563;
+  transform: translateY(-1px);
+}
+
+.action-btn.success {
+  background: #10b981;
+  color: white;
+}
+
+.action-btn.success:hover {
+  background: #059669;
+  transform: translateY(-1px);
+}
+
+.action-btn.danger {
+  background: #ef4444;
+  color: white;
+}
+
+.action-btn.danger:hover {
+  background: #dc2626;
+  transform: translateY(-1px);
+}
+
+.file-btn, .send-btn {
+  background: #374151;
+  border: none;
+  padding: 0.75rem;
+  border-radius: 8px;
+  cursor: pointer;
+  color: #e5e7eb;
+  transition: all 0.3s ease;
+}
+
+.file-btn:hover, .send-btn:hover {
+  background: #4b5563;
+}
+
+/* Review Stars */
+.review-stars .fa-star {
+  color: #d1d5db;
+}
+
+.review-stars .fa-star.filled {
+  color: #fbbf24;
+}
+
+.seller-response {
+  background: rgba(0, 0, 0, 0.2);
+  padding: 1rem;
+  border-radius: 8px;
+  margin-top: 1rem;
+}
+
+@media (max-width: 768px) {
+  .grid-cols-1.lg\\:col-span-3 {
+    grid-template-columns: 1fr;
+  }
+
+  .lg\\:col-span-2 {
+    grid-column: span 1;
+  }
+
+  .progress-step {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  .step-circle {
+    margin-right: 0;
+    margin-bottom: 1rem;
+  }
+
+  .message-item.sent {
+    margin-left: 0;
+  }
+
+  .message-item.received {
+    margin-right: 0;
+  }
+}
+</style>
+{% endblock %}

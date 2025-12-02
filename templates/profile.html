@@ -1,0 +1,300 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="bg-gradient-to-br from-slate-50 to-blue-50 min-h-screen py-12">
+  <div class="max-w-6xl mx-auto px-6">
+
+    <!-- Profile Header -->
+    <div class="bg-white rounded-3xl shadow-2xl overflow-hidden mb-8">
+      <div class="bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 px-8 py-12">
+        <div class="flex flex-col md:flex-row items-center gap-8">
+
+          <!-- Avatar Section -->
+          <div class="relative">
+            <div class="w-32 h-32 bg-white bg-opacity-20 rounded-full flex items-center justify-center border-4 border-white border-opacity-30">
+              <i class="fas fa-user text-white text-4xl"></i>
+            </div>
+            {% if user.is_verified %}
+            <div class="absolute -bottom-2 -right-2 bg-green-500 text-white rounded-full p-2 shadow-lg">
+              <i class="fas fa-check text-xs"></i>
+            </div>
+            {% endif %}
+          </div>
+
+          <!-- Profile Info -->
+          <div class="flex-1 text-center md:text-left text-white">
+            <h1 class="text-4xl font-bold mb-2">{{ user.display_name() }}</h1>
+            <p class="text-blue-100 text-lg mb-4">Professional Freelancer</p>
+
+            <!-- Verification Status -->
+            <div class="flex items-center justify-center md:justify-start gap-4 mb-6">
+              <div class="flex items-center gap-2">
+                <span class="text-sm font-medium">Status:</span>
+                {% if user.is_verified %}
+                  <span class="bg-green-500 bg-opacity-20 text-green-100 px-3 py-1 rounded-full text-sm font-medium border border-green-400 border-opacity-30">
+                    <i class="fas fa-shield-alt mr-1"></i>Verified
+                  </span>
+                {% else %}
+                  <span class="bg-yellow-500 bg-opacity-20 text-yellow-100 px-3 py-1 rounded-full text-sm font-medium border border-yellow-400 border-opacity-30">
+                    <i class="fas fa-clock mr-1"></i>Pending
+                  </span>
+                {% endif %}
+              </div>
+            </div>
+
+            <!-- Stats -->
+            <div class="grid grid-cols-3 gap-6 text-center">
+              <div>
+                <div class="text-2xl font-bold">{{ services|length }}</div>
+                <div class="text-blue-100 text-sm">Services</div>
+              </div>
+              <div>
+                <div class="text-2xl font-bold">4.8</div>
+                <div class="text-blue-100 text-sm">Rating</div>
+              </div>
+              <div>
+                <div class="text-2xl font-bold">127</div>
+                <div class="text-blue-100 text-sm">Reviews</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Action Buttons -->
+          {% if current_user.id == user.id %}
+          <div class="flex flex-col gap-3">
+            <a href="{{ url_for('edit_profile') }}"
+               class="bg-white bg-opacity-20 text-white px-6 py-3 rounded-xl hover:bg-opacity-30 transition duration-300 border border-white border-opacity-30">
+              <i class="fas fa-edit mr-2"></i>Edit Profile
+            </a>
+            <a href="{{ url_for('create_service') }}"
+               class="bg-green-500 text-white px-6 py-3 rounded-xl hover:bg-green-600 transition duration-300">
+              <i class="fas fa-plus mr-2"></i>Add Service
+            </a>
+          </div>
+          {% else %}
+          <div class="flex flex-col gap-3">
+            <a href="{{ url_for('message_user', user_id=user.id) }}"
+               class="bg-blue-500 text-white px-6 py-3 rounded-xl hover:bg-blue-600 transition duration-300">
+              <i class="fas fa-envelope mr-2"></i>Message
+            </a>
+            <a href="{{ url_for('conversations') }}"
+               class="bg-gray-100 text-gray-800 px-6 py-3 rounded-xl hover:bg-gray-200 transition duration-300">
+              <i class="fas fa-comments mr-2"></i>View Chat
+            </a>
+          </div>
+          {% endif %}
+
+        </div>
+      </div>
+    </div>
+
+    <!-- Services Section -->
+    <div class="mb-12">
+      <div class="flex items-center justify-between mb-8">
+        <h2 class="text-3xl font-bold text-gray-800">Services</h2>
+        {% if current_user.id == user.id %}
+        <a href="{{ url_for('create_service') }}"
+           class="bg-blue-600 text-white px-6 py-3 rounded-xl hover:bg-blue-700 transition duration-300">
+          <i class="fas fa-plus mr-2"></i>Add New Service
+        </a>
+        {% endif %}
+      </div>
+
+      {% if services %}
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        {% for service in services %}
+        <div class="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition duration-300">
+
+          <!-- Service Image -->
+          <div class="aspect-w-16 aspect-h-9 bg-gray-200">
+            {% if service.image_list %}
+              <img src="{{ url_for('static', filename='uploads/services/' ~ service.image_list[0]) }}"
+                   class="w-full h-48 object-cover"
+                   alt="{{ service.title }}">
+            {% else %}
+              <div class="w-full h-48 bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center">
+                <i class="fas fa-image text-gray-400 text-3xl"></i>
+              </div>
+            {% endif %}
+          </div>
+
+          <!-- Service Content -->
+          <div class="p-6">
+            <h3 class="text-xl font-bold text-gray-800 mb-2">{{ service.title }}</h3>
+            <p class="text-gray-600 text-sm mb-4 line-clamp-2">{{ service.description[:120] }}{% if service.description|length > 120 %}...{% endif %}</p>
+
+            <div class="flex items-center justify-between mb-4">
+              <div class="text-2xl font-bold text-green-600">
+                ${{ "%.2f"|format(service.price) }}
+              </div>
+              {% if service.category %}
+              <span class="bg-blue-100 text-blue-800 text-xs px-3 py-1 rounded-full">
+                {{ service.category }}
+              </span>
+              {% endif %}
+            </div>
+
+            <div class="flex gap-3">
+              <a href="{{ url_for('service_detail', service_id=service.id) }}"
+                 class="flex-1 bg-gray-100 text-gray-800 text-center py-2 px-4 rounded-lg hover:bg-gray-200 transition duration-300 text-sm font-medium">
+                View Details
+              </a>
+              {% if current_user.id == user.id %}
+              <a href="{{ url_for('edit_service', id=service.id) }}"
+                 class="bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition duration-300 text-sm font-medium">
+                <i class="fas fa-edit"></i>
+              </a>
+              {% endif %}
+            </div>
+          </div>
+
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div class="bg-white rounded-2xl shadow-lg p-12 text-center">
+        <div class="w-24 h-24 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6">
+          <i class="fas fa-plus-circle text-blue-600 text-3xl"></i>
+        </div>
+        <h3 class="text-2xl font-bold text-gray-800 mb-4">No Services Yet</h3>
+        <p class="text-gray-600 mb-8">This freelancer hasn't uploaded any services yet.</p>
+        {% if current_user.id == user.id %}
+        <a href="{{ url_for('create_service') }}"
+           class="bg-blue-600 text-white px-8 py-3 rounded-xl hover:bg-blue-700 transition duration-300 inline-block">
+          <i class="fas fa-upload mr-2"></i>Create Your First Service
+        </a>
+        {% endif %}
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- Reviews Section -->
+    <div class="bg-white rounded-2xl shadow-lg p-8">
+      <h2 class="text-2xl font-bold text-gray-800 mb-6">Reviews & Ratings</h2>
+      <div class="text-center py-12">
+        <div class="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-4">
+          <i class="fas fa-star text-yellow-500 text-xl"></i>
+        </div>
+        <p class="text-gray-600">No reviews yet</p>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<style>
+  @keyframes fade-in {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .animate-fade-in {
+    animation: fade-in 0.7s ease-out;
+  }
+  
+  /* Media Preview Grid */
+  .media-preview-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 1rem;
+    margin-top: 1rem;
+  }
+  
+  .media-preview-item {
+    position: relative;
+    border-radius: 8px;
+    overflow: hidden;
+    background: #2a2a2a;
+    aspect-ratio: 4/3;
+    transition: all 0.3s ease;
+  }
+  
+  .media-preview-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+  }
+  
+  .preview-media {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  
+  .media-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(transparent, rgba(0, 0, 0, 0.8));
+    padding: 0.5rem;
+    transform: translateY(100%);
+    transition: all 0.3s ease;
+  }
+  
+  .media-preview-item:hover .media-overlay {
+    transform: translateY(0);
+  }
+  
+  .media-price {
+    color: #10b981;
+    font-size: 0.8rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    margin-bottom: 0.3rem;
+  }
+  
+  .media-type {
+    color: #9ca3af;
+    font-size: 0.7rem;
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+  }
+  
+  .line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  
+  .line-clamp-3 {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  /* Contact Link */
+  .contact-link {
+    color: #2563eb;
+    text-decoration: none;
+    font-size: 0.875rem;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    margin-top: 0.25rem;
+    padding: 0.5rem 0.75rem;
+    background: rgba(37, 99, 235, 0.1);
+    border-radius: 6px;
+    transition: all 0.3s ease;
+  }
+
+  .contact-link:hover {
+    background: rgba(37, 99, 235, 0.2);
+    color: #1d4ed8;
+    text-decoration: none;
+    transform: translateY(-1px);
+  }
+
+  /* Responsive adjustments */
+  @media (max-width: 768px) {
+    .media-preview-grid {
+      grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+      gap: 0.75rem;
+    }
+  }
+</style>
+{% endblock %}

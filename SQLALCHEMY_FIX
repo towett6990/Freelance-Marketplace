@@ -1,0 +1,42 @@
+# SQLAlchemy Relationship Fix Summary
+
+## Problem
+The application was failing with:
+```
+sqlalchemy.exc.AmbiguousForeignKeysError: Could not determine join condition between parent/child tables on relationship Service.user - there are multiple foreign key paths linking the tables.
+```
+
+## Root Cause
+The `Service` model had multiple foreign key relationships to the `User` model:
+1. `user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)`
+2. `seller_id = db.Column(db.Integer, db.ForeignKey("user.id"))`
+
+SQLAlchemy couldn't determine which foreign key to use for the `user` relationship.
+
+## Solution
+Fixed the `Service.user` relationship by explicitly specifying the foreign key:
+
+**Before (causing error):**
+```python
+user = db.relationship('User', backref='user_services')
+```
+
+**After (fixed):**
+```python
+user = db.relationship('User', foreign_keys=[user_id], back_populates="services")
+```
+
+This change:
+1. Explicitly specifies which foreign key to use (`user_id`)
+2. Uses `back_populates` instead of `backref` to properly link to the User model's `services` relationship
+3. Eliminates the ambiguity that was causing SQLAlchemy to fail
+
+## Verification
+The application should now start without the `AmbiguousForeignKeysError` and the line that was failing:
+```python
+User.query.filter_by(role="admin").first()
+```
+should work correctly.
+
+## Files Modified
+- `app.py` - Fixed the Service.user relationship definition (line ~338)

@@ -1,0 +1,40 @@
+<!-- templates/upload_service.html -->
+{% extends 'base.html' %}
+{% block title %}Upload Service Photos{% endblock %}
+{% block content %}
+<div class="container mt-5">
+  <h2 class="text-center mb-4">Upload Photos of Your Service</h2>
+  <form action="{{ url_for('upload_service') }}" method="POST" enctype="multipart/form-data" class="p-4 border rounded bg-dark text-light">
+    <div class="mb-3">
+      <label for="service_title" class="form-label">Service Title</label>
+      <input type="text" id="service_title" name="service_title" class="form-control" required>
+    </div>
+    <div class="mb-3">
+      <label for="service_description" class="form-label">Description</label>
+      <textarea id="service_description" name="service_description" class="form-control" rows="4" required></textarea>
+    </div>
+    <div class="mb-3">
+      <label for="service_photos" class="form-label">Select Service Photos (Multiple allowed)</label>
+      <input type="file" class="form-control" id="service_photos" name="service_photos" accept=".jpg,.jpeg,.png" multiple required>
+    </div>
+    <button type="submit" class="btn btn-primary w-100">Upload</button>
+  </form>
+
+  {% if services %}
+  <div class="mt-5">
+    <h4>Your Uploaded Services</h4>
+    {% for service in services %}
+      <div class="card bg-secondary text-light my-3 p-3">
+        <h5>{{ service.title }}</h5>
+        <p>{{ service.description }}</p>
+        <div class="d-flex flex-wrap gap-3">
+          {% for img in service.image_list %}
+            <img src="{{ url_for('static', filename='uploads/services/' + img) }}" class="img-thumbnail" style="max-width:150px;">
+          {% endfor %}
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

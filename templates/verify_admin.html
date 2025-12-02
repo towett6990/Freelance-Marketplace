@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block title %}Verify Sellers{% endblock %}
+{% block content %}
+<div class="container mx-auto mt-8 text-gray-200">
+  <h2 class="text-3xl font-bold mb-6 text-center">Seller Verification Dashboard</h2>
+
+  {% if sellers %}
+  <div class="overflow-x-auto">
+    <table class="min-w-full bg-gray-800 rounded-lg shadow-lg">
+      <thead>
+        <tr class="bg-gray-700 text-gray-300">
+          <th class="py-3 px-4 text-left">Seller</th>
+          <th class="py-3 px-4 text-left">Email</th>
+          <th class="py-3 px-4 text-left">Uploaded ID</th>
+          <th class="py-3 px-4 text-center">Status</th>
+          <th class="py-3 px-4 text-center">Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for seller in sellers %}
+        <tr class="border-t border-gray-700">
+          <td class="py-3 px-4">{{ seller.username }}</td>
+          <td class="py-3 px-4">{{ seller.email }}</td>
+          <td class="py-3 px-4">
+            {% if seller.id_filename %}
+              <a href="{{ url_for('uploaded_file', filename=seller.id_filename) }}" target="_blank" class="text-blue-400 hover:underline">View ID</a>
+            {% else %}
+              <span class="text-gray-500">No ID Uploaded</span>
+            {% endif %}
+          </td>
+          <td class="py-3 px-4 text-center">
+            {% if seller.is_verified %}
+              <span class="text-green-400 font-semibold">Verified</span>
+            {% else %}
+              <span class="text-yellow-400 font-semibold">Pending</span>
+            {% endif %}
+          </td>
+          <td class="py-3 px-4 text-center">
+            {% if not seller.is_verified %}
+              <form method="POST" action="{{ url_for('verify_seller', seller_id=seller.id) }}">
+                <button type="submit" class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded">
+                  Approve
+                </button>
+              </form>
+            {% else %}
+              <form method="POST" action="{{ url_for('revoke_verification', seller_id=seller.id) }}">
+                <button type="submit" class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded">
+                  Revoke
+                </button>
+              </form>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+    <p class="text-center text-gray-400 mt-6">No sellers pending verification.</p>
+  {% endif %}
+</div>
+{% endblock %}

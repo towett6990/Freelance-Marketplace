@@ -1,0 +1,468 @@
+{% extends 'base.html' %}
+{% block title %}{{ service.title }}{% endblock %}
+
+{% block content %}
+<section class="bg-gradient-to-b from-blue-50 to-white py-16">
+  <div class="max-w-6xl mx-auto px-6">
+
+    <!-- Service Header -->
+    <div class="text-center mb-12">
+      <h1 class="text-4xl font-extrabold text-gray-800 mb-4">{{ service.title }}</h1>
+      <p class="text-lg text-gray-600">Professional service by {{ service.seller.username or service.seller.email if service.seller else 'Unknown Seller' }}</p>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
+
+      <!-- Service Media Gallery -->
+      <div class="order-2 lg:order-1">
+        <div class="bg-white rounded-2xl shadow-xl overflow-hidden">
+          {% if service.image_list or service.video_list %}
+            <div class="media-gallery-full">
+              {% for img in service.image_list %}
+              <div class="media-item-full">
+                <img src="{{ url_for('static', filename='uploads/services/' ~ img) }}"
+                     class="w-full object-contain"
+                     alt="{{ service.title }}">
+              </div>
+              {% endfor %}
+              {% for vid in service.video_list %}
+              <div class="media-item-full">
+                <video src="{{ url_for('static', filename='uploads/services/' ~ vid) }}"
+                       class="w-full object-contain"
+                       controls
+                       alt="{{ service.title }}">
+                </video>
+              </div>
+              {% endfor %}
+            </div>
+          {% else %}
+            <div class="w-full h-96 bg-gray-200 flex items-center justify-center">
+              <div class="text-center text-gray-500">
+                <i class="fas fa-image text-4xl mb-4"></i>
+                <p>No Media Available</p>
+              </div>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Service Details -->
+      <div class="order-1 lg:order-2">
+        <div class="bg-white rounded-2xl shadow-xl p-8">
+
+          <!-- Price -->
+          <div class="mb-6">
+            <p class="text-sm font-medium text-gray-500 uppercase tracking-wide">Starting Price</p>
+            <p class="text-4xl font-bold text-green-600">${{ "%.2f"|format(service.price) }}</p>
+          </div>
+
+          <!-- M-Pesa Payment Section -->
+          <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded-lg mb-6">
+            <h3 class="text-lg font-semibold text-gray-800 mb-2">Pay with M-Pesa</h3>
+            <form id="mpesa-payment-form" class="space-y-2">
+              <label class="block text-gray-700 font-medium">Phone Number (07xxxxxxxx format):</label>
+              <input type="tel" id="buyer-phone" name="phone" placeholder="07xxxxxxxx"
+                     class="w-full p-2 border rounded-lg bg-white text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-yellow-400" required>
+              <label class="block text-gray-700 font-medium">Amount (KES):</label>
+              <input type="number" id="payment-amount" name="amount" value="{{ service.price|int }}"
+                     class="w-full p-2 border rounded-lg bg-white text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-yellow-400" required min="1">
+              <button type="submit"
+                      class="w-full bg-green-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-green-700 transition duration-300">
+                Pay with M-Pesa
+              </button>
+            </form>
+            <p id="payment-status" class="mt-2 text-gray-600"></p>
+          </div>
+
+          <!-- Description -->
+          <div class="mb-8">
+            <h3 class="text-xl font-semibold text-gray-800 mb-3">Description</h3>
+            <p class="text-gray-600 leading-relaxed">{{ service.description }}</p>
+          </div>
+
+          <!-- Seller Info -->
+          <div class="mb-8">
+            <h3 class="text-xl font-semibold text-gray-800 mb-3">About the Seller</h3>
+            <div class="flex items-center space-x-4">
+              <div class="w-12 h-12 bg-gray-300 rounded-full flex items-center justify-center">
+                <i class="fas fa-user text-gray-600"></i>
+              </div>
+              <div>
+                <p class="font-medium text-gray-800">{{ service.seller.username or service.seller.email if service.seller else 'Unknown Seller' }}</p>
+                <p class="text-sm text-gray-500">Verified Seller</p>
+                {% if service.contact_methods %}
+                  <div id="contact-section" class="contact-methods-section">
+                    <h4 class="contact-title">Contact the Seller</h4>
+                    <div class="contact-methods-grid">
+                      {% if service.contact_methods.phone %}
+                      <a href="tel:{{ service.contact_methods.phone }}" class="contact-method-detail" onclick="makeCall('{{ service.contact_methods.phone }}')">
+                        <i class="fas fa-phone"></i>
+                        <span>{{ service.contact_methods.phone }}</span>
+                      </a>
+                      {% endif %}
+                      {% if service.contact_methods.email %}
+                      <a href="mailto:{{ service.contact_methods.email }}" class="contact-method-detail" onclick="sendEmail('{{ service.contact_methods.email }}')">
+                        <i class="fas fa-envelope"></i>
+                        <span>{{ service.contact_methods.email }}</span>
+                      </a>
+                      {% endif %}
+                      {% if service.contact_methods.whatsapp %}
+                      <a href="https://wa.me/{{ service.contact_methods.whatsapp|replace('+', '') }}" class="contact-method-detail" target="_blank">
+                        <i class="fab fa-whatsapp"></i>
+                        <span>WhatsApp</span>
+                      </a>
+                      {% endif %}
+                      {% if service.contact_methods.instagram %}
+                      <a href="{% if 'http' in service.contact_methods.instagram %}{{ service.contact_methods.instagram }}{% else %}https://instagram.com/{{ service.contact_methods.instagram|replace('@', '') }}{% endif %}" class="contact-method-detail" target="_blank">
+                        <i class="fab fa-instagram"></i>
+                        <span>Instagram</span>
+                      </a>
+                      {% endif %}
+                      {% if service.contact_methods.facebook %}
+                      <a href="{% if 'http' in service.contact_methods.facebook %}{{ service.contact_methods.facebook }}{% else %}https://facebook.com/{{ service.contact_methods.facebook }}{% endif %}" class="contact-method-detail" target="_blank">
+                        <i class="fab fa-facebook"></i>
+                        <span>Facebook</span>
+                      </a>
+                      {% endif %}
+                    </div>
+                  </div>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="space-y-4">
+            {% if current_user.is_authenticated and service.seller and current_user.id != service.seller.id %}
+            <a href="{{ url_for('message_user', user_id=service.seller.id) }}"
+               class="w-full bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg hover:bg-blue-700 transition duration-300 flex items-center justify-center space-x-2">
+              <i class="fas fa-envelope"></i>
+              <span>Message Seller</span>
+            </a>
+            {% if service.contact_methods %}
+            <a href="#contact-section" onclick="showContactMethods(); return false;" class="btn btn-success w-full bg-green-600 text-white font-semibold py-3 px-6 rounded-lg hover:bg-green-700 transition duration-300 flex items-center justify-center space-x-2 cursor-pointer" style="text-decoration: none;">
+              <i class="fas fa-phone"></i>
+              <span>Contact Seller</span>
+            </a>
+            {% endif %}
+
+            {% elif not current_user.is_authenticated %}
+            <a href="{{ url_for('login') }}"
+               class="w-full bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg hover:bg-blue-700 transition duration-300 flex items-center justify-center space-x-2">
+              <i class="fas fa-sign-in-alt"></i>
+              <span>Login to Message Seller</span>
+            </a>
+            {% endif %}
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Similar Services Section -->
+    {% if related %}
+    <div class="mt-16">
+      <h2 class="text-3xl font-bold text-gray-800 text-center mb-12">Similar Services</h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        {% for item in related %}
+        <div class="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition duration-300">
+          <div class="aspect-w-16 aspect-h-9">
+            {% if item.image_list %}
+              <img src="{{ url_for('static', filename='uploads/services/' ~ item.image_list[0]) }}"
+                   class="w-full h-48 object-cover"
+                   alt="{{ item.title }}">
+            {% else %}
+              <div class="w-full h-48 bg-gray-200 flex items-center justify-center">
+                <i class="fas fa-image text-gray-400 text-2xl"></i>
+              </div>
+            {% endif %}
+          </div>
+          <div class="p-6">
+            <h3 class="text-xl font-semibold text-gray-800 mb-2">{{ item.title }}</h3>
+            <p class="text-gray-600 text-sm mb-4">{{ item.description[:100] }}{% if item.description|length > 100 %}...{% endif %}</p>
+            <div class="flex justify-between items-center">
+              <span class="text-2xl font-bold text-green-600">${{ "%.2f"|format(item.price) }}</span>
+              <a href="{{ url_for('service_detail', service_id=item.id) }}"
+                 class="bg-gray-100 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-200 transition duration-300">
+                View Details
+              </a>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
+  </div>
+</section>
+
+<style>
+  /* Media Gallery Full Display Styles */
+  .media-gallery-full {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    padding: 1rem;
+  }
+
+  .media-item-full {
+    width: 100%;
+    max-height: 500px;
+    border-radius: 8px;
+    overflow: hidden;
+    background: #f5f5f5;
+    border: 2px solid #e0e0e0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .media-item-full img,
+  .media-item-full video {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    display: block;
+  }
+
+  .media-item-full video {
+    width: 100%;
+  }
+
+  /* Contact Methods Section */
+  .contact-methods-section {
+    margin-top: 1rem;
+  }
+
+  .contact-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 0.75rem;
+  }
+
+  .contact-methods-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 0.75rem;
+  }
+
+  .contact-method-detail {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: rgba(37, 99, 235, 0.1);
+    color: #2563eb;
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    border: 1px solid rgba(37, 99, 235, 0.2);
+  }
+
+  .contact-method-detail:hover {
+    background: rgba(37, 99, 235, 0.2);
+    color: #1d4ed8;
+    text-decoration: none;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+  }
+
+  .contact-method-detail i {
+    font-size: 1rem;
+  }
+
+  .contact-method-detail span {
+    font-weight: 500;
+  }
+</style>
+
+<script>
+function makeCall(phoneNumber) {
+  window.location.href = 'tel:' + phoneNumber;
+  setTimeout(function() {
+    if (confirm('Would you like to call ' + phoneNumber + '?')) {
+      window.location.href = 'tel:' + phoneNumber;
+    }
+  }, 100);
+}
+
+function sendEmail(emailAddress) {
+  window.location.href = 'mailto:' + emailAddress;
+  setTimeout(function() {
+    if (confirm('Would you like to send an email to ' + emailAddress + '?')) {
+      window.location.href = 'mailto:' + emailAddress;
+    }
+  }, 100);
+}
+
+function showContactMethods() {
+  const contactSection = document.querySelector('.contact-methods-section');
+  if (contactSection) {
+    contactSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    contactSection.style.boxShadow = '0 0 20px rgba(37, 99, 235, 0.5)';
+    setTimeout(() => { contactSection.style.boxShadow = ''; }, 2000);
+  }
+}
+
+// M-PESA Payment Form
+const mpesaForm = document.getElementById('mpesa-payment-form');
+const statusEl = document.getElementById('payment-status');
+
+if (mpesaForm) {
+  mpesaForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const phone = document.getElementById('buyer-phone').value.trim();
+    const amount = document.getElementById('payment-amount').value;
+
+    if (!phone) {
+      statusEl.textContent = "Please enter your phone number.";
+      statusEl.classList.add('text-red-500');
+      statusEl.classList.remove('text-green-600', 'text-yellow-700');
+      return;
+    }
+
+    if (!amount || amount < 1) {
+      statusEl.textContent = "Please enter a valid amount.";
+      statusEl.classList.add('text-red-500');
+      statusEl.classList.remove('text-green-600', 'text-yellow-700');
+      return;
+    }
+
+    statusEl.textContent = "Initiating STK Push...";
+    statusEl.classList.remove('text-red-500', 'text-green-600');
+    statusEl.classList.add('text-yellow-700');
+
+    try {
+      const formData = new FormData(mpesaForm);
+      const res = await fetch(`{{ url_for('pay_service', service_id=service.id) }}`, {
+        method: 'POST',
+        body: formData
+      });
+      const data = await res.json();
+
+      if (data.ResponseCode === '0') {
+        // Show popup modal for M-Pesa payment guidance
+        showMpesaPaymentModal(phone, amount);
+        
+        statusEl.textContent = "STK Push sent! Please check your phone.";
+        statusEl.classList.remove('text-red-500', 'text-yellow-700');
+        statusEl.classList.add('text-green-600');
+
+      } else {
+        statusEl.textContent = data.errorMessage || "Payment initiation failed.";
+        statusEl.classList.add('text-red-500');
+        statusEl.classList.remove('text-green-600', 'text-yellow-700');
+      }
+
+    } catch (err) {
+      statusEl.textContent = "Error connecting to payment gateway.";
+      statusEl.classList.add('text-red-500');
+      statusEl.classList.remove('text-green-600', 'text-yellow-700');
+      console.error(err);
+    }
+  });
+}
+
+// M-Pesa Payment Modal
+function showMpesaPaymentModal(phone, amount) {
+  // Create modal HTML
+  const modalHTML = `
+    <div id="mpesa-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div class="bg-white rounded-2xl p-8 max-w-md mx-4 shadow-2xl">
+        <div class="text-center mb-6">
+          <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <i class="fas fa-mobile-alt text-2xl text-green-600"></i>
+          </div>
+          <h3 class="text-2xl font-bold text-gray-800 mb-2">Check Your Phone</h3>
+          <p class="text-gray-600">STK Push sent to your phone</p>
+        </div>
+        
+        <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-sm text-gray-600">Phone Number:</span>
+            <span class="font-mono font-medium">${phone}</span>
+          </div>
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-sm text-gray-600">Amount:</span>
+            <span class="font-mono font-medium text-green-600">KES ${amount}</span>
+          </div>
+          <div class="flex items-center justify-between">
+            <span class="text-sm text-gray-600">Reference:</span>
+            <span class="font-mono font-medium">Payment</span>
+          </div>
+        </div>
+        
+        <div class="text-left mb-6">
+          <h4 class="font-semibold text-gray-800 mb-2">Next Steps:</h4>
+          <ol class="text-sm text-gray-600 space-y-2">
+            <li class="flex items-start">
+              <span class="bg-green-100 text-green-600 rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold mr-2 mt-0.5">1</span>
+              Check your phone for M-Pesa prompt
+            </li>
+            <li class="flex items-start">
+              <span class="bg-green-100 text-green-600 rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold mr-2 mt-0.5">2</span>
+              Open the M-Pesa prompt
+            </li>
+            <li class="flex items-start">
+              <span class="bg-green-100 text-green-600 rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold mr-2 mt-0.5">3</span>
+              Enter your M-Pesa PIN to complete payment
+            </li>
+            <li class="flex items-start">
+              <span class="bg-green-100 text-green-600 rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold mr-2 mt-0.5">4</span>
+              Wait for payment confirmation
+            </li>
+          </ol>
+        </div>
+        
+        <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-6">
+          <div class="flex items-center">
+            <i class="fas fa-info-circle text-yellow-600 mr-2"></i>
+            <p class="text-sm text-yellow-800">
+              The M-Pesa prompt will arrive within 30 seconds. If not received, check your phone settings or contact M-Pesa support.
+            </p>
+          </div>
+        </div>
+        
+        <button onclick="closeMpesaModal()" 
+                class="w-full bg-green-600 text-white font-semibold py-3 px-4 rounded-lg hover:bg-green-700 transition duration-300">
+          I've Completed Payment
+        </button>
+      </div>
+    </div>
+  `;
+  
+  // Add modal to page
+  document.body.insertAdjacentHTML('beforeend', modalHTML);
+  
+  // Add animation
+  setTimeout(() => {
+    document.getElementById('mpesa-modal').classList.add('opacity-100');
+  }, 10);
+}
+
+function closeMpesaModal() {
+  const modal = document.getElementById('mpesa-modal');
+  if (modal) {
+    modal.remove();
+  }
+}
+
+// Close modal when clicking outside
+document.addEventListener('click', function(event) {
+  const modal = document.getElementById('mpesa-modal');
+  if (modal && event.target === modal) {
+    closeMpesaModal();
+  }
+});
+
+// Close modal with Escape key
+document.addEventListener('keydown', function(event) {
+  if (event.key === 'Escape') {
+    closeMpesaModal();
+  }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block title %}Post a Product - Freelance Marketplace{% endblock %}
+
+{% block content %}
+<h1>Post a New Product</h1>
+
+<form method="POST" action="{{ url_for('post_service') }}" enctype="multipart/form-data">
+    <label for="name">Product Name</label>
+    <input type="text" name="name" required>
+
+    <label for="description">Description</label>
+    <textarea name="description" required></textarea>
+
+    <label for="price">Price ($)</label>
+    <input type="number" step="0.01" name="price" required>
+
+    <label for="image">Product Image</label>
+    <!-- Required image input with camera and file access -->
+    <input type="file" name="image" accept="image/*" capture="environment" required>
+
+    <button type="submit">Post Product</button>
+</form>
+{% endblock %}

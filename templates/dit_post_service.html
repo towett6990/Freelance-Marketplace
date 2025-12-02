@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="container mt-5">
+  <div class="card shadow-lg p-4" style="background:#181818; color:#eee; border:none;">
+    <h3 class="text-center mb-4">Edit Service</h3>
+
+```
+<form method="POST" enctype="multipart/form-data" action="{{ url_for('edit_service', service_id=service.id) }}">
+  {{ form.hidden_tag() }}
+
+  <div class="form-group mb-3">
+    <label for="title">Service Title</label>
+    <input type="text" class="form-control bg-dark text-light border-0" id="title" name="title"
+           value="{{ service.title }}" placeholder="Enter service title" required>
+  </div>
+
+  <div class="form-group mb-3">
+    <label for="description">Description</label>
+    <textarea class="form-control bg-dark text-light border-0" id="description" name="description"
+              rows="5" placeholder="Describe your service..." required>{{ service.description }}</textarea>
+  </div>
+
+  <div class="form-group mb-3">
+    <label for="price">Price (USD)</label>
+    <input type="number" class="form-control bg-dark text-light border-0" id="price" name="price"
+           step="0.01" value="{{ service.price }}" placeholder="Enter price" required>
+  </div>
+
+  <div class="form-group mb-4">
+    <label for="category">Category</label>
+    <select class="form-select bg-dark text-light border-0" id="category" name="category" required>
+      <option value="{{ service.category }}">{{ service.category }}</option>
+      <option disabled>──────────</option>
+      {% for cat in categories %}
+      <option value="{{ cat }}">{{ cat }}</option>
+      {% endfor %}
+    </select>
+  </div>
+
+  <div class="form-group mb-4">
+    <label>Upload Images (Multiple allowed)</label>
+    <input type="file" id="images" name="images" class="form-control bg-dark text-light border-0"
+           accept="image/*" multiple onchange="previewFiles(event, 'image-preview')">
+    <div id="image-preview" class="d-flex flex-wrap mt-3"></div>
+  </div>
+
+  <div class="form-group mb-4">
+    <label>Upload Videos (Multiple allowed)</label>
+    <input type="file" id="videos" name="videos" class="form-control bg-dark text-light border-0"
+           accept="video/*" multiple onchange="previewFiles(event, 'video-preview')">
+    <div id="video-preview" class="d-flex flex-wrap mt-3"></div>
+  </div>
+
+  <div class="text-center mt-4">
+    <button type="submit" class="btn btn-primary px-5">Save Changes</button>
+    <a href="{{ url_for('my_services') }}" class="btn btn-secondary px-4">Cancel</a>
+  </div>
+</form>
+```
+
+  </div>
+</div>
+
+<script>
+function previewFiles(event, previewId) {
+  const preview = document.getElementById(previewId);
+  preview.innerHTML = '';
+  const files = event.target.files;
+
+  Array.from(files).forEach(file => {
+    const reader = new FileReader();
+    reader.onload = e => {
+      if (file.type.startsWith('image/')) {
+        const img = document.createElement('img');
+        img.src = e.target.result;
+        img.classList.add('m-2');
+        img.style.height = '120px';
+        img.style.borderRadius = '8px';
+        preview.appendChild(img);
+      } else if (file.type.startsWith('video/')) {
+        const vid = document.createElement('video');
+        vid.src = e.target.result;
+        vid.controls = true;
+        vid.classList.add('m-2');
+        vid.style.height = '140px';
+        vid.style.borderRadius = '8px';
+        preview.appendChild(vid);
+      }
+    };
+    reader.readAsDataURL(file);
+  });
+}
+</script>
+
+{% endblock %}

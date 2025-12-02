@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block title %}{{ product.name }} - Freelance Marketplace{% endblock %}
+
+{% block content %}
+<div class="product-detail">
+    {% if product.image %}
+        <img src="{{ url_for('static', filename='uploads/' ~ product.image) }}" alt="{{ product.name }}">
+    {% endif %}
+
+    <h1>{{ product.name }}</h1>
+    <p>{{ product.description }}</p>
+    <p><strong>Price: ${{ product.price }}</strong></p>
+
+    <hr>
+    <h3>Seller Info</h3>
+    <p><strong>Seller:</strong> {{ product.seller.username }}</p>
+    <p><strong>Phone:</strong> {{ product.seller.phone or "Not provided" }}</p>
+    <a href="mailto:{{ product.seller.email }}">📧 Email Seller</a>
+</div>
+{% endblock %}

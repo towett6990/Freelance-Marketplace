@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container py-5">
+  <div class="card shadow-lg border-0 mx-auto" style="max-width: 700px; background-color: #1e1e2f; color: #f0f0f0; border-radius: 15px;">
+    <div class="card-body p-5">
+      <h3 class="text-center mb-4" style="color: #4da6ff;">Verify Your National ID</h3>
+      <p class="text-center text-muted">Upload both the front and back sides of your ID for verification.</p>
+
+      <!-- Flash messages -->
+      {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+        <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+          {{ message }}
+          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        {% endfor %}
+      {% endif %}
+      {% endwith %}
+
+      <form method="POST" enctype="multipart/form-data" class="mt-4 text-center">
+        <div class="row g-4">
+          <!-- Front ID upload -->
+          <div class="col-md-6">
+            <label for="front_id" class="form-label fw-bold">Front Side</label>
+            <div class="upload-box border border-info rounded-4 p-3 bg-dark bg-opacity-50 hover-glow">
+              <input type="file" name="front_id" id="front_id" class="form-control bg-dark text-light" accept="image/*" required onchange="previewImage(event, 'frontPreview')">
+              <img id="frontPreview" src="" alt="Front ID Preview" class="img-fluid rounded mt-2 d-none shadow-sm">
+            </div>
+          </div>
+
+          <!-- Back ID upload -->
+          <div class="col-md-6">
+            <label for="back_id" class="form-label fw-bold">Back Side</label>
+            <div class="upload-box border border-info rounded-4 p-3 bg-dark bg-opacity-50 hover-glow">
+              <input type="file" name="back_id" id="back_id" class="form-control bg-dark text-light" accept="image/*" required onchange="previewImage(event, 'backPreview')">
+              <img id="backPreview" src="" alt="Back ID Preview" class="img-fluid rounded mt-2 d-none shadow-sm">
+            </div>
+          </div>
+        </div>
+
+        <div class="text-center mt-4">
+          <button type="submit" class="btn btn-primary btn-lg w-100" style="background-color: #4da6ff; border: none;">
+            <i class="bi bi-check-circle"></i> Upload & Verify
+          </button>
+        </div>
+      </form>
+
+      {% if current_user.id_document_front or current_user.id_document_back %}
+      <hr class="my-4" style="border-color: #333;">
+      <div class="text-center">
+        <h5 class="mb-3" style="color: #4da6ff;">Last Uploaded ID:</h5>
+        <div class="row g-3">
+          {% if current_user.id_document_front %}
+          <div class="col-md-6">
+            <img src="{{ url_for('static', filename='uploads/ids/' + current_user.id_document_front) }}" alt="Front ID" class="img-fluid rounded shadow" style="border: 2px solid #4da6ff;">
+            <p class="text-muted mt-2 small">Front Side</p>
+          </div>
+          {% endif %}
+          {% if current_user.id_document_back %}
+          <div class="col-md-6">
+            <img src="{{ url_for('static', filename='uploads/ids/' + current_user.id_document_back) }}" alt="Back ID" class="img-fluid rounded shadow" style="border: 2px solid #4da6ff;">
+            <p class="text-muted mt-2 small">Back Side</p>
+          </div>
+          {% endif %}
+        </div>
+
+        <div class="mt-3">
+          <strong>Status:</strong>
+          <span class="badge
+            {% if current_user.id_verification_status == 'verified' %} bg-success
+            {% elif current_user.id_verification_status == 'rejected' %} bg-danger
+            {% else %} bg-secondary {% endif %}">
+            {{ current_user.id_verification_status|capitalize }}
+          </span>
+        </div>
+
+        {% if current_user.vision_message %}
+        <p class="mt-2"><strong>Details:</strong> {{ current_user.vision_message }}</p>
+        {% endif %}
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<style>
+.hover-glow:hover {
+  box-shadow: 0 0 10px #4da6ff;
+  transition: 0.3s ease-in-out;
+}
+</style>
+
+<script>
+function previewImage(event, previewId) {
+  const input = event.target;
+  const preview = document.getElementById(previewId);
+  if (input.files && input.files[0]) {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      preview.src = e.target.result;
+      preview.classList.remove('d-none');
+    };
+    reader.readAsDataURL(input.files[0]);
+  }
+}
+</script>
+{% endblock %}

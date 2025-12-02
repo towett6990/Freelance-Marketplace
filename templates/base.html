@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}FREELANCE MARKETPLACE{% endblock %}</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+
+<body class="bg-gray-900 text-white flex flex-col min-h-screen">
+
+  <!-- Navbar -->
+  <nav class="bg-gray-800 py-4 shadow-lg">
+    <div class="container mx-auto flex justify-between items-center px-6">
+      <a href="{{ url_for('index') }}">
+        <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Freelance Marketplace Logo" class="h-12 w-12 rounded-full">
+      </a>
+      <div class="space-x-6 flex items-center">
+        <div class="relative dropdown">
+          <button class="dropdown-toggle hover:text-green-400">Menu ▼</button>
+          <div class="dropdown-menu hidden absolute right-0 mt-2 w-48 bg-gray-800 rounded-md shadow-lg z-10">
+            <a href="{{ url_for('index') }}" class="block px-4 py-2 hover:bg-gray-700">🏠 Home</a>
+            <a href="{{ url_for('list_services') }}" class="block px-4 py-2 hover:bg-gray-700">💼 Services</a>
+            <a href="{{ url_for('login') }}" class="block px-4 py-2 hover:bg-gray-700">🔑 Login</a>
+            <a href="{{ url_for('register') }}" class="block px-4 py-2 hover:bg-gray-700">🧾 Register</a>
+          </div>
+        </div>
+
+        {% if current_user.is_authenticated %}
+
+          <!-- Notifications -->
+          <a href="{{ url_for('conversations') }}" class="hover:text-green-400 relative">
+            🔔 Notifications
+            {% if unread_total > 0 %}
+              <span class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">{{ unread_total }}</span>
+            {% endif %}
+          </a>
+
+          <a href="{{ url_for('conversations') }}" class="hover:text-green-400">💬 Chat</a>
+          <a href="{{ url_for('profile', username=current_user.username) }}" class="hover:text-green-400">👤 Profile</a>
+          <a href="{{ url_for('logout') }}" class="hover:text-red-400">🚪 Logout</a>
+        {% endif %}
+      </div>
+    </div>
+  </nav>
+
+  <!-- Flash Messages -->
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="container mx-auto mt-4 px-6">
+        {% for category, message in messages %}
+          <div class="p-3 mb-3 rounded text-center
+                      {% if category == 'success' %}bg-green-700
+                      {% elif category == 'warning' %}bg-yellow-700
+                      {% elif category == 'danger' %}bg-red-700
+                      {% else %}bg-gray-700{% endif %}">
+            {{ message }}
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+
+  <!-- Page Content -->
+  <main class="flex-grow container mx-auto px-6 py-10">
+    {% block content %}{% endblock %}
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-gray-800 py-6 text-center mt-auto">
+    <p class="text-gray-400 text-sm">
+      © 2025 Freelance Marketplace. All rights reserved. |
+      Welcome to the future of freelancing! |
+      <a href="{{ url_for('index') }}" class="text-blue-400 hover:underline">Back to Home</a>
+    </p>
+  </footer>
+
+  <!-- Dropdown Script -->
+  <script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Dropdown functionality
+    const dropdowns = document.querySelectorAll('.dropdown');
+
+    dropdowns.forEach(dropdown => {
+      const toggle = dropdown.querySelector('.dropdown-toggle');
+      const menu = dropdown.querySelector('.dropdown-menu');
+
+      toggle.addEventListener('click', function(e) {
+        e.preventDefault();
+        menu.classList.toggle('hidden');
+      });
+
+      // Close dropdown when clicking outside
+      document.addEventListener('click', function(e) {
+        if (!dropdown.contains(e.target)) {
+          menu.classList.add('hidden');
+        }
+      });
+    });
+  });
+  </script>
+
+</body>
+</html>
