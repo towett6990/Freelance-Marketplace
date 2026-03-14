@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+{% block title %}Verify Email{% endblock %}
+{% block content %}
+<style>
+.ve-wrap{min-height:80vh;display:flex;align-items:center;justify-content:center;padding:1.5rem}
+.ve-card{background:#131625;border:1px solid rgba(255,255,255,.08);border-radius:18px;padding:2.5rem;max-width:420px;width:100%;text-align:center}
+.ve-icon{font-size:3rem;margin-bottom:1rem}
+.ve-title{font-size:1.5rem;font-weight:800;color:#f1f5f9;margin-bottom:.5rem}
+.ve-sub{color:#64748b;font-size:.88rem;margin-bottom:2rem;line-height:1.6}
+.ve-input{width:100%;padding:1rem;font-size:1.8rem;font-weight:800;letter-spacing:.4em;text-align:center;background:rgba(0,255,200,.05);border:1px solid rgba(0,255,200,.2);border-radius:12px;color:#00ffc8;outline:none;margin-bottom:1.5rem}
+.ve-input:focus{border-color:#00ffc8;box-shadow:0 0 0 3px rgba(0,255,200,.1)}
+.ve-btn{width:100%;padding:1rem;border-radius:12px;font-weight:800;font-size:1rem;border:none;cursor:pointer;background:linear-gradient(135deg,#00ffc8,#00d4ff);color:#0a0e27}
+.ve-btn:hover{opacity:.9}
+.ve-resend{margin-top:1rem;font-size:.82rem;color:#64748b}
+.ve-resend a{color:#00ffc8;text-decoration:none}
+</style>
+<div class="ve-wrap">
+  <div class="ve-card">
+    <div class="ve-icon">📧</div>
+    <div class="ve-title">Check your email</div>
+    <div class="ve-sub">We sent a 6-digit code to <strong style="color:#e2e8f0">{{ email }}</strong>. Enter it below to verify your account.</div>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% for cat, msg in messages %}
+        <div style="padding:.75rem;border-radius:8px;margin-bottom:1rem;font-size:.85rem;background:rgba({% if cat=='danger' %}239,68,68{% elif cat=='success' %}52,211,153{% else %}251,191,36{% endif %},.1);color:{% if cat=='danger' %}#f87171{% elif cat=='success' %}#34d399{% else %}#fbbf24{% endif %}">{{ msg }}</div>
+      {% endfor %}
+    {% endwith %}
+    <form method="POST">
+      <input type="hidden" name="email" value="{{ email }}">
+      <input type="text" name="code" class="ve-input" placeholder="000000" maxlength="6" autocomplete="off" autofocus>
+      <button type="submit" class="ve-btn">Verify Email</button>
+    </form>
+    <div class="ve-resend">Didn't receive it? <a href="{{ url_for('resend_verification', email=email) }}">Resend code</a></div>
+  </div>
+</div>
+{% endblock %}

@@ -1,38 +1,38 @@
 {% extends "base.html" %}
 {% block content %}
-<div class="min-h-screen bg-gradient-to-br from-gray-900 via-gray-950 to-black text-gray-100 py-10">
-  <div class="max-w-7xl mx-auto px-4">
-    
+<div style="min-height: 100vh; background: linear-gradient(135deg, #0a1f2e 0%, #1a3a4a 50%, #0a1f2e 100%); color: var(--body-color); padding: 2.5rem;">
+  <div style="max-width: 80rem; margin: 0 auto; padding: 0 1rem;">
+     
     <!-- Header -->
-    <div class="mb-8">
-      <h1 class="text-3xl font-bold text-white mb-2">🔍 ID Verification Dashboard</h1>
-      <p class="text-gray-400">Manual review and management of pending ID verifications</p>
+    <div style="margin-bottom: 2rem;">
+      <h1 style="font-size: 1.875rem; font-weight: bold; color: var(--heading-color); margin-bottom: 0.5rem;">🔍 ID Verification Dashboard</h1>
+      <p style="color: #9ca3af;">Manual review and management of pending ID verifications</p>
     </div>
 
     <!-- Stats Cards -->
-    <div class="grid md:grid-cols-3 gap-6 mb-8">
-      <div class="bg-yellow-600/20 border border-yellow-600/40 rounded-xl p-6">
-        <div class="flex items-center justify-between">
+    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; margin-bottom: 2rem;">
+      <div style="background: rgba(234, 179, 8, 0.2); border: 1px solid rgba(234, 179, 8, 0.4); border-radius: 0.75rem; padding: 1.5rem;">
+        <div style="display: flex; align-items: center; justify-content: space-between;">
           <div>
-            <p class="text-yellow-400 text-sm font-medium">Pending Review</p>
-            <p class="text-3xl font-bold text-white">{{ stats.pending_count }}</p>
+            <p style="color: #eab308; font-size: 0.875rem; font-weight: 500;">Pending Review</p>
+            <p style="font-size: 1.875rem; font-weight: bold; color: var(--body-color);">{{ stats.pending_count }}</p>
           </div>
-          <div class="text-yellow-400">
-            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div style="color: #eab308;">
+            <svg style="width: 2rem; height: 2rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
             </svg>
           </div>
         </div>
       </div>
       
-      <div class="bg-blue-600/20 border border-blue-600/40 rounded-xl p-6">
-        <div class="flex items-center justify-between">
+      <div style="background: rgba(59, 130, 246, 0.2); border: 1px solid rgba(59, 130, 246, 0.4); border-radius: 0.75rem; padding: 1.5rem;">
+        <div style="display: flex; align-items: center; justify-content: space-between;">
           <div>
-            <p class="text-blue-400 text-sm font-medium">In Review</p>
-            <p class="text-3xl font-bold text-white">{{ stats.in_review_count }}</p>
+            <p style="color: #3b82f6; font-size: 0.875rem; font-weight: 500;">In Review</p>
+            <p style="font-size: 1.875rem; font-weight: bold; color: var(--body-color);">{{ stats.in_review_count }}</p>
           </div>
-          <div class="text-blue-400">
-            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div style="color: #3b82f6;">
+            <svg style="width: 2rem; height: 2rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
             </svg>
@@ -40,14 +40,14 @@
         </div>
       </div>
       
-      <div class="bg-green-600/20 border border-green-600/40 rounded-xl p-6">
-        <div class="flex items-center justify-between">
+      <div style="background: rgba(34, 197, 94, 0.2); border: 1px solid rgba(34, 197, 94, 0.4); border-radius: 0.75rem; padding: 1.5rem;">
+        <div style="display: flex; align-items: center; justify-content: space-between;">
           <div>
-            <p class="text-green-400 text-sm font-medium">Reviews Today</p>
-            <p class="text-3xl font-bold text-white">{{ stats.total_reviews_today }}</p>
+            <p style="color: #22c55e; font-size: 0.875rem; font-weight: 500;">Reviews Today</p>
+            <p style="font-size: 1.875rem; font-weight: bold; color: var(--body-color);">{{ stats.total_reviews_today }}</p>
           </div>
-          <div class="text-green-400">
-            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div style="color: #22c55e;">
+            <svg style="width: 2rem; height: 2rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
             </svg>
           </div>
@@ -56,63 +56,63 @@
     </div>
 
     <!-- Pending Reviews Section -->
-    <div class="bg-gray-800/80 rounded-xl p-6 mb-8">
-      <h2 class="text-xl font-semibold text-white mb-4 flex items-center">
-        <span class="bg-yellow-500/20 text-yellow-400 px-3 py-1 rounded-full text-sm mr-3">Pending</span>
+    <div style="background: var(--main-bg); border-radius: 0.75rem; padding: 1.5rem; border: 1px solid var(--main-border); margin-bottom: 2rem;">
+      <h2 style="font-size: 1.25rem; font-weight: 600; color: var(--heading-color); margin-bottom: 1rem; display: flex; align-items: center;">
+        <span style="background: rgba(234, 179, 8, 0.2); color: #eab308; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.875rem; margin-right: 0.75rem;">Pending</span>
         ID Submissions Requiring Manual Review
       </h2>
       
       {% if pending_users %}
-      <div class="overflow-x-auto">
-        <table class="w-full text-left">
+      <div style="overflow-x: auto;">
+        <table style="width: 100%; text-align: left;">
           <thead>
-            <tr class="border-b border-gray-700">
-              <th class="pb-3 text-gray-400">User</th>
-              <th class="pb-3 text-gray-400">Confidence</th>
-              <th class="pb-3 text-gray-400">Content Score</th>
-              <th class="pb-3 text-gray-400">Quality Score</th>
-              <th class="pb-3 text-gray-400">Submitted</th>
-              <th class="pb-3 text-gray-400">Actions</th>
+            <tr style="border-bottom: 1px solid var(--main-border);">
+              <th style="padding-bottom: 0.75rem; color: #9ca3af;">User</th>
+              <th style="padding-bottom: 0.75rem; color: #9ca3af;">Confidence</th>
+              <th style="padding-bottom: 0.75rem; color: #9ca3af;">Content Score</th>
+              <th style="padding-bottom: 0.75rem; color: #9ca3af;">Quality Score</th>
+              <th style="padding-bottom: 0.75rem; color: #9ca3af;">Submitted</th>
+              <th style="padding-bottom: 0.75rem; color: #9ca3af;">Actions</th>
             </tr>
           </thead>
           <tbody>
             {% for user in pending_users %}
-            <tr class="border-b border-gray-700/50 hover:bg-gray-700/30">
-              <td class="py-4">
-                <div class="flex items-center">
-                  <div class="w-10 h-10 bg-gray-600 rounded-full flex items-center justify-center mr-3">
+            <tr style="border-bottom: 1px solid var(--main-border);">
+              <td style="padding: 1rem 0;">
+                <div style="display: flex; align-items: center;">
+                  <div style="width: 2.5rem; height: 2.5rem; border-radius: 9999px; background: #4b5563; display: flex; align-items: center; justify-content: center; margin-right: 0.75rem; color: var(--body-color);">
                     {{ user.username[0].upper() if user.username else user.email[0].upper() }}
                   </div>
                   <div>
-                    <p class="text-white font-medium">{{ user.username or user.email }}</p>
-                    <p class="text-gray-400 text-sm">{{ user.email }}</p>
+                    <p style="color: var(--body-color); font-weight: 500;">{{ user.username or user.email }}</p>
+                    <p style="color: #9ca3af; font-size: 0.875rem;">{{ user.email }}</p>
                   </div>
                 </div>
               </td>
-              <td class="py-4">
-                <span class="px-2 py-1 rounded-full text-sm {% if user.id_confidence_score >= 0.6 %}bg-yellow-500/20 text-yellow-400{% elif user.id_confidence_score >= 0.4 %}bg-orange-500/20 text-orange-400{% else %}bg-red-500/20 text-red-400{% endif %}">
+              <td style="padding: 1rem 0;">
+                <span style="padding: 0.25rem 0.5rem; border-radius: 9999px; font-size: 0.875rem; {% if user.id_confidence_score >= 0.6 %}background: rgba(234, 179, 8, 0.2); color: #eab308;{% elif user.id_confidence_score >= 0.4 %}background: rgba(249, 115, 22, 0.2); color: #f97316;{% else %}background: rgba(239, 68, 68, 0.2); color: #ef4444;{% endif %}">
                   {{ "%.2f"|format(user.id_confidence_score) }}
                 </span>
               </td>
-              <td class="py-4 text-gray-300">{{ "%.2f"|format(user.id_content_score or 0) }}</td>
-              <td class="py-4 text-gray-300">{{ "%.2f"|format(user.id_quality_score or 0) }}</td>
-              <td class="py-4 text-gray-400">
+              <td style="padding: 1rem 0; color: #d1d5db;">{{ "%.2f"|format(user.id_content_score or 0) }}</td>
+              <td style="padding: 1rem 0; color: #d1d5db;">{{ "%.2f"|format(user.id_quality_score or 0) }}</td>
+              <td style="padding: 1rem 0; color: #9ca3af;">
                 {{ user.last_id_upload_at.strftime("%Y-%m-%d %H:%M") if user.last_id_upload_at else "Unknown" }}
               </td>
-              <td class="py-4">
-                <a href="{{ url_for('admin_id_review_detail', user_id=user.id) }}" 
-                   class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm transition-colors">
+              <td style="padding: 1rem 0;">
+                <a href="{{ url_for('admin_id_review_detail', user_id=user.id) }}"
+                   style="background: #3b82f6; color: white; padding: 0.25rem 0.75rem; border-radius: 0.25rem; font-size: 0.875rem; text-decoration: none;">
                   Review
                 </a>
               </td>
             </tr>
             {% endfor %}
           </tbody>
-        </table>
+        </table></div>
       </div>
       {% else %}
-      <div class="text-center py-8 text-gray-400">
-        <svg class="w-16 h-16 mx-auto mb-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <div style="text-align: center; padding: 2rem; color: #9ca3af;">
+        <svg style="width: 4rem; height: 4rem; margin: 0 auto 1rem; color: #4b5563;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
         </svg>
         <p>No pending reviews at the moment!</p>
@@ -122,21 +122,21 @@
 
     <!-- In Review Section -->
     {% if in_review_users %}
-    <div class="bg-gray-800/80 rounded-xl p-6">
-      <h2 class="text-xl font-semibold text-white mb-4 flex items-center">
-        <span class="bg-blue-500/20 text-blue-400 px-3 py-1 rounded-full text-sm mr-3">In Review</span>
+    <div style="background: var(--main-bg); border-radius: 0.75rem; padding: 1.5rem; border: 1px solid var(--main-border);">
+      <h2 style="font-size: 1.25rem; font-weight: 600; color: var(--heading-color); margin-bottom: 1rem; display: flex; align-items: center;">
+        <span style="background: rgba(59, 130, 246, 0.2); color: #3b82f6; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.875rem; margin-right: 0.75rem;">In Review</span>
         Currently Being Reviewed
       </h2>
       
-      <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem;">
         {% for user in in_review_users %}
-        <div class="bg-gray-700/50 rounded-lg p-4 border border-gray-600/50">
-          <div class="flex items-center justify-between mb-2">
-            <h3 class="text-white font-medium">{{ user.username or user.email }}</h3>
-            <span class="text-blue-400 text-sm">Reviewing</span>
+        <div style="background: rgba(55, 65, 81, 0.5); border-radius: 0.5rem; padding: 1rem; border: 1px solid rgba(75, 85, 99, 0.5);">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.5rem;">
+            <h3 style="color: var(--body-color); font-weight: 500;">{{ user.username or user.email }}</h3>
+            <span style="color: #3b82f6; font-size: 0.875rem;">Reviewing</span>
           </div>
-          <p class="text-gray-400 text-sm mb-2">Confidence: {{ "%.2f"|format(user.id_confidence_score) }}</p>
-          <p class="text-gray-400 text-sm">Started: {{ user.manual_reviewed_at.strftime("%H:%M") if user.manual_reviewed_at else "Unknown" }}</p>
+          <p style="color: #9ca3af; font-size: 0.875rem; margin-bottom: 0.5rem;">Confidence: {{ "%.2f"|format(user.id_confidence_score) }}</p>
+          <p style="color: #9ca3af; font-size: 0.875rem;">Started: {{ user.manual_reviewed_at.strftime("%H:%M") if user.manual_reviewed_at else "Unknown" }}</p>
         </div>
         {% endfor %}
       </div>

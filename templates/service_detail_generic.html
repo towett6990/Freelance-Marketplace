@@ -1,0 +1,153 @@
+{% extends 'base.html' %}
+{% block title %}{{ service.title }}{% endblock %}
+{% block content %}
+{% set reviews_list = service.reviews.all() %}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+{% set cd = service.custom_data or {} %}
+{% set cur = service.currency or 'KES' %}
+{% set sym = 'KSh' if cur == 'KES' else ('$' if cur == 'USD' else '€') %}
+{% set avg_rating = service.get_average_rating() %}
+
+<div class="gd-page">
+
+  <div class="gd-breadcrumb">
+    <a href="{{ url_for('list_other') }}" class="bc-link"><i class="fas fa-arrow-left"></i> All Listings</a>
+    <span class="bc-sep">/</span>
+    <span class="bc-cur">{{ service.title }}</span>
+  </div>
+
+  <div class="gd-layout">
+
+    <!-- Images -->
+    <div class="gd-gallery">
+      {% if service.images %}
+        <img src="{{ url_for('static', filename='uploads/services/' ~ service.images[0].filename) }}" class="gd-main-img" id="gdMain" alt="{{ service.title }}">
+        {% if service.images|length > 1 %}
+        <div class="gd-thumbs">
+          {% for img in service.images %}
+          <img src="{{ url_for('static', filename='uploads/services/' ~ img.filename) }}"
+               class="gd-thumb {% if loop.first %}gt-active{% endif %}"
+               onclick="document.getElementById('gdMain').src=this.src;document.querySelectorAll('.gd-thumb').forEach(t=>t.classList.remove('gt-active'));this.classList.add('gt-active')" alt="">
+          {% endfor %}
+        </div>
+        {% endif %}
+      {% else %}
+        <div class="gd-img-ph"><i class="fas fa-box-open"></i><p>No images uploaded</p></div>
+      {% endif %}
+    </div>
+
+    <!-- Details panel -->
+    <div class="gd-panel">
+      <h1 class="gd-title">{{ service.title }}</h1>
+
+      {% if cd.get('sub_category') %}<span class="gd-cat-badge">{{ cd.get('sub_category') }}</span>{% endif %}
+      {% if cd.get('condition') %}<span class="gd-cond-badge">{{ cd.get('condition') }}</span>{% endif %}
+
+      <div class="gd-rating-row">
+        {% for i in range(5) %}<i class="{{ 'fas' if i < avg_rating else 'far' }} fa-star {% if i < avg_rating %}s-on{% else %}s-off{% endif %}"></i>{% endfor %}
+        <span class="gd-rv">{{ "%.1f"|format(avg_rating) }} ({{ service.get_review_count() }} reviews)</span>
+      </div>
+
+      <div class="gd-price-box">
+        {% if service.price and service.price > 0 %}
+          <span class="gd-price">{{ sym }} {{ "{:,.0f}".format(service.price|float) }}</span>
+          {% if cd.get('price_type') == 'Negotiable' %}<span class="gd-neg">Negotiable</span>{% endif %}
+        {% else %}
+          <span class="gd-price" style="color:#fbbf24">{{ cd.get('price_type','Negotiable') }}</span>
+        {% endif %}
+      </div>
+
+      {% if cd.get('location') %}
+      <div class="gd-location"><i class="fas fa-map-marker-alt"></i> {{ cd.get('location') }}</div>
+      {% endif %}
+
+      <div class="gd-actions" style="flex-direction:column">
+        {% include '_service_actions.html' %}
+      </div>
+
+      <div class="gd-seller">
+        <div class="gs-av">{{ (service.seller.username[0] if service.seller else 'S')|upper }}</div>
+        <div class="gs-info">
+          <span class="gs-name">{{ service.seller.username if service.seller else 'Seller' }}</span>
+          {% if service.seller and service.seller.is_verified %}<span class="gs-ver"><i class="fas fa-shield-alt"></i> Verified</span>{% endif %}
+        </div>
+      </div>
+
+      <div class="gd-desc-box">
+        <h4 class="gd-sec-hd"><i class="fas fa-align-left"></i> Description</h4>
+        <p class="gd-desc">{{ service.description or 'No description provided.' }}</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Reviews -->
+  <div class="gd-bottom">
+    <div class="gd-section">
+      {% include '_reviews_section.html' %}
+{% include '_qa_section.html' %}
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+.gd-page{font-family:'DM Sans',sans-serif;background:#0b0d14;min-height:100vh;color:#e2e8f0;padding:1.5rem}
+.gd-breadcrumb{display:flex;align-items:center;gap:.5rem;font-size:.82rem;margin-bottom:1.25rem;max-width:1200px;margin-left:auto;margin-right:auto}
+.bc-link{color:#64748b;text-decoration:none;display:flex;align-items:center;gap:.3rem;transition:color .2s}.bc-link:hover{color:#818cf8;text-decoration:none}
+.bc-sep{color:#334155}.bc-cur{color:#94a3b8;font-weight:500}
+.gd-layout{display:grid;grid-template-columns:1fr 380px;gap:2rem;max-width:1200px;margin:0 auto;align-items:start}
+.gd-gallery{background:#131625;border:1px solid rgba(255,255,255,.07);border-radius:14px;overflow:hidden}
+.gd-main-img{width:100%;max-height:400px;object-fit:cover;cursor:zoom-in}
+.gd-img-ph{height:280px;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#1e293b;font-size:3rem;gap:.5rem}
+.gd-img-ph p{font-size:.9rem;color:#334155}
+.gd-thumbs{display:flex;gap:.4rem;padding:.6rem;overflow-x:auto;background:rgba(0,0,0,.3)}
+.gd-thumb{width:64px;height:48px;object-fit:cover;border-radius:6px;cursor:pointer;opacity:.55;border:2px solid transparent;transition:all .2s;flex-shrink:0}
+.gt-active,.gd-thumb:hover{opacity:1;border-color:#818cf8}
+.gd-panel{background:#131625;border:1px solid rgba(255,255,255,.07);border-radius:14px;padding:1.4rem;display:flex;flex-direction:column;gap:.85rem}
+.gd-title{font-family:'Syne',sans-serif;font-size:1.5rem;font-weight:800;color:#f1f5f9;line-height:1.2}
+.gd-cat-badge,.gd-cond-badge{display:inline-flex;padding:.25rem .7rem;border-radius:20px;font-size:.72rem;font-weight:600;margin-right:.35rem}
+.gd-cat-badge{background:rgba(99,102,241,.12);border:1px solid rgba(99,102,241,.25);color:#818cf8}
+.gd-cond-badge{background:rgba(251,191,36,.12);border:1px solid rgba(251,191,36,.25);color:#fbbf24}
+.gd-rating-row{display:flex;align-items:center;gap:.3rem}.gd-rating-row i{font-size:.8rem}
+.s-on{color:#fbbf24}.s-off{color:#334155}
+.gd-rv{font-size:.78rem;color:#64748b;margin-left:.25rem}
+.gd-price-box{display:flex;align-items:baseline;gap:.65rem;padding:.9rem;background:rgba(52,211,153,.05);border:1px solid rgba(52,211,153,.12);border-radius:10px}
+.gd-price{font-family:'Syne',sans-serif;font-size:1.8rem;font-weight:800;color:#34d399}
+.gd-neg{font-size:.72rem;color:#64748b;border:1px solid #334155;padding:.18rem .45rem;border-radius:20px}
+.gd-location{font-size:.82rem;color:#64748b;display:flex;align-items:center;gap:.3rem}
+.gd-location i{color:#818cf8;font-size:.75rem}
+.gd-actions{display:flex;gap:.6rem}
+.gd-btn-contact,.gd-btn-chat{flex:1;padding:.65rem;border-radius:9px;font-weight:700;font-size:.83rem;text-decoration:none;display:flex;align-items:center;justify-content:center;gap:.35rem;transition:all .2s}
+.gd-btn-contact{background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff}
+.gd-btn-contact:hover{transform:translateY(-1px);box-shadow:0 5px 16px rgba(99,102,241,.4);color:#fff;text-decoration:none}
+.gd-btn-chat{background:rgba(99,102,241,.08);border:1px solid rgba(99,102,241,.22);color:#818cf8}
+.gd-btn-chat:hover{background:rgba(99,102,241,.16);color:#a5b4fc;text-decoration:none}
+.gd-seller{display:flex;align-items:center;gap:.6rem;background:rgba(0,0,0,.22);border:1px solid rgba(255,255,255,.05);border-radius:9px;padding:.65rem}
+.gs-av{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#6366f1,#8b5cf6);display:flex;align-items:center;justify-content:center;font-size:.85rem;font-weight:700;color:#fff;flex-shrink:0}
+.gs-info{display:flex;flex-direction:column}.gs-name{font-size:.85rem;font-weight:600;color:#e2e8f0}
+.gs-ver{font-size:.68rem;color:#34d399;display:flex;align-items:center;gap:.2rem}
+.gd-desc-box{background:rgba(0,0,0,.2);border:1px solid rgba(255,255,255,.05);border-radius:10px;padding:.9rem}
+.gd-sec-hd{font-family:'Syne',sans-serif;font-size:.8rem;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.06em;margin-bottom:.7rem;display:flex;align-items:center;gap:.4rem}
+.gd-sec-hd i{color:#818cf8}
+.gd-desc{color:#94a3b8;line-height:1.7;font-size:.88rem}
+.gd-bottom{max-width:1200px;margin:1.25rem auto 0;display:flex;flex-direction:column;gap:1rem}
+.gd-section{background:#131625;border:1px solid rgba(255,255,255,.07);border-radius:14px;padding:1.2rem}
+.gd-rv-badge{background:rgba(99,102,241,.1);color:#818cf8;border-radius:20px;padding:.1rem .4rem;font-size:.7rem;font-family:'DM Sans',sans-serif;text-transform:none;letter-spacing:0;margin-left:.2rem}
+.rv-list{display:flex;flex-direction:column;gap:.55rem}
+.rv-card{background:rgba(0,0,0,.2);border:1px solid rgba(255,255,255,.05);border-radius:9px;padding:.85rem}
+.rv-top{display:flex;align-items:center;gap:.55rem;margin-bottom:.45rem}
+.rv-av{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,#6366f1,#8b5cf6);display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:700;color:#fff;flex-shrink:0}
+.rv-meta{flex:1;display:flex;flex-direction:column}.rv-name{font-size:.8rem;font-weight:600;color:#e2e8f0}.rv-date{font-size:.68rem;color:#475569}
+.rv-stars i{font-size:.68rem}
+.rv-body{color:#94a3b8;font-size:.82rem;line-height:1.5}
+.no-rv{text-align:center;padding:1.5rem;color:#334155}.no-rv i{font-size:1.8rem;margin-bottom:.5rem}
+.sim-row{display:flex;flex-direction:column;gap:.45rem}
+.sim-item{display:flex;align-items:center;gap:.65rem;background:rgba(0,0,0,.2);border:1px solid rgba(255,255,255,.05);border-radius:9px;text-decoration:none;overflow:hidden;transition:all .2s}
+.sim-item:hover{border-color:rgba(99,102,241,.3);text-decoration:none}
+.sim-item img{width:65px;height:52px;object-fit:cover;flex-shrink:0}
+.sim-ph{width:65px;height:52px;background:#1e293b;display:flex;align-items:center;justify-content:center;color:#334155;flex-shrink:0}
+.sim-info{display:flex;flex-direction:column;padding:.3rem 0;gap:.1rem;font-size:.78rem;color:#94a3b8}
+.sim-pr{font-family:'Syne',sans-serif;font-size:.8rem;font-weight:700;color:#34d399}
+@media(max-width:900px){.gd-layout{grid-template-columns:1fr}}
+@media(max-width:600px){.gd-page{padding:1rem}.gd-actions{flex-direction:column}}
+</style>
+{% endblock %}

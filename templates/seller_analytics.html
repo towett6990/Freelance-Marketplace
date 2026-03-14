@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+{% block title %}Seller Analytics{% endblock %}
+{% block content %}
+<div>
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:2rem;flex-wrap:wrap;gap:1rem">
+    <h1 style="color:#00ff88;margin:0">📊 Seller Analytics</h1>
+    {% if seller_level %}
+    {% set lvl_colors = {"new_seller":"#64748b","active_seller":"#3b82f6","level_1":"#22c55e","level_2":"#f59e0b","top_rated":"#00ffc8"} %}
+    {% set lvl_labels = {"new_seller":"New Seller","active_seller":"Active Seller","level_1":"Level 1","level_2":"Level 2","top_rated":"Top Rated ⭐"} %}
+    <span style="background:{{ lvl_colors.get(seller_level.level,'#64748b') }}22;color:{{ lvl_colors.get(seller_level.level,'#64748b') }};border:1px solid {{ lvl_colors.get(seller_level.level,'#64748b') }};padding:.4rem 1.2rem;border-radius:9999px;font-weight:700">{{ lvl_labels.get(seller_level.level, seller_level.level) }}</span>
+    {% endif %}
+  </div>
+
+  <!-- Stat Cards -->
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:1rem;margin-bottom:2rem">
+    {% for icon,label,val,color in [
+      ("👁","Views (30d)", total_views, "#00ffc8"),
+      ("📦","Total Orders", total_orders, "#3b82f6"),
+      ("✅","Completed", completed_orders, "#22c55e"),
+      ("⏳","In Progress", pending_orders, "#f59e0b"),
+      ("💰","Total Earned", "KES {:,.0f}".format(total_earned), "#00d4ff"),
+      ("📅","This Month", "KES {:,.0f}".format(month_earned), "#a78bfa"),
+      ("❤️","Favorites", fav_count, "#ec4899"),
+      ("📝","Services", services|length, "#64748b"),
+    ] %}
+    <div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:14px;padding:1.2rem;text-align:center">
+      <div style="font-size:1.5rem;margin-bottom:.4rem">{{ icon }}</div>
+      <div style="color:{{ color }};font-size:1.4rem;font-weight:800">{{ val }}</div>
+      <div style="color:#475569;font-size:.75rem;text-transform:uppercase;letter-spacing:.08em;margin-top:.25rem">{{ label }}</div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-bottom:2rem">
+    <!-- Daily views chart -->
+    <div style="background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:16px;padding:1.5rem">
+      <h3 style="color:#00ffc8;margin:0 0 1.2rem;font-size:.9rem;text-transform:uppercase;letter-spacing:.1em">📈 Daily Views (14 days)</h3>
+      {% set max_v = daily_views|map(attribute='count')|max or 1 %}
+      <div style="display:flex;align-items:flex-end;gap:4px;height:100px">
+        {% for d in daily_views %}
+        {% set h = [((d.count / max_v) * 90)|int, 4]|max %}
+        <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px" title="{{ d.date }}: {{ d.count }} views">
+          <div style="width:100%;background:linear-gradient(180deg,#00ffc8,#00d4ff);border-radius:3px 3px 0 0;height:{{ h }}px;opacity:{{ 0.5 + (d.count / (max_v or 1)) * 0.5 }}"></div>
+        </div>
+        {% endfor %}
+      </div>
+      <div style="display:flex;justify-content:space-between;margin-top:.5rem">
+        <span style="color:#475569;font-size:.65rem">{{ daily_views[0].date }}</span>
+        <span style="color:#475569;font-size:.65rem">Today</span>
+      </div>
+    </div>
+
+    <!-- Monthly earnings chart -->
+    <div style="background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:16px;padding:1.5rem">
+      <h3 style="color:#22c55e;margin:0 0 1.2rem;font-size:.9rem;text-transform:uppercase;letter-spacing:.1em">💰 Monthly Earnings</h3>
+      {% set max_e = monthly|map(attribute='earned')|max or 1 %}
+      <div style="display:flex;align-items:flex-end;gap:8px;height:100px">
+        {% for m in monthly %}
+        {% set h = [((m.earned / max_e) * 90)|int, 4]|max %}
+        <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px" title="{{ m.month }}: KES {{ '{:,.0f}'.format(m.earned) }}">
+          <div style="width:100%;background:linear-gradient(180deg,#22c55e,#16a34a);border-radius:3px 3px 0 0;height:{{ h }}px"></div>
+        </div>
+        {% endfor %}
+      </div>
+      <div style="display:flex;justify-content:space-between;margin-top:.5rem">
+        <span style="color:#475569;font-size:.65rem">{{ monthly[0].month }}</span>
+        <span style="color:#475569;font-size:.65rem">{{ monthly[-1].month }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Top Services -->
+  {% if top_services %}
+  <div style="background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:16px;padding:1.5rem;margin-bottom:2rem">
+    <h3 style="color:#00ffc8;margin:0 0 1rem;font-size:.9rem;text-transform:uppercase;letter-spacing:.1em">🔥 Top Services by Views (30d)</h3>
+    {% for item in top_services %}
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:.6rem 0;border-bottom:1px solid rgba(255,255,255,.05)">
+      <a href="{{ url_for('service_detail', service_id=item.service.id) }}" style="color:#e2e8f0;text-decoration:none;font-size:.9rem;font-weight:500">{{ item.service.title[:50] }}</a>
+      <div style="display:flex;align-items:center;gap:.75rem">
+        <span style="color:#00ffc8;font-size:.85rem">{{ item.views }} views</span>
+        <a href="{{ url_for('features.manage_packages', sid=item.service.id) }}" style="color:#a78bfa;font-size:.75rem;text-decoration:none;border:1px solid rgba(167,139,250,.2);padding:.2rem .5rem;border-radius:6px">📦 Packages</a>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <!-- Seller Level Progress -->
+  {% if seller_level %}
+  <div style="background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:16px;padding:1.5rem">
+    <h3 style="color:#f59e0b;margin:0 0 1rem;font-size:.9rem;text-transform:uppercase;letter-spacing:.1em">🏆 Seller Level Progress</h3>
+    {% set thresholds = [("new_seller","New Seller","#64748b",0,0),("active_seller","Active Seller","#3b82f6",1,0),("level_1","Level 1","#22c55e",10,4.0),("level_2","Level 2","#f59e0b",50,4.5),("top_rated","Top Rated","#00ffc8",100,4.8)] %}
+    {% for key,label,color,min_orders,min_rating in thresholds %}
+    {% set active = seller_level.level == key %}
+    <div style="display:flex;align-items:center;gap:1rem;padding:.6rem 0;border-bottom:1px solid rgba(255,255,255,.05);opacity:{{ '1' if active else '0.5' }}">
+      <span style="color:{{ color }};font-size:1rem;width:20px">{{ '⭐' if active else '○' }}</span>
+      <div style="flex:1">
+        <div style="color:{{ color if active else '#94a3b8' }};font-weight:{{ '700' if active else '400' }};font-size:.9rem">{{ label }}</div>
+        <div style="color:#475569;font-size:.75rem">{{ min_orders }}+ orders{% if min_rating %} · {{ min_rating }}+ rating{% endif %}</div>
+      </div>
+      {% if active %}<span style="color:{{ color }};font-size:.75rem;font-weight:700">← CURRENT</span>{% endif %}
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

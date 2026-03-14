@@ -1,171 +1,371 @@
-{% extends "base.html" %}
-{% block title %}Home - Freelance Marketplace{% endblock %}
+{% extends 'base.html' %}
+{% block title %}Dashboard — FreelancingHub{% endblock %}
 
 {% block content %}
-<section class="bg-gradient-to-br from-blue-600 via-purple-600 to-indigo-700 text-white py-20">
-  <div class="max-w-6xl mx-auto px-6 text-center">
-    <h1 class="text-5xl font-bold mb-6">Find the Perfect Freelancer</h1>
-    <p class="text-xl text-blue-100 mb-12">Connect with talented professionals for your next project</p>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800;900&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
 
-    <!-- Search Bar -->
-    <div class="max-w-2xl mx-auto mb-12">
-      <form method="GET" action="{{ url_for('list_services') }}" class="flex gap-4">
-        <input type="text"
-               name="q"
-               placeholder="What service are you looking for?"
-               class="flex-1 px-6 py-4 rounded-xl text-gray-800 text-lg focus:outline-none focus:ring-2 focus:ring-blue-300">
-        <button type="submit" class="bg-green-500 hover:bg-green-600 px-8 py-4 rounded-xl font-semibold transition duration-300">
-          <i class="fas fa-search mr-2"></i>Search
-        </button>
-      </form>
-    </div>
+<style>
+  :root{--bg:#0a0e27;--bg2:#0f1429;--bg3:#1a1f3a;--cyan:#00ffc8;--blue:#00d4ff;
+    --txt:#e0e0e0;--muted:#a0a0a0;--bdr:rgba(0,255,200,0.15)}
+  .hm *{box-sizing:border-box;margin:0;padding:0}
+  .hm{font-family:'Inter',sans-serif;background:var(--bg);color:#fff;overflow-x:hidden}
 
-    <!-- Quick Stats -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto">
-      <div class="bg-white bg-opacity-10 backdrop-blur-sm rounded-2xl p-6">
-        <div class="text-4xl font-bold mb-2">{{ total_services or 0 }}</div>
-        <div class="text-blue-100">Services Available</div>
+  /* WELCOME BANNER */
+  .hm-welcome{
+    position:relative;min-height:420px;display:flex;align-items:center;overflow:hidden;
+    padding:5rem 3rem 4rem;
+    background:linear-gradient(135deg,rgba(0,255,200,.08),rgba(0,212,255,.06))
+  }
+  #hm-canvas{position:absolute;inset:0;width:100%;height:100%;z-index:1}
+  .hm-welcome::before{content:'';position:absolute;inset:0;
+    background:radial-gradient(circle at 10% 50%,rgba(0,255,200,.1) 0%,transparent 55%),
+      radial-gradient(circle at 90% 30%,rgba(0,212,255,.1) 0%,transparent 55%);z-index:2}
+  .hm-welcome::after{content:'';position:absolute;inset:0;
+    background-image:linear-gradient(0deg,transparent 24%,rgba(0,255,200,.03) 25%,rgba(0,255,200,.03) 26%,transparent 27%),
+      linear-gradient(90deg,transparent 24%,rgba(0,255,200,.03) 25%,rgba(0,255,200,.03) 26%,transparent 27%);
+    background-size:60px 60px;z-index:2}
+
+  .hm-welcome-inner{position:relative;z-index:10;max-width:1280px;width:100%;margin:0 auto;
+    display:flex;align-items:center;justify-content:space-between;gap:3rem;flex-wrap:wrap}
+
+  .hm-greet{flex:1;min-width:280px;animation:fadeUp .9s cubic-bezier(.34,1.56,.64,1)}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(40px)}to{opacity:1;transform:translateY(0)}}
+
+  .hm-greet-badge{display:inline-flex;align-items:center;gap:.5rem;
+    background:rgba(0,255,200,.12);border:1px solid rgba(0,255,200,.35);
+    color:var(--cyan);padding:.45rem 1.1rem;border-radius:50px;
+    font-size:.82rem;font-weight:600;margin-bottom:1.2rem}
+  .hm-bdot{width:7px;height:7px;border-radius:50%;background:var(--cyan);
+    box-shadow:0 0 8px var(--cyan);animation:pulse 2s ease infinite}
+  @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(1.4)}}
+
+  .hm-h1{font-family:'Poppins',sans-serif;font-size:3rem;font-weight:900;line-height:1.1;margin-bottom:1rem}
+  .hm-h1 span{background:linear-gradient(135deg,var(--cyan),var(--blue));
+    -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+  .hm-sub{color:#c0c0c0;font-size:1.05rem;line-height:1.7;margin-bottom:2rem;max-width:520px}
+
+  /* SEARCH BAR (smaller in logged-in state) */
+  .hm-search{display:flex;max-width:560px;background:rgba(255,255,255,.07);
+    border:1px solid rgba(0,255,200,.25);border-radius:12px;overflow:hidden;
+    backdrop-filter:blur(12px)}
+  .hm-search:focus-within{border-color:rgba(0,255,200,.5);box-shadow:0 4px 24px rgba(0,255,200,.15)}
+  .hm-search-ico{padding:0 .9rem;color:var(--cyan);display:flex;align-items:center;font-size:.95rem}
+  .hm-search-input{flex:1;background:transparent;border:none;outline:none;color:#fff;
+    font-size:.95rem;padding:.9rem 0;font-family:'Inter',sans-serif}
+  .hm-search-input::placeholder{color:rgba(255,255,255,.4)}
+  .hm-search-btn{background:linear-gradient(135deg,var(--cyan),var(--blue));color:#0a0e27;
+    border:none;padding:0 1.4rem;font-weight:700;font-size:.88rem;cursor:pointer;
+    transition:all .3s;font-family:'Inter',sans-serif}
+  .hm-search-btn:hover{box-shadow:0 0 20px rgba(0,255,200,.5)}
+
+  /* QUICK ACTIONS */
+  .hm-quick{display:flex;flex-direction:column;gap:1rem;min-width:280px;animation:fadeUp .9s cubic-bezier(.34,1.56,.64,1) .1s both}
+  .hm-qa{display:flex;align-items:center;gap:1rem;background:rgba(255,255,255,.05);
+    border:1px solid rgba(0,255,200,.15);border-radius:14px;padding:1.1rem 1.4rem;
+    text-decoration:none;color:#fff;transition:all .3s}
+  .hm-qa:hover{background:rgba(0,255,200,.08);border-color:var(--cyan);
+    transform:translateX(6px);color:#fff;text-decoration:none}
+  .hm-qa-ico{width:42px;height:42px;border-radius:10px;
+    background:linear-gradient(135deg,var(--cyan),var(--blue));
+    display:flex;align-items:center;justify-content:center;
+    color:#0a0e27;font-size:1.1rem;flex-shrink:0}
+  .hm-qa-lbl{font-weight:600;font-size:.95rem}
+  .hm-qa-sub{font-size:.78rem;color:var(--muted);margin-top:.1rem}
+  .hm-qa-arr{margin-left:auto;color:var(--cyan);opacity:.7;font-size:.85rem}
+
+  /* SECTION HELPERS */
+  .hm-sec{padding:5rem 3rem}
+  .hm-sec-bg{background:linear-gradient(180deg,var(--bg2) 0%,var(--bg3) 50%,var(--bg2) 100%)}
+  .hm-sec-inner{max-width:1280px;margin:0 auto}
+  .hm-sec-hdr{display:flex;align-items:flex-end;justify-content:space-between;
+    margin-bottom:2.5rem;flex-wrap:wrap;gap:1rem}
+  .hm-sec-titles{}
+  .hm-eyebrow{display:inline-flex;align-items:center;gap:.5rem;color:var(--cyan);
+    font-size:.78rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;margin-bottom:.5rem}
+  .hm-eyebrow::before,.hm-eyebrow::after{content:'';display:block;width:22px;height:1px;background:var(--cyan);opacity:.5}
+  .hm-title{font-family:'Poppins',sans-serif;font-size:2.2rem;font-weight:800;color:#fff}
+  .hm-title span{background:linear-gradient(135deg,var(--cyan),var(--blue));
+    -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+  .hm-sec-link{color:var(--cyan);text-decoration:none;font-weight:600;font-size:.88rem;
+    display:flex;align-items:center;gap:.4rem;border:1px solid rgba(0,255,200,.3);
+    padding:.55rem 1.1rem;border-radius:8px;transition:all .3s;white-space:nowrap}
+  .hm-sec-link:hover{background:rgba(0,255,200,.1);border-color:var(--cyan);color:var(--cyan);transform:translateX(3px)}
+
+  /* CATEGORIES */
+  .hm-cat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:1rem}
+  .hm-cat-card{background:linear-gradient(135deg,rgba(0,255,200,.06),rgba(0,212,255,.06));
+    border:1px solid rgba(0,255,200,.15);border-radius:14px;padding:1.6rem 1.2rem;
+    text-align:center;text-decoration:none;color:#fff;
+    transition:all .35s cubic-bezier(.34,1.56,.64,1);
+    position:relative;overflow:hidden;display:block}
+  .hm-cat-card:hover{transform:translateY(-10px);border-color:var(--cyan);
+    box-shadow:0 0 30px rgba(0,255,200,.22);color:#fff;text-decoration:none}
+  .hm-cat-ico{font-size:2.2rem;margin-bottom:.8rem;
+    background:linear-gradient(135deg,var(--cyan),var(--blue));
+    -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;display:block}
+  .hm-cat-name{font-family:'Poppins',sans-serif;font-size:.92rem;font-weight:700}
+
+  /* LISTINGS GRID */
+  .hm-list-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:1.4rem}
+  .hm-list-card{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);
+    border-radius:14px;overflow:hidden;transition:all .3s;text-decoration:none;
+    color:#fff;display:block;backdrop-filter:blur(20px)}
+  .hm-list-card:hover{transform:translateY(-6px);box-shadow:0 12px 40px rgba(0,0,0,.35);
+    border-color:rgba(0,255,200,.25);color:#fff;text-decoration:none}
+  .hm-list-img{position:relative;aspect-ratio:16/10;overflow:hidden;background:#1a1f3a}
+  .hm-list-img img{width:100%;height:100%;object-fit:cover;transition:transform .4s}
+  .hm-list-card:hover .hm-list-img img{transform:scale(1.05)}
+  .hm-list-ph{width:100%;height:100%;display:flex;align-items:center;justify-content:center;
+    font-size:2rem;background:linear-gradient(135deg,var(--cyan),var(--blue));
+    -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+  .hm-list-badge{position:absolute;top:8px;left:8px;
+    background:linear-gradient(135deg,var(--cyan),var(--blue));color:#0a0e27;
+    padding:.25rem .7rem;border-radius:20px;font-size:.68rem;font-weight:700;text-transform:uppercase}
+  .hm-list-body{padding:1rem}
+  .hm-list-title{font-weight:700;font-size:.95rem;line-height:1.3;margin-bottom:.4rem;
+    display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+  .hm-list-price{color:var(--cyan);font-size:1.05rem;font-weight:700;margin-bottom:.7rem}
+  .hm-list-meta{display:flex;align-items:center;gap:.5rem;
+    border-top:1px solid rgba(255,255,255,.06);padding-top:.7rem}
+  .hm-list-av{width:22px;height:22px;border-radius:50%;object-fit:cover;
+    border:1px solid rgba(0,255,200,.3)}
+  .hm-list-av-ph{width:22px;height:22px;border-radius:50%;background:rgba(255,255,255,.1);
+    display:flex;align-items:center;justify-content:center;color:#777;font-size:.6rem}
+  .hm-list-sname{font-size:.78rem;color:var(--muted);font-weight:500}
+  .hm-list-verified{color:var(--blue);font-size:.75rem;margin-left:auto}
+
+  /* RESPONSIVE */
+  @media(max-width:768px){
+    .hm-welcome{padding:4rem 1.5rem 3rem;min-height:auto}
+    .hm-welcome-inner{flex-direction:column}
+    .hm-quick{width:100%}
+    .hm-h1{font-size:2.2rem}
+    .hm-sec{padding:3.5rem 1.5rem}
+    .hm-cat-grid{grid-template-columns:repeat(4,1fr);gap:.7rem}
+    .hm-list-grid{grid-template-columns:1fr}
+    .hm-search{flex-direction:column}
+    .hm-search-btn{width:100%;justify-content:center;padding:1rem}
+  }
+  @media(max-width:480px){
+    .hm-h1{font-size:1.8rem}
+    .hm-sub{font-size:.95rem}
+    .hm-qa{padding:1rem}
+    .hm-qa-ico{width:36px;height:36px;font-size:1rem}
+    .hm-cat-grid{grid-template-columns:repeat(2,1fr)}
+    .hm-cat-card{padding:1.2rem .8rem}
+    .hm-cat-ico{font-size:1.8rem}
+    .hm-title{font-size:1.6rem}
+    .hm-sec{padding:2.5rem 1rem}
+  }
+</style>
+
+<div class="hm">
+
+  <!-- WELCOME BANNER -->
+  <section class="hm-welcome">
+    <canvas id="hm-canvas"></canvas>
+    <div class="hm-welcome-inner">
+
+      <div class="hm-greet">
+        <div class="hm-greet-badge"><div class="hm-bdot"></div> Welcome back!</div>
+        <h1 class="hm-h1">Hey, <span>{{ user.username or user.email.split('@')[0] }}</span> 👋</h1>
+        <p class="hm-sub">What are you looking for today? Browse the latest listings or post something new.</p>
+        <form action="{{ url_for('list_services') }}" method="GET" class="hm-search">
+          <span class="hm-search-ico"><i class="fas fa-search"></i></span>
+          <input type="text" name="q" class="hm-search-input" placeholder="Search listings...">
+          <button type="submit" class="hm-search-btn"><i class="fas fa-search"></i> Go</button>
+        </form>
       </div>
-      <div class="bg-white bg-opacity-10 backdrop-blur-sm rounded-2xl p-6">
-        <div class="text-4xl font-bold mb-2">{{ total_users or 0 }}</div>
-        <div class="text-blue-100">Active Freelancers</div>
+
+      <div class="hm-quick">
+        {% if user.can_sell %}
+        <a href="{{ url_for('create_service') }}" class="hm-qa">
+          <div class="hm-qa-ico"><i class="fas fa-plus"></i></div>
+          <div><div class="hm-qa-lbl">Post a Listing</div><div class="hm-qa-sub">Add a new item or service</div></div>
+          <span class="hm-qa-arr"><i class="fas fa-chevron-right"></i></span>
+        </a>
+        <a href="{{ url_for('dashboard') }}" class="hm-qa">
+          <div class="hm-qa-ico"><i class="fas fa-chart-bar"></i></div>
+          <div><div class="hm-qa-lbl">My Dashboard</div><div class="hm-qa-sub">View earnings &amp; orders</div></div>
+          <span class="hm-qa-arr"><i class="fas fa-chevron-right"></i></span>
+        </a>
+        {% else %}
+        <a href="{{ url_for('dashboard') }}" class="hm-qa">
+          <div class="hm-qa-ico"><i class="fas fa-th-large"></i></div>
+          <div><div class="hm-qa-lbl">My Dashboard</div><div class="hm-qa-sub">Orders &amp; payment history</div></div>
+          <span class="hm-qa-arr"><i class="fas fa-chevron-right"></i></span>
+        </a>
+        {% endif %}
+        <a href="{{ url_for('conversations') }}" class="hm-qa">
+          <div class="hm-qa-ico"><i class="fas fa-comments"></i></div>
+          <div><div class="hm-qa-lbl">Messages</div><div class="hm-qa-sub">Chat with buyers &amp; sellers</div></div>
+          <span class="hm-qa-arr"><i class="fas fa-chevron-right"></i></span>
+        </a>
+        {% if user.username %}
+        <a href="{{ url_for('profile', username=user.username) }}" class="hm-qa">
+          <div class="hm-qa-ico"><i class="fas fa-user"></i></div>
+          <div><div class="hm-qa-lbl">My Profile</div><div class="hm-qa-sub">Edit details &amp; avatar</div></div>
+          <span class="hm-qa-arr"><i class="fas fa-chevron-right"></i></span>
+        </a>
+        {% endif %}
       </div>
-      <div class="bg-white bg-opacity-10 backdrop-blur-sm rounded-2xl p-6">
-        <div class="text-4xl font-bold mb-2">{{ total_orders or 0 }}</div>
-        <div class="text-blue-100">Projects Completed</div>
+
+    </div>
+  </section>
+
+  <!-- CATEGORIES -->
+  <section class="hm-sec hm-sec-bg">
+    <div class="hm-sec-inner">
+      <div class="hm-sec-hdr">
+        <div class="hm-sec-titles">
+          <p class="hm-eyebrow">Browse by Category</p>
+          <h2 class="hm-title">What are you <span>looking for?</span></h2>
+        </div>
+        <a href="{{ url_for('list_services') }}" class="hm-sec-link">All listings <i class="fas fa-arrow-right"></i></a>
+      </div>
+      <div class="hm-cat-grid">
+        <a href="{{ url_for('list_web_dev_services') }}" class="hm-cat-card">
+          <span class="hm-cat-ico"><i class="fas fa-code"></i></span>
+          <div class="hm-cat-name">Web Dev</div>
+        </a>
+        <a href="{{ url_for('list_mobile_design') }}" class="hm-cat-card">
+          <span class="hm-cat-ico"><i class="fas fa-mobile-alt"></i></span>
+          <div class="hm-cat-name">Mobile Design</div>
+        </a>
+        <a href="{{ url_for('list_ui_ux') }}" class="hm-cat-card">
+          <span class="hm-cat-ico"><i class="fas fa-pencil-ruler"></i></span>
+          <div class="hm-cat-name">UI/UX</div>
+        </a>
+        <a href="{{ url_for('list_writing') }}" class="hm-cat-card">
+          <span class="hm-cat-ico"><i class="fas fa-pen-nib"></i></span>
+          <div class="hm-cat-name">Writing</div>
+        </a>
+        <a href="{{ url_for('list_marketing') }}" class="hm-cat-card">
+          <span class="hm-cat-ico"><i class="fas fa-bullhorn"></i></span>
+          <div class="hm-cat-name">Marketing</div>
+        </a>
+        <a href="{{ url_for('list_video') }}" class="hm-cat-card">
+          <span class="hm-cat-ico"><i class="fas fa-video"></i></span>
+          <div class="hm-cat-name">Video</div>
+        </a>
+        <a href="{{ url_for('list_photo') }}" class="hm-cat-card">
+          <span class="hm-cat-ico"><i class="fas fa-camera"></i></span>
+          <div class="hm-cat-name">Photo</div>
+        </a>
+        <a href="{{ url_for('list_audio') }}" class="hm-cat-card">
+          <span class="hm-cat-ico"><i class="fas fa-microphone"></i></span>
+          <div class="hm-cat-name">Audio</div>
+        </a>
+        <a href="{{ url_for('list_data') }}" class="hm-cat-card">
+          <span class="hm-cat-ico"><i class="fas fa-database"></i></span>
+          <div class="hm-cat-name">Data</div>
+        </a>
+        <a href="{{ url_for('list_translation') }}" class="hm-cat-card">
+          <span class="hm-cat-ico"><i class="fas fa-language"></i></span>
+          <div class="hm-cat-name">Translation</div>
+        </a>
+        <a href="{{ url_for('list_consulting') }}" class="hm-cat-card">
+          <span class="hm-cat-ico"><i class="fas fa-user-tie"></i></span>
+          <div class="hm-cat-name">Consulting</div>
+        </a>
+        <a href="{{ url_for('list_car_sales') }}" class="hm-cat-card">
+          <span class="hm-cat-ico"><i class="fas fa-car"></i></span>
+          <div class="hm-cat-name">Cars</div>
+        </a>
+        <a href="{{ url_for('list_real_estate') }}" class="hm-cat-card">
+          <span class="hm-cat-ico"><i class="fas fa-building"></i></span>
+          <div class="hm-cat-name">Real Estate</div>
+        </a>
+        <a href="{{ url_for('list_electronics') }}" class="hm-cat-card">
+          <span class="hm-cat-ico"><i class="fas fa-laptop"></i></span>
+          <div class="hm-cat-name">Electronics</div>
+        </a>
+        <a href="{{ url_for('list_clothing') }}" class="hm-cat-card">
+          <span class="hm-cat-ico"><i class="fas fa-tshirt"></i></span>
+          <div class="hm-cat-name">Clothing</div>
+        </a>
       </div>
     </div>
-  </div>
-</section>
+  </section>
 
-<!-- Categories Section -->
-<section class="py-16 bg-gray-50">
-  <div class="max-w-6xl mx-auto px-6">
-    <div class="text-center mb-12">
-      <h2 class="text-3xl font-bold text-gray-800 mb-4">Browse by Category</h2>
-      <p class="text-gray-600">Find the right service for your needs</p>
-    </div>
-
-    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-      <a href="{{ url_for('list_services', category='Web Development') }}"
-         class="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition duration-300 text-center group">
-        <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-blue-200 transition duration-300">
-          <i class="fas fa-code text-blue-600 text-2xl"></i>
+  <!-- LATEST LISTINGS -->
+  {% if services %}
+  <section class="hm-sec">
+    <div class="hm-sec-inner">
+      <div class="hm-sec-hdr">
+        <div class="hm-sec-titles">
+          <p class="hm-eyebrow">Fresh on FreelancingHub</p>
+          <h2 class="hm-title">Latest <span>Listings</span></h2>
         </div>
-        <h3 class="font-semibold text-gray-800 mb-2">Web Development</h3>
-        <p class="text-sm text-gray-600">Build modern websites</p>
-      </a>
-
-      <a href="{{ url_for('list_services', category='Graphic Design') }}"
-         class="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition duration-300 text-center group">
-        <div class="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-purple-200 transition duration-300">
-          <i class="fas fa-palette text-purple-600 text-2xl"></i>
-        </div>
-        <h3 class="font-semibold text-gray-800 mb-2">Graphic Design</h3>
-        <p class="text-sm text-gray-600">Creative visual solutions</p>
-      </a>
-
-      <a href="{{ url_for('list_services', category='Writing & Content') }}"
-         class="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition duration-300 text-center group">
-        <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-green-200 transition duration-300">
-          <i class="fas fa-pen-fancy text-green-600 text-2xl"></i>
-        </div>
-        <h3 class="font-semibold text-gray-800 mb-2">Writing & Content</h3>
-        <p class="text-sm text-gray-600">Professional content creation</p>
-      </a>
-
-      <a href="{{ url_for('list_services', category='Digital Marketing') }}"
-         class="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition duration-300 text-center group">
-        <div class="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-orange-200 transition duration-300">
-          <i class="fas fa-bullhorn text-orange-600 text-2xl"></i>
-        </div>
-        <h3 class="font-semibold text-gray-800 mb-2">Digital Marketing</h3>
-        <p class="text-sm text-gray-600">Grow your online presence</p>
-      </a>
-
-      <a href="{{ url_for('list_services', category='Video & Animation') }}"
-         class="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition duration-300 text-center group">
-        <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-red-200 transition duration-300">
-          <i class="fas fa-video text-red-600 text-2xl"></i>
-        </div>
-        <h3 class="font-semibold text-gray-800 mb-2">Video & Animation</h3>
-        <p class="text-sm text-gray-600">Engaging visual content</p>
-      </a>
-
-      <a href="{{ url_for('list_services', category='Mobile Development') }}"
-         class="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition duration-300 text-center group">
-        <div class="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-indigo-200 transition duration-300">
-          <i class="fas fa-mobile-alt text-indigo-600 text-2xl"></i>
-        </div>
-        <h3 class="font-semibold text-gray-800 mb-2">Mobile Development</h3>
-        <p class="text-sm text-gray-600">iOS & Android apps</p>
-      </a>
-
-      <a href="{{ url_for('list_services', category='Photography') }}"
-         class="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition duration-300 text-center group">
-        <div class="w-16 h-16 bg-pink-100 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-pink-200 transition duration-300">
-          <i class="fas fa-camera text-pink-600 text-2xl"></i>
-        </div>
-        <h3 class="font-semibold text-gray-800 mb-2">Photography</h3>
-        <p class="text-sm text-gray-600">Professional photo services</p>
-      </a>
-
-      <a href="{{ url_for('list_services') }}"
-         class="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition duration-300 text-center group">
-        <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-gray-200 transition duration-300">
-          <i class="fas fa-th-large text-gray-600 text-2xl"></i>
-        </div>
-        <h3 class="font-semibold text-gray-800 mb-2">View All</h3>
-        <p class="text-sm text-gray-600">Explore all services</p>
-      </a>
-    </div>
-  </div>
-</section>
-
-<!-- Featured Services Section -->
-<section class="py-16 bg-white">
-  <div class="max-w-6xl mx-auto px-6">
-    <div class="text-center mb-12">
-      <h2 class="text-3xl font-bold text-gray-800 mb-4">Featured Services</h2>
-      <p class="text-gray-600">Check out some of our top-rated services</p>
-    </div>
-
-    {% if services %}
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-      {% for service in services[:6] %}
-      <div class="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition duration-300 border border-gray-100">
-        <div class="aspect-w-16 aspect-h-9 bg-gray-200">
-          {% if service.image_list %}
-            <img src="{{ url_for('static', filename='uploads/services/' ~ service.image_list[0]) }}"
-                 class="w-full h-48 object-cover"
-                 alt="{{ service.title }}">
-          {% else %}
-            <div class="w-full h-48 bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center">
-              <i class="fas fa-image text-gray-400 text-3xl"></i>
-            </div>
-          {% endif %}
-        </div>
-        <div class="p-6">
-          <h3 class="text-xl font-bold text-gray-800 mb-2">{{ service.title }}</h3>
-          <p class="text-gray-600 text-sm mb-4 line-clamp-2">{{ service.description[:120] }}{% if service.description|length > 120 %}...{% endif %}</p>
-          <div class="flex items-center justify-between">
-            <div class="text-2xl font-bold text-green-600">
-              ${{ "%.2f"|format(service.price) }}
-            </div>
-            <a href="{{ url_for('service_detail', service_id=service.id) }}"
-               class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition duration-300 text-sm font-medium">
-              View Details
-            </a>
+        <a href="{{ url_for('list_services') }}" class="hm-sec-link">View all <i class="fas fa-arrow-right"></i></a>
+      </div>
+      <div class="hm-list-grid">
+        {% for svc in services[:8] %}
+        {% set sym = 'KSh' if (svc.currency or 'KES') in ['KES',''] else svc.currency %}
+        <a href="{{ url_for('service_detail', service_id=svc.id) }}" class="hm-list-card">
+          <div class="hm-list-img">
+            {% if svc.images and svc.images|length > 0 %}
+              <img src="{{ url_for('static', filename='uploads/services/' ~ svc.images[0].filename) }}" alt="{{ svc.title }}" loading="lazy">
+            {% else %}
+              <div class="hm-list-ph">
+                {% if svc.category and svc.category.slug == 'car-sales' %}<i class="fas fa-car"></i>
+                {% elif svc.category and svc.category.slug == 'real-estate' %}<i class="fas fa-building"></i>
+                {% elif svc.category and svc.category.slug == 'electronics' %}<i class="fas fa-laptop"></i>
+                {% elif svc.category and svc.category.slug == 'clothing' %}<i class="fas fa-tshirt"></i>
+                {% elif svc.category and svc.category.slug == 'web-development' %}<i class="fas fa-code"></i>
+                {% else %}<i class="fas fa-box"></i>{% endif %}
+              </div>
+            {% endif %}
+            {% if svc.category %}<span class="hm-list-badge">{{ svc.category.name }}</span>{% endif %}
           </div>
-        </div>
+          <div class="hm-list-body">
+            <div class="hm-list-title">{{ svc.title }}</div>
+            <div class="hm-list-price">{{ sym }} {{ '{:,.0f}'.format(svc.price|float) }}</div>
+            <div class="hm-list-meta">
+              {% if svc.seller and svc.seller.avatar %}
+                <img src="{{ url_for('static', filename='uploads/avatars/' ~ svc.seller.avatar) }}" class="hm-list-av" alt="seller">
+              {% else %}
+                <div class="hm-list-av-ph"><i class="fas fa-user"></i></div>
+              {% endif %}
+              <span class="hm-list-sname">{{ svc.seller.username if svc.seller else 'Platform Seller' }}</span>
+              {% if svc.seller and svc.seller.is_verified %}<span class="hm-list-verified" title="Verified"><i class="fas fa-check-circle"></i></span>{% endif %}
+            </div>
+          </div>
+        </a>
+        {% endfor %}
       </div>
-      {% endfor %}
     </div>
-    {% else %}
-    <div class="text-center py-12">
-      <p class="text-gray-600">No services available yet.</p>
-    </div>
-    {% endif %}
-  </div>
-</section>
+  </section>
+  {% endif %}
+
+</div>
+
+<script>
+(function(){
+  const canvas=document.getElementById('hm-canvas');
+  if(!canvas)return;
+  const ctx=canvas.getContext('2d');
+  function resize(){canvas.width=window.innerWidth;canvas.height=canvas.parentElement.offsetHeight||420}
+  resize();window.addEventListener('resize',resize);
+  const P=[];
+  for(let i=0;i<25;i++)P.push({x:Math.random()*canvas.width,y:Math.random()*canvas.height,
+    vx:(Math.random()-.5)*.5,vy:(Math.random()-.5)*.5,r:Math.random()*2+1,op:Math.random()*.4+.1});
+  function draw(){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    for(let i=0;i<P.length;i++)for(let j=i+1;j<P.length;j++){
+      const dx=P[i].x-P[j].x,dy=P[i].y-P[j].y,d=Math.sqrt(dx*dx+dy*dy);
+      if(d<200){const a=.25*(1-d/200),g=ctx.createLinearGradient(P[i].x,P[i].y,P[j].x,P[j].y);
+        g.addColorStop(0,`rgba(0,255,200,${a})`);g.addColorStop(1,`rgba(0,212,255,${a})`);
+        ctx.strokeStyle=g;ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(P[i].x,P[i].y);ctx.lineTo(P[j].x,P[j].y);ctx.stroke()}}
+    P.forEach(p=>{
+      ctx.fillStyle=`rgba(0,255,200,${p.op})`;ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.fill();
+      p.x+=p.vx;p.y+=p.vy;
+      if(p.x<0)p.x=canvas.width;if(p.x>canvas.width)p.x=0;
+      if(p.y<0)p.y=canvas.height;if(p.y>canvas.height)p.y=0;
+    });
+    requestAnimationFrame(draw);
+  }
+  draw();
+})();
+</script>
 {% endblock %}

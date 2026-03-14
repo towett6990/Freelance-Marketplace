@@ -1,0 +1,234 @@
+{% extends 'base.html' %}
+{% block title %}{{ service.title }}{% endblock %}
+{% block content %}
+{% set reviews_list = service.reviews.all() %}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+{% set cd = service.custom_data or {} %}
+{% set cur = service.currency or 'KES' %}
+{% set sym = 'KSh' if cur == 'KES' else ('$' if cur == 'USD' else '€') %}
+{% set avg_rating = service.get_average_rating() %}
+
+<div class="pd-page">
+
+  <!-- BREADCRUMB -->
+  <div class="pd-breadcrumb">
+    {% if category %}
+    <a href="{{ url_for('list_' + category.slug.replace('-','_')) }}" class="bc-link"><i class="fas fa-arrow-left"></i> {{ category.name }}</a>
+    {% else %}
+    <a href="{{ url_for('list_services') }}" class="bc-link"><i class="fas fa-arrow-left"></i> Listings</a>
+    {% endif %}
+    <span class="bc-sep">/</span>
+    <span class="bc-cur">{{ service.title }}</span>
+  </div>
+
+  <div class="pd-layout">
+
+    <!-- LEFT: Image gallery -->
+    <div class="pd-gallery-col">
+      <div class="gallery-main-wrap">
+        {% if service.images %}
+          <img src="{{ url_for('static', filename='uploads/services/' ~ service.images[0].filename) }}" class="gallery-main-img" id="mainImg" alt="{{ service.title }}">
+          {% if service.images and service.images|length > 1 %}
+          <div class="gallery-thumbs">
+            {% for img in service.images %}
+            <img src="{{ url_for('static', filename='uploads/services/' ~ img.filename) }}"
+                 class="thumb {% if loop.first %}thumb-active{% endif %}"
+                 onclick="document.getElementById('mainImg').src=this.src;document.querySelectorAll('.thumb').forEach(t=>t.classList.remove('thumb-active'));this.classList.add('thumb-active')"
+                 alt="{{ loop.index }}">
+            {% endfor %}
+          </div>
+          {% endif %}
+        {% else %}
+          <div class="gallery-ph"><i class="fas fa-image"></i><p>No images uploaded</p></div>
+        {% endif %}
+      </div>
+
+      <!-- Video samples -->
+      {% if service.videos and service.videos|length > 0 %}
+      <div class="pd-section">
+        <h4 class="pd-sec-title"><i class="fas fa-film"></i> Video Samples</h4>
+        <div class="video-grid">
+          {% for vid in service.videos[:3] %}
+          <video controls class="video-item">
+            <source src="{{ url_for('static', filename='uploads/services/' ~ vid.filename) }}">
+          </video>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- RIGHT: Details -->
+    <div class="pd-detail-col">
+
+      <!-- Title & badges -->
+      <div class="pd-title-row">
+        <h1 class="pd-title">{{ service.title }}</h1>
+        {% if cd.get('condition') %}
+        <span class="cond-pill cond-{{ cd.get('condition','').lower().replace(' ','-') }}">{{ cd.get('condition') }}</span>
+        {% endif %}
+      </div>
+
+      <!-- Rating -->
+      <div class="pd-rating-row">
+        <div class="pd-stars">
+          {% for i in range(5) %}<i class="{{ 'fas' if i < avg_rating else 'far' }} fa-star {% if i < avg_rating %}s-on{% else %}s-off{% endif %}"></i>{% endfor %}
+        </div>
+        <span class="pd-rat-val">{{ "%.1f"|format(avg_rating) }}</span>
+        <span class="pd-rev-cnt">({{ service.get_review_count() }} reviews)</span>
+      </div>
+
+      <!-- Price -->
+      <div class="pd-price-box">
+        <span class="pd-price">{{ sym }} {{ "{:,.0f}".format(service.price|float) }}</span>
+        {% if category and category.price_type == 'negotiable' %}<span class="pd-neg">Negotiable</span>{% endif %}
+      </div>
+
+      <!-- Key specs -->
+      <div class="pd-specs-grid">
+        {% for field in (category.detail_fields if category and category.detail_fields else []) %}
+          {% set val = cd.get(field) %}
+          {% if val %}
+            {% if val is iterable and val is not string %}
+              {# multi-select / list #}
+              <div class="spec-item spec-full">
+                <span class="spec-lbl">{{ field.replace('_',' ')|title }}</span>
+                <div class="spec-tags">{% for v in val %}<span class="spec-tag">{{ v }}</span>{% endfor %}</div>
+              </div>
+            {% else %}
+              <div class="spec-item">
+                <span class="spec-lbl">{{ field.replace('_',' ')|title }}</span>
+                <span class="spec-val">{{ val }}</span>
+              </div>
+            {% endif %}
+          {% endif %}
+        {% endfor %}
+      </div>
+
+      <!-- Action buttons -->
+      <div class="pd-actions" style="flex-direction:column">
+        {% include '_service_actions.html' %}
+      </div>
+
+      <!-- Seller info card -->
+      <div class="pd-seller-card">
+        <div class="sc-av">{{ (service.seller.username[0] if service.seller else 'S')|upper }}</div>
+        <div class="sc-info">
+          <span class="sc-name">{{ service.seller.username if service.seller else 'Anonymous' }}</span>
+          <span class="sc-since">Member since {{ service.seller.created_at.strftime('%b %Y') if service.seller and service.seller.created_at else '—' }}</span>
+          {% if service.seller and service.seller.is_verified %}<span class="sc-badge"><i class="fas fa-shield-alt"></i> Verified</span>{% endif %}
+        </div>
+        <div class="sc-rat">
+          <span class="sc-rat-val">{{ "%.1f"|format(avg_rating) }}</span>
+          <span class="sc-rat-lbl">Rating</span>
+        </div>
+      </div>
+
+    </div><!-- /detail col -->
+  </div>
+
+  <!-- DESCRIPTION -->
+  <div class="pd-bottom">
+    <div class="pd-section">
+      <h4 class="pd-sec-title"><i class="fas fa-align-left"></i> Description</h4>
+      <p class="pd-desc-text">{{ service.description or 'No description provided.' }}</p>
+    </div>
+
+    <!-- REVIEWS -->
+    <div class="pd-section">
+      {% include '_reviews_section.html' %}
+{% include '_qa_section.html' %}
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+.pd-page{font-family:'DM Sans',sans-serif;background:#0b0d14;min-height:100vh;color:#e2e8f0;padding:1.5rem}
+.pd-breadcrumb{display:flex;align-items:center;gap:.5rem;font-size:.82rem;margin-bottom:1.5rem;max-width:1300px;margin-left:auto;margin-right:auto}
+.bc-link{color:#64748b;text-decoration:none;display:flex;align-items:center;gap:.35rem;transition:color .2s}.bc-link:hover{color:#818cf8;text-decoration:none}
+.bc-sep{color:#334155}.bc-cur{color:#94a3b8;font-weight:500}
+.pd-layout{display:grid;grid-template-columns:1fr 420px;gap:2rem;max-width:1300px;margin:0 auto;align-items:start}
+.gallery-main-wrap{background:#131625;border:1px solid rgba(255,255,255,.07);border-radius:16px;overflow:hidden;margin-bottom:1rem}
+.gallery-main-img{width:100%;max-height:450px;object-fit:cover;display:block;cursor:zoom-in}
+.gallery-ph{height:300px;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#1e293b;font-size:3rem;gap:.5rem}
+.gallery-ph p{font-size:1rem;color:#334155}
+.gallery-thumbs{display:flex;gap:.5rem;padding:.6rem;overflow-x:auto;background:rgba(0,0,0,.3)}
+.thumb{width:72px;height:54px;object-fit:cover;border-radius:7px;cursor:pointer;opacity:.6;border:2px solid transparent;transition:all .2s;flex-shrink:0}
+.thumb-active,.thumb:hover{opacity:1;border-color:#6366f1}
+.video-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:.5rem}
+.video-item{width:100%;border-radius:9px;background:#0f1220}
+
+/* Detail col */
+.pd-detail-col{background:#131625;border:1px solid rgba(255,255,255,.07);border-radius:16px;padding:1.5rem;position:sticky;top:1.5rem}
+.pd-title-row{display:flex;align-items:flex-start;gap:.75rem;flex-wrap:wrap;margin-bottom:.75rem}
+.pd-title{font-family:'Syne',sans-serif;font-size:1.5rem;font-weight:800;color:#f1f5f9;flex:1;line-height:1.2}
+.cond-pill{padding:.3rem .75rem;border-radius:20px;font-size:.72rem;font-weight:700;flex-shrink:0}
+.cond-brand-new,.cond-like-new{background:rgba(52,211,153,.2);color:#34d399;border:1px solid rgba(52,211,153,.3)}
+.cond-very-good,.cond-good{background:rgba(96,165,250,.15);color:#60a5fa;border:1px solid rgba(96,165,250,.25)}
+.cond-fair{background:rgba(251,191,36,.15);color:#fbbf24;border:1px solid rgba(251,191,36,.25)}
+.pd-rating-row{display:flex;align-items:center;gap:.35rem;margin-bottom:1rem}
+.pd-stars i{font-size:.8rem}.s-on{color:#fbbf24}.s-off{color:#334155}
+.pd-rat-val{font-size:.85rem;font-weight:600;color:#fbbf24}.pd-rev-cnt{font-size:.78rem;color:#475569}
+.pd-price-box{background:rgba(52,211,153,.06);border:1px solid rgba(52,211,153,.15);border-radius:12px;padding:1rem;margin-bottom:1.25rem;display:flex;align-items:baseline;gap:.75rem}
+.pd-price{font-family:'Syne',sans-serif;font-size:2rem;font-weight:800;color:#34d399}
+.pd-neg{font-size:.75rem;color:#64748b;border:1px solid #334155;padding:.2rem .5rem;border-radius:20px}
+
+/* Specs grid */
+.pd-specs-grid{display:grid;grid-template-columns:1fr 1fr;gap:.5rem;margin-bottom:1.25rem}
+.spec-item{background:rgba(0,0,0,.25);border:1px solid rgba(255,255,255,.05);border-radius:9px;padding:.6rem .75rem;display:flex;flex-direction:column;gap:.15rem}
+.spec-full{grid-column:span 2}
+.spec-lbl{font-size:.68rem;color:#64748b;text-transform:uppercase;letter-spacing:.05em}
+.spec-val{font-size:.85rem;color:#e2e8f0;font-weight:500}
+.spec-tags{display:flex;flex-wrap:wrap;gap:.3rem;margin-top:.25rem}
+.spec-tag{padding:.2rem .5rem;background:rgba(99,102,241,.1);border:1px solid rgba(99,102,241,.2);color:#a5b4fc;border-radius:5px;font-size:.7rem}
+
+/* Actions */
+.pd-actions{display:flex;gap:.6rem;margin-bottom:1.1rem}
+.btn-contact{flex:1;padding:.7rem;background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;border-radius:9px;font-weight:700;font-size:.85rem;text-decoration:none;display:flex;align-items:center;justify-content:center;gap:.35rem;transition:all .2s}
+.btn-contact:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(99,102,241,.4);color:#fff;text-decoration:none}
+.btn-chat-outline{padding:.7rem 1rem;background:rgba(99,102,241,.08);border:1px solid rgba(99,102,241,.25);color:#818cf8;border-radius:9px;font-weight:600;font-size:.85rem;text-decoration:none;display:flex;align-items:center;gap:.35rem;transition:all .2s}
+.btn-chat-outline:hover{background:rgba(99,102,241,.16);color:#a5b4fc;text-decoration:none}
+
+/* Seller card */
+.pd-seller-card{display:flex;align-items:center;gap:.75rem;background:rgba(0,0,0,.25);border:1px solid rgba(255,255,255,.05);border-radius:10px;padding:.75rem}
+.sc-av{width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#6366f1,#8b5cf6);display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-size:1rem;font-weight:700;color:#fff;flex-shrink:0}
+.sc-info{flex:1;display:flex;flex-direction:column}
+.sc-name{font-size:.88rem;font-weight:600;color:#e2e8f0}
+.sc-since{font-size:.72rem;color:#475569}
+.sc-badge{font-size:.68rem;color:#34d399;margin-top:.15rem;display:flex;align-items:center;gap:.2rem}
+.sc-rat{display:flex;flex-direction:column;align-items:center}
+.sc-rat-val{font-family:'Syne',sans-serif;font-size:1.1rem;font-weight:700;color:#fbbf24}
+.sc-rat-lbl{font-size:.65rem;color:#475569}
+
+/* Bottom sections */
+.pd-bottom{max-width:1300px;margin:1.5rem auto 0;display:flex;flex-direction:column;gap:1rem}
+.pd-section{background:#131625;border:1px solid rgba(255,255,255,.07);border-radius:14px;padding:1.25rem}
+.pd-sec-title{font-family:'Syne',sans-serif;font-size:.85rem;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.06em;margin-bottom:.9rem;display:flex;align-items:center;gap:.4rem}
+.pd-sec-title i{color:#818cf8}
+.rev-badge{background:rgba(99,102,241,.12);color:#818cf8;border-radius:20px;padding:.1rem .45rem;font-size:.72rem;font-family:'DM Sans',sans-serif;text-transform:none;letter-spacing:0;margin-left:.25rem}
+.pd-desc-text{color:#94a3b8;line-height:1.75;font-size:.9rem}
+.reviews-list{display:flex;flex-direction:column;gap:.6rem}
+.rv-card{background:rgba(0,0,0,.2);border:1px solid rgba(255,255,255,.05);border-radius:10px;padding:.9rem}
+.rv-top{display:flex;align-items:center;gap:.6rem;margin-bottom:.5rem}
+.rv-av{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#6366f1,#8b5cf6);display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:700;color:#fff;flex-shrink:0}
+.rv-meta{flex:1;display:flex;flex-direction:column}
+.rv-name{font-size:.82rem;font-weight:600;color:#e2e8f0}.rv-date{font-size:.7rem;color:#475569}
+.rv-stars i{font-size:.7rem}
+.rv-body{color:#94a3b8;font-size:.83rem;line-height:1.55}
+.no-rev{text-align:center;padding:1.5rem;color:#334155}
+.no-rev i{font-size:1.8rem;margin-bottom:.5rem}
+
+/* Related */
+.related-row{display:flex;flex-direction:column;gap:.5rem}
+.rel-card{display:flex;align-items:center;gap:.75rem;background:rgba(0,0,0,.2);border:1px solid rgba(255,255,255,.05);border-radius:9px;text-decoration:none;overflow:hidden;transition:all .2s}
+.rel-card:hover{border-color:rgba(99,102,241,.3);background:rgba(99,102,241,.05);text-decoration:none}
+.rel-card img{width:70px;height:55px;object-fit:cover;flex-shrink:0}
+.rel-ph{width:70px;height:55px;background:#1e293b;display:flex;align-items:center;justify-content:center;color:#334155;flex-shrink:0}
+.rel-info{flex:1;display:flex;flex-direction:column;gap:.1rem;padding:.4rem 0}
+.rel-title{font-size:.8rem;color:#e2e8f0;font-weight:500}
+.rel-price{font-family:'Syne',sans-serif;font-size:.82rem;font-weight:700;color:#34d399}
+
+@media(max-width:1024px){.pd-layout{grid-template-columns:1fr}}
+@media(max-width:640px){.pd-page{padding:1rem}.pd-specs-grid{grid-template-columns:1fr}.pd-actions{flex-direction:column}}
+</style>
+{% endblock %}

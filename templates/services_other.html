@@ -1,0 +1,259 @@
+{% extends 'base.html' %}
+{% block title %}Other Services — FreelancingHub Kenya{% endblock %}
+{% block content %}
+
+<style>
+.page-header {
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+  padding: 3rem 2rem;
+  text-align: center;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+.page-header h1 { color: #fff; font-size: 2.5rem; font-weight: 700; margin-bottom: 0.5rem; }
+.page-header p { color: #aaa; font-size: 1.1rem; }
+
+.layout { display: flex; gap: 2rem; max-width: 1400px; margin: 2rem auto; padding: 0 1rem; }
+
+/* Sidebar */
+.sidebar {
+  width: 280px; flex-shrink: 0;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 16px; padding: 1.5rem;
+  height: fit-content;
+}
+.sidebar h3 { color: #00d4ff; font-size: 1rem; font-weight: 600; margin-bottom: 1rem; text-transform: uppercase; letter-spacing: 0.05em; }
+.filter-group { margin-bottom: 1.5rem; }
+.filter-group label { display: block; color: #ccc; font-size: 0.85rem; margin-bottom: 0.4rem; }
+.filter-group input, .filter-group select {
+  width: 100%; padding: 0.6rem 0.8rem;
+  background: #1a1a1a; border: 1px solid #333;
+  border-radius: 8px; color: #fff; font-size: 0.9rem;
+  box-sizing: border-box;
+}
+.filter-group input:focus, .filter-group select:focus { outline: none; border-color: #00d4ff; }
+.price-row { display: flex; gap: 0.5rem; }
+.price-row input { width: 50%; }
+.apply-btn {
+  width: 100%; padding: 0.75rem;
+  background: linear-gradient(135deg, #00d4ff, #0099cc);
+  border: none; border-radius: 8px;
+  color: #fff; font-weight: 600; cursor: pointer;
+  font-size: 0.95rem; transition: opacity 0.2s;
+}
+.apply-btn:hover { opacity: 0.85; }
+.clear-btn {
+  display: block; text-align: center; margin-top: 0.75rem;
+  color: #888; font-size: 0.85rem; text-decoration: none;
+}
+.clear-btn:hover { color: #ccc; }
+
+/* Main */
+.main { flex: 1; min-width: 0; }
+.results-bar {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 1.5rem; flex-wrap: wrap; gap: 0.5rem;
+}
+.results-bar span { color: #aaa; font-size: 0.9rem; }
+.sort-select {
+  background: #1a1a1a; border: 1px solid #333;
+  border-radius: 8px; color: #fff; padding: 0.5rem 0.75rem; font-size: 0.9rem;
+}
+
+/* Cards */
+.services-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.5rem;
+}
+.service-card {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 16px; overflow: hidden;
+  transition: transform 0.2s, border-color 0.2s;
+  text-decoration: none; display: block;
+}
+.service-card:hover { transform: translateY(-4px); border-color: rgba(0,212,255,0.4); }
+.card-img {
+  width: 100%; height: 180px; object-fit: cover;
+  background: #1a1a2e;
+  display: flex; align-items: center; justify-content: center;
+}
+.card-img img { width: 100%; height: 180px; object-fit: cover; display: block; }
+.card-img-placeholder { color: #555; font-size: 3rem; }
+.card-body { padding: 1rem; }
+.card-title { color: #fff; font-weight: 600; font-size: 1rem; margin-bottom: 0.4rem; line-height: 1.3; }
+.card-meta { color: #888; font-size: 0.82rem; margin-bottom: 0.75rem; }
+.card-footer { display: flex; justify-content: space-between; align-items: center; }
+.card-price { color: #00d4ff; font-weight: 700; font-size: 1.1rem; }
+.card-seller { color: #888; font-size: 0.8rem; }
+.badge {
+  display: inline-block; padding: 0.2rem 0.6rem;
+  background: rgba(0,212,255,0.15); border-radius: 20px;
+  color: #00d4ff; font-size: 0.75rem; font-weight: 500;
+  margin-bottom: 0.5rem;
+}
+
+/* Empty state */
+.empty-state { text-align: center; padding: 4rem 2rem; color: #666; }
+.empty-state i { font-size: 4rem; margin-bottom: 1rem; display: block; }
+.empty-state h3 { color: #888; font-size: 1.3rem; margin-bottom: 0.5rem; }
+.post-btn {
+  display: inline-block; margin-top: 1.5rem;
+  padding: 0.75rem 2rem;
+  background: linear-gradient(135deg, #00d4ff, #0099cc);
+  color: #fff; border-radius: 10px; text-decoration: none; font-weight: 600;
+}
+
+/* Pagination */
+.pagination { display: flex; justify-content: center; gap: 0.5rem; margin-top: 2rem; flex-wrap: wrap; }
+.pagination a, .pagination span {
+  padding: 0.5rem 0.9rem; border-radius: 8px;
+  background: rgba(255,255,255,0.05); color: #ccc;
+  text-decoration: none; font-size: 0.9rem; border: 1px solid rgba(255,255,255,0.08);
+}
+.pagination a:hover { background: rgba(0,212,255,0.15); color: #00d4ff; }
+.pagination .current { background: #00d4ff; color: #000; font-weight: 700; border-color: #00d4ff; }
+
+@media (max-width: 768px) {
+  .layout { flex-direction: column; }
+  .sidebar { width: 100%; }
+}
+</style>
+
+<!-- Header -->
+<div class="page-header">
+  <h1><i class="fas fa-th-large"></i> Other Services</h1>
+  <p>Browse miscellaneous listings — tools, equipment, crafts, and more</p>
+</div>
+
+<div class="layout">
+  <!-- Sidebar Filters -->
+  <aside class="sidebar">
+    <h3><i class="fas fa-filter"></i> Filters</h3>
+    <form method="GET" action="/services/other">
+      <div class="filter-group">
+        <label>Search</label>
+        <input type="text" name="q" value="{{ q or '' }}" placeholder="Search listings...">
+      </div>
+
+      <div class="filter-group">
+        <label>Sub-Category</label>
+        <input type="text" name="sub_cat" value="{{ sub_cat or '' }}" placeholder="e.g. Tools, Crafts...">
+      </div>
+
+      <div class="filter-group">
+        <label>Condition</label>
+        <select name="condition">
+          <option value="">All Conditions</option>
+          {% for c in ['New', 'Like New', 'Good', 'Fair', 'For Parts'] %}
+          <option value="{{ c }}" {% if condition == c %}selected{% endif %}>{{ c }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label>Price Range (KES)</label>
+        <div class="price-row">
+          <input type="number" name="min_price" value="{{ min_price or '' }}" placeholder="Min">
+          <input type="number" name="max_price" value="{{ max_price or '' }}" placeholder="Max">
+        </div>
+      </div>
+
+      <div class="filter-group">
+        <label>Sort By</label>
+        <select name="sort" class="sort-select">
+          <option value="newest" {% if sort_by == 'newest' %}selected{% endif %}>Newest First</option>
+          <option value="price_low" {% if sort_by == 'price_low' %}selected{% endif %}>Price: Low to High</option>
+          <option value="price_high" {% if sort_by == 'price_high' %}selected{% endif %}>Price: High to Low</option>
+          <option value="rating" {% if sort_by == 'rating' %}selected{% endif %}>Top Rated</option>
+        </select>
+      </div>
+
+      <button type="submit" class="apply-btn">Apply Filters</button>
+      <a href="/services/other" class="clear-btn">Clear all filters</a>
+    </form>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="main">
+    <div class="results-bar">
+      <span>{{ total }} listing{{ 's' if total != 1 else '' }} found</span>
+      {% if q or sub_cat or condition or min_price or max_price %}
+      <a href="/services/other" style="color:#ff6b6b; font-size:0.85rem; text-decoration:none;">
+        <i class="fas fa-times"></i> Clear filters
+      </a>
+      {% endif %}
+    </div>
+
+    {% if services %}
+    <div class="services-grid">
+      {% for svc in services %}
+      <a href="/service/{{ svc.id }}" class="service-card">
+        <div class="card-img">
+          {% if svc.images and svc.images|length > 0 %}
+            <img src="/static/uploads/services/{{ svc.images[0].filename }}"
+                 alt="{{ svc.title }}"
+                 onerror="this.parentElement.innerHTML='<i class=\'fas fa-box card-img-placeholder\'></i>'">
+          {% else %}
+            <i class="fas fa-box card-img-placeholder"></i>
+          {% endif %}
+        </div>
+        <div class="card-body">
+          {% if svc.custom_data and svc.custom_data.get('sub_category') %}
+            <span class="badge">{{ svc.custom_data.get('sub_category') }}</span>
+          {% endif %}
+          {% if svc.custom_data and svc.custom_data.get('condition') %}
+            <span class="badge" style="background:rgba(100,220,100,0.15);color:#64dc64;">
+              {{ svc.custom_data.get('condition') }}
+            </span>
+          {% endif %}
+          <div class="card-title">{{ svc.title }}</div>
+          <div class="card-meta">{{ (svc.description or '')[:80] }}{% if (svc.description or '')|length > 80 %}…{% endif %}</div>
+          <div class="card-footer">
+            <span class="card-price">KES {{ '{:,.0f}'.format(svc.price) }}</span>
+            <span class="card-seller">
+              <i class="fas fa-user"></i>
+              {{ svc.seller.username if svc.seller else 'Unknown' }}
+            </span>
+          </div>
+        </div>
+      </a>
+      {% endfor %}
+    </div>
+
+    <!-- Pagination -->
+    {% if total_pages > 1 %}
+    <div class="pagination">
+      {% if page > 1 %}
+        <a href="?{{ request.query_string.decode().replace('page='+page|string, 'page='+(page-1)|string) or 'page='+(page-1)|string }}">
+          <i class="fas fa-chevron-left"></i>
+        </a>
+      {% endif %}
+      {% for p in range(1, total_pages + 1) %}
+        {% if p == page %}
+          <span class="current">{{ p }}</span>
+        {% elif p == 1 or p == total_pages or (p >= page - 2 and p <= page + 2) %}
+          <a href="?q={{ q or '' }}&sub_cat={{ sub_cat or '' }}&condition={{ condition or '' }}&min_price={{ min_price or '' }}&max_price={{ max_price or '' }}&sort={{ sort_by }}&page={{ p }}">{{ p }}</a>
+        {% endif %}
+      {% endfor %}
+      {% if page < total_pages %}
+        <a href="?{{ request.query_string.decode().replace('page='+page|string, 'page='+(page+1)|string) or 'page='+(page+1)|string }}">
+          <i class="fas fa-chevron-right"></i>
+        </a>
+      {% endif %}
+    </div>
+    {% endif %}
+
+    {% else %}
+    <div class="empty-state">
+      <i class="fas fa-box-open"></i>
+      <h3>No listings found</h3>
+      <p>{% if q or sub_cat or condition %}Try adjusting your filters{% else %}Be the first to post in this category{% endif %}</p>
+      <a href="/post_service" class="post-btn"><i class="fas fa-plus"></i> Post a Listing</a>
+    </div>
+    {% endif %}
+  </main>
+</div>
+
+{% endblock %}

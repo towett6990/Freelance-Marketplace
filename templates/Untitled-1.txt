@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+{% block title %}My Orders{% endblock %}
+{% block content %}
+<style>
+.page-header { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%); padding: 3rem 2rem; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.1); }
+.page-header h1 { color: #fff; font-size: 2rem; font-weight: 700; }
+.page-header p { color: #aaa; }
+.container { max-width: 1000px; margin: 2rem auto; padding: 0 1rem; }
+.tabs { display: flex; gap: 0.5rem; margin-bottom: 2rem; }
+.tab { padding: 0.6rem 1.5rem; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 0.9rem; border: 1px solid rgba(255,255,255,0.1); color: #aaa; background: rgba(255,255,255,0.03); transition: all 0.2s; }
+.tab.active { background: #00d4ff; color: #000; border-color: #00d4ff; }
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+.order-card { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 1.5rem; margin-bottom: 1rem; display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap; text-decoration: none; transition: border-color 0.2s; }
+.order-card:hover { border-color: rgba(0,212,255,0.4); }
+.order-info h3 { color: #fff; font-weight: 600; margin-bottom: 0.3rem; }
+.order-info p { color: #888; font-size: 0.85rem; }
+.order-meta { text-align: right; }
+.order-amount { color: #00d4ff; font-weight: 700; font-size: 1.1rem; }
+.order-date { color: #666; font-size: 0.8rem; margin-top: 0.3rem; }
+.status-badge { display: inline-block; padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; margin-top: 0.4rem; }
+.status-pending { background: rgba(251,191,36,0.2); color: #fbbf24; }
+.status-paid { background: rgba(59,130,246,0.2); color: #3b82f6; }
+.status-in_progress { background: rgba(245,158,11,0.2); color: #f59e0b; }
+.status-delivered { background: rgba(139,92,246,0.2); color: #8b5cf6; }
+.status-completed { background: rgba(16,185,129,0.2); color: #10b981; }
+.status-cancelled { background: rgba(239,68,68,0.2); color: #ef4444; }
+.status-disputed { background: rgba(239,68,68,0.2); color: #ef4444; }
+.empty { text-align: center; padding: 4rem 2rem; color: #666; }
+.empty i { font-size: 3rem; margin-bottom: 1rem; display: block; }
+.empty h3 { color: #888; margin-bottom: 0.5rem; }
+.browse-btn { display: inline-block; margin-top: 1rem; padding: 0.75rem 2rem; background: linear-gradient(135deg, #00d4ff, #0099cc); color: #fff; border-radius: 10px; text-decoration: none; font-weight: 600; }
+</style>
+
+<div class="page-header">
+  <h1><i class="fas fa-shopping-bag"></i> My Orders</h1>
+  <p>Track all your purchases and sales</p>
+</div>
+
+<div class="container">
+  <div class="tabs">
+    <div class="tab active" onclick="switchTab('buying')">
+      <i class="fas fa-shopping-cart"></i> Buying ({{ buying|length }})
+    </div>
+    <div class="tab" onclick="switchTab('selling')">
+      <i class="fas fa-store"></i> Selling ({{ selling|length }})
+    </div>
+  </div>
+
+  <!-- Buying Tab -->
+  <div class="tab-content active" id="tab-buying">
+    {% if buying %}
+      {% for order in buying %}
+      <a href="{{ url_for('order_detail', order_id=order.id) }}" class="order-card">
+        <div class="order-info">
+          <h3>{{ order.title or (order.service.title if order.service else 'Order #' + order.id|string) }}</h3>
+          <p>Seller: {{ order.seller.username if order.seller else 'Unknown' }}</p>
+          <span class="status-badge status-{{ order.status }}">{{ order.status.replace('_', ' ').title() }}</span>
+        </div>
+        <div class="order-meta">
+          <div class="order-amount">KES {{ '{:,.0f}'.format(order.amount) }}</div>
+          <div class="order-date">{{ order.created_at.strftime('%b %d, %Y') }}</div>
+        </div>
+      </a>
+      {% endfor %}
+    {% else %}
+      <div class="empty">
+        <i class="fas fa-shopping-cart"></i>
+        <h3>No orders yet</h3>
+        <p>Browse services and place your first order</p>
+        <a href="/services" class="browse-btn">Browse Services</a>
+      </div>
+    {% endif %}
+  </div>
+
+  <!-- Selling Tab -->
+  <div class="tab-content" id="tab-selling">
+    {% if selling %}
+      {% for order in selling %}
+      <a href="{{ url_for('order_detail', order_id=order.id) }}" class="order-card">
+        <div class="order-info">
+          <h3>{{ order.title or (order.service.title if order.service else 'Order #' + order.id|string) }}</h3>
+          <p>Buyer: {{ order.buyer.username if order.buyer else 'Unknown' }}</p>
+          <span class="status-badge status-{{ order.status }}">{{ order.status.replace('_', ' ').title() }}</span>
+        </div>
+        <div class="order-meta">
+          <div class="order-amount">KES {{ '{:,.0f}'.format(order.amount) }}</div>
+          <div class="order-date">{{ order.created_at.strftime('%b %d, %Y') }}</div>
+        </div>
+      </a>
+      {% endfor %}
+    {% else %}
+      <div class="empty">
+        <i class="fas fa-store"></i>
+        <h3>No sales yet</h3>
+        <p>Post a service to start receiving orders</p>
+        <a href="/post_service" class="browse-btn">Post a Service</a>
+      </div>
+    {% endif %}
+  </div>
+</div>
+
+<script>
+function switchTab(name) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  event.target.closest('.tab').classList.add('active');
+  document.getElementById('tab-' + name).classList.add('active');
+}
+</script>
+{% endblock %}

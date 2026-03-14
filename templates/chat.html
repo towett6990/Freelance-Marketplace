@@ -1,332 +1,474 @@
 {% extends "base.html" %}
-{% block title %}Chat - {{ receiver.display_name() }}{% endblock %}
+{% block title %}Chat - Freelance Marketplace{% endblock %}
+
 {% block content %}
-
-<section class="bg-gradient-to-br from-slate-50 to-blue-50 min-h-screen py-8">
-  <div class="max-w-4xl mx-auto px-6">
-
-    <!-- Chat Header -->
-    <div class="bg-white rounded-2xl shadow-xl mb-6 overflow-hidden">
-      <div class="bg-gradient-to-r from-blue-600 to-purple-600 px-8 py-6">
-        <div class="flex items-center space-x-4">
-          <div class="w-16 h-16 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
-            <i class="fas fa-user text-white text-2xl"></i>
-          </div>
-          <div class="flex-1">
-            <h1 class="text-2xl font-bold text-white">{{ receiver.display_name() }}</h1>
-            <p class="text-blue-100">Active conversation</p>
-          </div>
-          <a href="{{ url_for('profile', username=receiver.username) }}"
-             class="bg-white bg-opacity-20 text-white px-4 py-2 rounded-lg hover:bg-opacity-30 transition duration-300">
-            <i class="fas fa-user-circle mr-2"></i>View Profile
-          </a>
-        </div>
-      </div>
-    </div>
-
-    <!-- Chat Messages Container -->
-    <div class="bg-white rounded-2xl shadow-xl overflow-hidden">
-      <div id="chat-box" class="chat-messages">
-        {% for m in messages %}
-          <div class="message-wrapper {% if m.sender_id == current_user.id %}sent{% else %}received{% endif %}">
-            <div class="message-bubble">
-              <p class="message-text">{{ m.content|e }}</p>
-              <span class="message-time">{{ m.timestamp.strftime('%H:%M') }}</span>
-            </div>
-          </div>
-        {% endfor %}
-      </div>
-
-      <!-- Typing Indicator -->
-      <div id="typing" class="typing-indicator" style="display:none;">
-        <div class="typing-dots">
-          <span></span>
-          <span></span>
-          <span></span>
-        </div>
-        <p class="typing-text">{{ receiver.display_name() }} is typing...</p>
-      </div>
-
-      <!-- Message Input -->
-      <div class="chat-input-container">
-        <form id="chat-form" class="message-form" autocomplete="off">
-          <div class="input-group">
-            <input id="message-input"
-                   type="text"
-                   placeholder="Type your message..."
-                   class="message-input"
-                   required />
-            <button type="submit" class="send-button">
-              <i class="fas fa-paper-plane"></i>
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-
-  </div>
-</section>
-
-<script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
-
-<script>
-(function(){
-  const socket = io();
-  const room = "{{ room }}";
-  const receiverId = {{ receiver.id }};
-  const chatBox = document.getElementById("chat-box");
-  const typingEl = document.getElementById("typing");
-  const form = document.getElementById("chat-form");
-  const input = document.getElementById("message-input");
-
-  socket.emit("join", { room: room, user_room: "user_{{ current_user.id }}" });
-
-  function scrollBottom() {
-    chatBox.scrollTop = chatBox.scrollHeight;
-  }
-  scrollBottom();
-
-  form.addEventListener("submit", e => {
-    e.preventDefault();
-    const text = input.value.trim();
-    if (!text) return;
-
-    socket.emit("send_message", { receiver_id: receiverId, content: text });
-
-    let bubble = document.createElement("div");
-    bubble.className = "msg-row sent";
-    bubble.innerHTML = `
-      <div class="msg-bubble">
-        <p class="msg-text">${text.replace(/</g,"&lt;")}</p>
-        <span class="msg-time">Now</span>
-      </div>`;
-    chatBox.appendChild(bubble);
-
-    input.value = "";
-    scrollBottom();
-  });
-
-  let typingTimer = null;
-  input.addEventListener("input", () => {
-    socket.emit("typing", { room: room, typing: input.value.length > 0 });
-    clearTimeout(typingTimer);
-    typingTimer = setTimeout(() => {
-      socket.emit("typing", { room: room, typing: false });
-    }, 1500);
-  });
-
-  socket.on("receive_message", data => {
-    if (data.room !== room) return;
-
-    let bubble = document.createElement("div");
-    bubble.className = data.sender_id == {{ current_user.id }} ? "msg-row sent" : "msg-row received";
-    bubble.innerHTML = `
-      <div class="msg-bubble">
-        <p class="msg-text">${data.content.replace(/</g,"&lt;")}</p>
-        <span class="msg-time">${data.timestamp}</span>
-      </div>`;
-
-    chatBox.appendChild(bubble);
-    scrollBottom();
-  });
-
-  socket.on("typing", data => {
-    if (data.room !== room) return;
-    typingEl.style.display = data.typing ? "block" : "none";
-  });
-
-})();
-</script>
-
 <style>
-/* Premium Chat Styles */
-.bg-gradient-to-br {
-  background: linear-gradient(to bottom right, #f8fafc, #e0f2fe);
-}
-
-.max-w-4xl {
-  max-width: 56rem;
-}
-
-/* Chat Header */
-.chat-messages {
-  height: 500px;
-  overflow-y: auto;
-  padding: 2rem;
-  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
-}
-
-/* Message Styles */
-.message-wrapper {
-  display: flex;
-  margin-bottom: 1.5rem;
-  animation: fadeIn 0.3s ease-in;
-}
-
-.message-wrapper.sent {
-  justify-content: flex-end;
-}
-
-.message-wrapper.received {
-  justify-content: flex-start;
-}
-
-.message-bubble {
-  max-width: 70%;
-  padding: 1rem 1.25rem;
-  border-radius: 1.5rem;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  position: relative;
-}
-
-.sent .message-bubble {
-  background: linear-gradient(135deg, #3b82f6, #1d4ed8);
-  color: white;
-  border-bottom-right-radius: 0.25rem;
-}
-
-.received .message-bubble {
-  background: white;
-  color: #374151;
-  border-bottom-left-radius: 0.25rem;
-  border: 1px solid #e5e7eb;
-}
-
-.message-text {
-  margin: 0;
-  font-size: 0.95rem;
-  line-height: 1.5;
-}
-
-.message-time {
-  font-size: 0.75rem;
-  opacity: 0.7;
-  margin-top: 0.5rem;
-  display: block;
-  text-align: right;
-}
-
-/* Typing Indicator */
-.typing-indicator {
-  padding: 1rem 2rem;
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  animation: pulse 2s infinite;
-}
-
-.typing-dots {
-  display: flex;
-  gap: 0.25rem;
-}
-
-.typing-dots span {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: #9ca3af;
-  animation: typing 1.4s infinite ease-in-out;
-}
-
-.typing-dots span:nth-child(1) { animation-delay: -0.32s; }
-.typing-dots span:nth-child(2) { animation-delay: -0.16s; }
-
-.typing-text {
-  color: #6b7280;
-  font-style: italic;
-  font-size: 0.9rem;
-}
-
-/* Input Container */
-.chat-input-container {
-  background: white;
-  border-top: 1px solid #e5e7eb;
-  padding: 1.5rem 2rem;
-}
-
-.input-group {
-  display: flex;
-  gap: 1rem;
-  align-items: center;
-}
-
-.message-input {
-  flex: 1;
-  padding: 0.875rem 1.25rem;
-  border: 2px solid #e5e7eb;
-  border-radius: 2rem;
-  font-size: 1rem;
-  outline: none;
-  transition: all 0.3s ease;
-  background: #f9fafb;
-}
-
-.message-input:focus {
-  border-color: #3b82f6;
-  background: white;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-}
-
-.send-button {
-  width: 3rem;
-  height: 3rem;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #10b981, #059669);
-  border: none;
-  color: white;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.2);
-}
-
-.send-button:hover {
-  transform: scale(1.05);
-  box-shadow: 0 6px 8px -1px rgba(16, 185, 129, 0.3);
-}
-
-/* Animations */
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes typing {
-  0%, 80%, 100% { transform: scale(0); }
-  40% { transform: scale(1); }
-}
-
-@keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-  .chat-messages {
-    height: 400px;
-    padding: 1rem;
+  .location-message {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    border-radius: 12px; padding: 12px; max-width: 280px;
+    cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;
   }
-
-  .message-bubble {
-    max-width: 85%;
-  }
-
-  .chat-input-container {
-    padding: 1rem;
-  }
-
-  .input-group {
-    gap: 0.5rem;
-  }
-
-  .message-input {
-    padding: 0.75rem 1rem;
-    font-size: 0.9rem;
-  }
-}
+  .location-message:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(16,185,129,.4); }
+  .location-message .location-icon { font-size: 24px; margin-bottom: 8px; }
+  .location-message .location-text { color: white; font-size: 13px; font-weight: 500; }
+  .location-message .location-time { color: rgba(255,255,255,0.7); font-size: 11px; margin-top: 6px; }
+  #location-modal .modal-content { background: rgba(31,41,55,.98); border: 1px solid rgba(16,185,129,.5); border-radius: 16px; }
+  #location-modal .modal-header { border-bottom: 1px solid rgba(55,65,81,.8); }
+  #location-map { height: 300px; border-radius: 8px; margin: 16px 0; border: 1px solid rgba(16,185,129,.3); }
+  .location-info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+  .location-info-item { background: rgba(55,65,81,.8); padding: 12px; border-radius: 8px; }
+  .location-info-label { color: #9ca3af; font-size: 12px; margin-bottom: 4px; }
+  .location-info-value { color: #10b981; font-weight: bold; font-size: 14px; }
 </style>
 
+<div style="max-width: 72rem; margin: 2.5rem auto 0; padding: 0 1rem; height: 100vh; display: flex; flex-direction: column;">
+
+  <!-- ── Chat Header ── -->
+  <div style="background: var(--main-bg); padding: 1rem; border-radius: 0.5rem 0.5rem 0 0; border-bottom: 1px solid var(--main-border); display: flex; justify-content: space-between; align-items: center;">
+    <div style="display: flex; align-items: center; gap: 0.75rem;">
+      <div style="width: 2.5rem; height: 2.5rem; border-radius: 9999px; background: var(--link-color); display: flex; align-items: center; justify-content: center; color: #0a1f2e; font-weight: bold;">
+        {{ other_user.username[0:1].upper() if other_user.username else other_user.email[0:1].upper() }}
+      </div>
+      <div>
+        <h2 style="font-size: 1.125rem; font-weight: bold; color: var(--link-color);">{{ other_user.username or other_user.email.split('@')[0] }}</h2>
+        <p style="font-size: 0.75rem;" id="status">
+          {% if other_user.is_online %}
+            <span style="color: var(--link-color);">🟢 Online</span>
+          {% else %}
+            <span style="color: #6b7280;">⚫ Offline</span>
+          {% endif %}
+        </p>
+      </div>
+    </div>
+
+    <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; justify-content: flex-end;">
+
+      {# ── 💼 CUSTOM OFFER BUTTON — sellers only ── #}
+      {% if can_send_offer %}
+      <a href="{{ url_for('features.send_offer', buyer_id=other_user.id) }}"
+         style="display:inline-flex;align-items:center;gap:.35rem;padding:.45rem .9rem;border-radius:8px;border:1px solid rgba(0,255,200,.25);background:rgba(0,255,200,.08);color:#00ffc8;text-decoration:none;font-size:.82rem;font-weight:700;transition:all .2s"
+         title="Send a formal custom quote">
+        💼 Send Offer
+      </a>
+      {% endif %}
+
+      {# ── 💼 VIEW OFFERS — any user ── #}
+      <a href="{{ url_for('features.my_offers') }}"
+         style="display:inline-flex;align-items:center;gap:.35rem;padding:.45rem .9rem;border-radius:8px;border:1px solid rgba(167,139,250,.2);background:rgba(167,139,250,.06);color:#a78bfa;text-decoration:none;font-size:.82rem;font-weight:600"
+         title="View your custom offers">
+        📋 Offers
+      </a>
+
+      <!-- Share Location -->
+      <button id="share-location-btn"
+        style="background: var(--link-color); color: #0a1f2e; padding: 0.5rem 0.75rem; border-radius: 0.25rem; font-weight: bold; font-size: 0.875rem; border: none; cursor: pointer;"
+        title="Share your location">📍 Location</button>
+
+      <!-- Delete Chat -->
+      <button id="delete-chat-btn"
+        style="background: #ef4444; color: white; padding: 0.5rem 0.75rem; border-radius: 0.25rem; font-weight: bold; font-size: 0.875rem; border: none; cursor: pointer;"
+        title="Delete conversation">🗑️ Delete</button>
+
+      <a href="{{ url_for('conversations') }}" style="color: #9ca3af; font-size: 1.5rem; padding: 0 0.5rem;">✕</a>
+    </div>
+  </div>
+
+  <!-- Search Bar -->
+  <div style="background: var(--main-bg); padding: 0.75rem; border-bottom: 1px solid var(--main-border);">
+    <input type="text" id="search-input" placeholder="🔍 Search messages..."
+      style="width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--main-border); border-radius: 0.25rem; padding: 0.5rem 1rem; color: var(--body-color); font-size: 0.875rem;"
+      autocomplete="off">
+  </div>
+
+  <!-- Messages Container -->
+  <div id="messages" style="flex: 1; background: rgba(0,0,0,0.2); overflow-y: auto; padding: 1rem; display: flex; flex-direction: column; gap: 0.75rem;">
+    {% for msg in messages %}
+        {% if msg.sender_id != current_user.id %}
+          <div style="display: flex; justify-content: flex-start;" class="message-item" data-msg-id="{{ msg.id }}" data-content="{{ msg.content.lower() if msg.content else '' }}">
+            <div style="background: rgba(55, 65, 81, 0.9); color: var(--body-color); max-width: 20rem; padding: 0.5rem 1rem; border-radius: 0.5rem; word-wrap: break-word;">
+              <p>{{ msg.content }}</p>
+              {% if msg.location %}
+                <div onclick="openGoogleMaps({{ msg.location.latitude }}, {{ msg.location.longitude }})"
+                     style="background:rgba(16,185,129,.1);border:1px solid #10b981;border-radius:6px;padding:.5rem;margin-top:.5rem;font-size:.85rem;cursor:pointer">
+                  <strong>📍 Location:</strong>
+                  <p style="margin:.25rem 0">{{ msg.location.city }}, {{ msg.location.country }}</p>
+                  <p style="color:#9ca3af;font-size:.75rem">{{ msg.location.latitude|round(4) }}, {{ msg.location.longitude|round(4) }}</p>
+                  <p style="color:#10b981;font-size:.65rem;margin-top:.25rem">📍 Click to view on map</p>
+                </div>
+              {% endif %}
+              <p style="font-size: 0.75rem; color: #9ca3af; margin-top: 0.25rem;">{{ msg.timestamp.strftime('%H:%M') }}</p>
+            </div>
+          </div>
+        {% else %}
+          <div style="display: flex; justify-content: flex-end;" class="message-item" data-msg-id="{{ msg.id }}" data-content="{{ msg.content.lower() if msg.content else '' }}">
+            <div style="background: var(--link-color); color: #0a1f2e; max-width: 20rem; padding: 0.5rem 1rem; border-radius: 0.5rem; word-wrap: break-word;">
+              <p>{{ msg.content }}</p>
+              {% if msg.location %}
+                <div onclick="openGoogleMaps({{ msg.location.latitude }}, {{ msg.location.longitude }})"
+                     style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);border-radius:6px;padding:.5rem;margin-top:.5rem;font-size:.85rem;cursor:pointer">
+                  <strong>📍 Location:</strong>
+                  <p style="margin:.25rem 0">{{ msg.location.city }}, {{ msg.location.country }}</p>
+                </div>
+              {% endif %}
+              <p style="font-size: 0.75rem; color: rgba(0,0,0,0.5); margin-top: 0.25rem; display: flex; justify-content: flex-end; gap: 0.5rem;">
+                <span>{{ msg.timestamp.strftime('%H:%M') }}</span>
+                <span id="tick-{{ msg.id }}" class="message-ticks">
+                  {% if msg.is_read %}<span style="color:#0099ff">✓✓</span>
+                  {% elif msg.delivered %}<span style="color:#999">✓✓</span>
+                  {% else %}<span style="color:#999">✓</span>{% endif %}
+                </span>
+              </p>
+            </div>
+          </div>
+        {% endif %}
+      {% endfor %}
+    </div>
+  
+    <!-- Typing Indicator -->
+    <div id="typing-indicator" style="padding: 0.5rem 1rem; color: #6b7280; font-size: 0.875rem; display:none">
+      <span id="typing-user"></span> is typing...
+    </div>
+  
+    <!-- Message Input -->
+    <div style="background: var(--main-bg); padding: 1rem; border-radius: 0 0 0.5rem 0.5rem; border-top: 1px solid var(--main-border);">
+      <button id="chatShareLocationBtn" title="Share your current location"
+        style="background: linear-gradient(135deg, #10b981, #059669); color: white; border: none; padding: 0.5rem 1rem; border-radius: 0.375rem; cursor: pointer; font-size: 0.875rem; font-weight: bold; display: inline-flex; align-items: center; gap: 0.5rem; margin-right: 0.5rem; margin-bottom: 0.5rem;">
+        <i class="fas fa-map-marker-alt"></i> Share Location
+      </button>
+  
+      <div id="chatLocationDisplay" style="display:none;background:rgba(16,185,129,.1);border:1px solid #10b981;border-radius:8px;padding:.75rem;margin:.5rem 0;font-size:.875rem">
+        <div style="color:#10b981;font-weight:bold;margin-bottom:.25rem">📍 Your Location</div>
+        <div style="color:#d1d5db;font-size:.75rem">
+          <div id="chatLocationCity">City, Country</div>
+          <div id="chatLocationCoords" style="font-size:.7rem;color:#6b7280">Coordinates: --</div>
+          <div id="chatLocationAccuracy" style="font-size:.7rem;color:#6b7280">Accuracy: --</div>
+          <div id="chatLocationTime" style="font-size:.7rem;color:#9ca3af;margin-top:.25rem"></div>
+          <button id="clearLocationBtn" style="background:#10b981;color:white;padding:.25rem .75rem;border-radius:4px;font-size:.75rem;margin-top:.5rem;border:none;cursor:pointer">Clear</button>
+        </div>
+      </div>
+  
+      <form id="message-form" style="display: flex; gap: 0.5rem;">
+        <input type="text" id="message-input" placeholder="Type a message..."
+          style="flex: 1; background: rgba(0,0,0,0.3); border: 1px solid var(--main-border); border-radius: 0.25rem; padding: 0.5rem 1rem; color: var(--body-color);"
+          autocomplete="off">
+        <input type="hidden" id="conversationId" value="{{ conversation.id }}">
+        <button type="submit" style="background: var(--link-color); color: #0a1f2e; padding: 0.5rem 1.5rem; border-radius: 0.25rem; font-weight: bold; border: none; cursor: pointer;">Send</button>
+      </form>
+    </div>
+  </div>
+
+<!-- Location Share Modal -->
+<div id="location-modal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); display: none; align-items: center; justify-content: center; z-index: 50;">
+  <div class="modal-content w-full max-w-md mx-4 p-6" style="background: rgba(31, 41, 55, 0.98); border: 1px solid rgba(0, 255, 200, 0.5); border-radius: 1rem;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+      <h3 style="font-size: 1.25rem; font-weight: bold; color: var(--link-color);"><i class="fas fa-map-marker-alt"></i> Share Your Location</h3>
+      <button id="close-location-modal" style="color: #9ca3af; font-size: 1.5rem; background: none; border: none; cursor: pointer;">&times;</button>
+    </div>
+    <div id="location-map"></div>
+    <div id="location-info" style="display:none">
+      <div class="location-info-grid">
+        <div class="location-info-item"><div class="location-info-label">Latitude</div><div class="location-info-value" id="modal-lat">--</div></div>
+        <div class="location-info-item"><div class="location-info-label">Longitude</div><div class="location-info-value" id="modal-lon">--</div></div>
+        <div class="location-info-item"><div class="location-info-label">Accuracy</div><div class="location-info-value" id="modal-accuracy">--</div></div>
+        <div class="location-info-item"><div class="location-info-label">Address</div><div class="location-info-value" id="modal-address" style="font-size:12px">--</div></div>
+      </div>
+    </div>
+    <div id="location-status" class="hidden p-3 rounded-lg mb-4 text-center"></div>
+    <div style="display: flex; gap: 0.75rem;">
+      <button id="get-location-btn" style="flex: 1; background: var(--link-color); color: #0a1f2e; padding: 0.75rem; border-radius: 0.25rem; font-weight: bold; border: none; cursor: pointer;"><i class="fas fa-crosshairs"></i> Get My Location</button>
+      <button id="send-location-btn" style="flex: 1; background: #06b6d4; color: white; padding: 0.75rem; border-radius: 0.25rem; font-weight: bold; border: none; cursor: pointer;" disabled><i class="fas fa-share"></i> Send Location</button>
+    </div>
+  </div>
+</div>
+
+<!-- Delete Modal -->
+<div id="delete-modal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: none; align-items: center; justify-content: center; z-index: 50;">
+  <div style="background: var(--main-bg); border-radius: 0.5rem; padding: 1.5rem; max-width: 28rem; margin: 0 1rem; border: 1px solid var(--main-border);">
+    <h3 style="font-size: 1.125rem; font-weight: bold; color: var(--body-color); margin-bottom: 1rem;">Delete Conversation?</h3>
+    <p style="color: #d1d5db; margin-bottom: 1.5rem;">Delete this conversation with {{ other_user.username or other_user.email.split('@')[0] }}? This cannot be undone.</p>
+    <div style="display: flex; gap: 0.75rem; justify-content: flex-end;">
+      <button id="cancel-delete" style="background: #4b5563; color: white; padding: 0.5rem 1rem; border-radius: 0.25rem; font-weight: bold; border: none; cursor: pointer;">Cancel</button>
+      <button id="confirm-delete" style="background: #ef4444; color: white; padding: 0.5rem 1rem; border-radius: 0.25rem; font-weight: bold; border: none; cursor: pointer;">Delete</button>
+    </div>
+  </div>
+</div>
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+<script>
+const conversationId = {{ conversation.id }};
+const currentUserId  = {{ current_user.id }};
+const otherUserId    = {{ other_user.id }};
+
+const socket = io();
+socket.emit('join_chat', { conversation_id: conversationId });
+socket.emit('mark_as_read', { conversation_id: conversationId });
+
+function scrollToBottom() {
+  const d = document.getElementById('messages');
+  d.scrollTop = d.scrollHeight;
+}
+
+function updateMessageTicks(messageId, isRead, delivered) {
+  const el = document.getElementById('tick-' + messageId);
+  if (!el) return;
+  if (isRead)      el.innerHTML = '<span style="color:#0099ff">✓✓</span>';
+  else if (delivered) el.innerHTML = '<span style="color:#999">✓✓</span>';
+  else             el.innerHTML = '<span style="color:#999">✓</span>';
+}
+
+// Search
+document.getElementById('search-input').addEventListener('keyup', function() {
+  const term = this.value.toLowerCase();
+  document.querySelectorAll('.message-item').forEach(item => {
+    const match = !term || item.getAttribute('data-content').includes(term);
+    item.style.display = match ? 'flex' : 'none';
+    item.style.backgroundColor = (match && term) ? 'rgba(34,197,94,.1)' : 'transparent';
+  });
+});
+
+// Delete
+document.getElementById('delete-chat-btn').addEventListener('click', () => document.getElementById('delete-modal').classList.remove('hidden'));
+document.getElementById('cancel-delete').addEventListener('click', () => document.getElementById('delete-modal').classList.add('hidden'));
+document.getElementById('delete-modal').addEventListener('click', e => { if (e.target === e.currentTarget) e.currentTarget.classList.add('hidden'); });
+document.getElementById('confirm-delete').addEventListener('click', function() {
+  fetch('/conversation/' + conversationId + '/delete', { method: 'POST', headers: {'Content-Type':'application/json'} })
+    .then(r => r.json())
+    .then(d => { if (d.success) { alert('Deleted'); window.location.href='/conversations'; } else alert('Error: ' + d.message); })
+    .catch(() => alert('Error deleting conversation'));
+});
+
+// Send message form (Socket.IO path — location handled separately below)
+document.getElementById('message-form').addEventListener('submit', function(e) {
+  e.preventDefault();
+  if (chatLocationData) { sendMessageWithLocation(); return; }
+  const input   = document.getElementById('message-input');
+  const content = input.value.trim();
+  if (!content) return;
+  socket.emit('send_message', { conversation_id: conversationId, receiver_id: otherUserId, content: content });
+  input.value = '';
+  input.focus();
+  socket.emit('typing', { conversation_id: conversationId, typing: false });
+});
+
+// ── SINGLE receive_message handler (location-aware) ──────────────
+socket.on('receive_message', function(data) {
+  const messagesDiv = document.getElementById('messages');
+  const msgDiv      = document.createElement('div');
+  const isLocation  = data.location_data && data.location_data.latitude;
+
+  if (data.sender_id === currentUserId) {
+    msgDiv.className = 'flex justify-end message-item';
+    const tick = data.is_read ? '<span style="color:#0099ff">✓✓</span>'
+               : !data.receiver_online ? '<span style="color:#999">✓</span>'
+               : '<span style="color:#999">✓✓</span>';
+    if (isLocation) {
+      msgDiv.innerHTML = `<div class="bg-green-600 text-white max-w-xs px-4 py-2 rounded-lg break-words">
+        <div class="location-message" style="max-width:100%;cursor:default">
+          <div class="location-icon">📍</div>
+          <div class="location-text">${data.content}</div>
+          <div class="location-time">${data.timestamp} <span id="tick-${data.id}">${tick}</span></div>
+        </div></div>`;
+    } else {
+      msgDiv.innerHTML = `<div class="bg-green-600 text-white max-w-xs px-4 py-2 rounded-lg break-words hover:bg-green-700 transition">
+        <p>${data.content}</p>
+        <p class="text-xs text-green-200 mt-1 flex items-center justify-end gap-2">
+          <span>${data.timestamp}</span><span id="tick-${data.id}">${tick}</span></p></div>`;
+    }
+  } else {
+    msgDiv.className = 'flex justify-start message-item';
+    if (isLocation) {
+      msgDiv.innerHTML = `<div class="bg-gray-700 text-gray-100 max-w-xs px-4 py-2 rounded-lg break-words">
+        <div class="location-message" style="background:linear-gradient(135deg,#0891b2,#0e7490);cursor:pointer"
+             onclick="openGoogleMaps(${data.location_data.latitude},${data.location_data.longitude})">
+          <div class="location-icon">📍</div>
+          <div class="location-text">${data.content}</div>
+          <div class="location-time">${data.timestamp}</div>
+        </div></div>`;
+    } else {
+      msgDiv.innerHTML = `<div class="bg-gray-700 text-gray-100 max-w-xs px-4 py-2 rounded-lg break-words hover:bg-gray-600 transition">
+        <p>${data.content}</p>
+        <p class="text-xs text-gray-400 mt-1">${data.timestamp}</p></div>`;
+    }
+  }
+
+  msgDiv.setAttribute('data-msg-id', data.id);
+  msgDiv.setAttribute('data-content', (data.content || '').toLowerCase());
+  messagesDiv.appendChild(msgDiv);
+  if (data.receiver_id === currentUserId) socket.emit('message_delivered', { message_id: data.id });
+  scrollToBottom();
+});
+
+socket.on('message_read_status',     d => updateMessageTicks(d.message_id, true, true));
+socket.on('message_delivery_status', d => updateMessageTicks(d.message_id, d.is_read, d.delivered));
+socket.on('user_online_status', function(d) {
+  if (d.user_id !== otherUserId) return;
+  document.getElementById('status').innerHTML = d.is_online
+    ? '<span class="text-green-400">🟢 Online</span>'
+    : '<span class="text-gray-500">⚫ Offline</span>';
+});
+socket.on('user_joined', () => { document.getElementById('status').innerHTML = '<span class="text-green-400">🟢 Online</span>'; });
+socket.on('user_left',   () => { document.getElementById('status').innerHTML = '<span class="text-gray-500">⚫ Offline</span>'; });
+socket.on('disconnect',  () => { document.getElementById('status').innerHTML = '<span class="text-red-500">❌ Disconnected</span>'; });
+socket.on('connect', function() {
+  socket.emit('join_chat', { conversation_id: conversationId });
+  fetch('/api/user/' + otherUserId + '/status').then(r => r.json()).then(d => {
+    document.getElementById('status').innerHTML = d.is_online
+      ? '<span class="text-green-400">🟢 Online</span>'
+      : '<span class="text-gray-500">⚫ Offline</span>';
+  });
+});
+
+// Typing indicator
+let typingTimeout;
+document.getElementById('message-input').addEventListener('input', function() {
+  socket.emit('typing', { conversation_id: conversationId, typing: true });
+  clearTimeout(typingTimeout);
+  typingTimeout = setTimeout(() => socket.emit('typing', { conversation_id: conversationId, typing: false }), 1000);
+});
+socket.on('user_typing', function(d) {
+  if (d.sender_id !== otherUserId) return;
+  document.getElementById('typing-user').textContent = d.sender_name;
+  document.getElementById('typing-indicator').style.display = d.is_typing ? 'block' : 'none';
+});
+
+window.addEventListener('focus',        () => socket.emit('message_read',  { conversation_id: conversationId }));
+window.addEventListener('beforeunload', () => socket.emit('leave_chat',    { conversation_id: conversationId }));
+
+function openGoogleMaps(lat, lon) { window.open('https://www.google.com/maps?q=' + lat + ',' + lon, '_blank'); }
+
+// ── LOCATION SHARING ─────────────────────────────────────────────
+let locationMap = null, userLocationMarker = null, currentLocationData = null;
+
+document.getElementById('share-location-btn').addEventListener('click', function() {
+  document.getElementById('location-modal').classList.remove('hidden');
+  setTimeout(() => { if (!locationMap) initializeLocationMap(); }, 100);
+});
+document.getElementById('close-location-modal').addEventListener('click', () => document.getElementById('location-modal').classList.add('hidden'));
+document.getElementById('location-modal').addEventListener('click', e => { if (e.target === e.currentTarget) e.currentTarget.classList.add('hidden'); });
+
+function initializeLocationMap() {
+  locationMap = L.map('location-map').setView([-1.2921, 36.8219], 12);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(locationMap);
+  getCurrentLocation();
+}
+
+document.getElementById('get-location-btn').addEventListener('click', getCurrentLocation);
+
+function getCurrentLocation() {
+  const btn = document.getElementById('get-location-btn');
+  if (!navigator.geolocation) { showLocationStatus('Geolocation not supported', 'error'); return; }
+  btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Getting...';
+  navigator.geolocation.getCurrentPosition(
+    function(pos) {
+      const lat = pos.coords.latitude, lon = pos.coords.longitude, acc = pos.coords.accuracy;
+      currentLocationData = { latitude: lat, longitude: lon, accuracy: acc };
+      locationMap.setView([lat, lon], 15);
+      if (userLocationMarker) locationMap.removeLayer(userLocationMarker);
+      userLocationMarker = L.marker([lat, lon]).addTo(locationMap).bindPopup('Your Location');
+      document.getElementById('modal-lat').textContent = lat.toFixed(6);
+      document.getElementById('modal-lon').textContent = lon.toFixed(6);
+      document.getElementById('modal-accuracy').textContent = Math.round(acc) + 'm';
+      document.getElementById('location-info').style.display = 'block';
+      document.getElementById('send-location-btn').disabled = false;
+      fetchAddress(lat, lon);
+      showLocationStatus('Location obtained!', 'success');
+      btn.disabled = false; btn.innerHTML = '<i class="fas fa-crosshairs"></i> Get My Location';
+    },
+    function(err) {
+      showLocationStatus('Unable to get location.', 'error');
+      btn.disabled = false; btn.innerHTML = '<i class="fas fa-crosshairs"></i> Get My Location';
+    }, { enableHighAccuracy: true, timeout: 10000 }
+  );
+}
+
+async function fetchAddress(lat, lon) {
+  try {
+    const r = await fetch('https://nominatim.openstreetmap.org/reverse?format=json&lat=' + lat + '&lon=' + lon);
+    const d = await r.json();
+    if (d.address) {
+      currentLocationData.city    = d.address.city || d.address.town || d.address.village || 'Unknown';
+      currentLocationData.country = d.address.country || 'Unknown';
+      currentLocationData.address = currentLocationData.city;
+      document.getElementById('modal-address').textContent = (d.display_name || '').substring(0, 50) + '...';
+    }
+  } catch(e) { document.getElementById('modal-address').textContent = 'Unable to get address'; }
+}
+
+function showLocationStatus(msg, type) {
+  const el = document.getElementById('location-status');
+  el.textContent = msg;
+  el.className = 'p-3 rounded-lg mb-4 text-center';
+  const styles = { success: ['rgba(16,185,129,.2)','#10b981','#10b981'], error: ['rgba(220,38,38,.2)','#dc2626','#dc2626'] };
+  const [bg, border, color] = styles[type] || ['rgba(8,145,178,.2)','#0891b2','#0891b2'];
+  el.style.cssText = 'background:' + bg + ';border:1px solid ' + border + ';color:' + color;
+  el.classList.remove('hidden');
+  if (type === 'success') setTimeout(() => el.classList.add('hidden'), 3000);
+}
+
+document.getElementById('send-location-btn').addEventListener('click', async function() {
+  if (!currentLocationData) { showLocationStatus('Get your location first', 'error'); return; }
+  this.disabled = true; this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sharing...';
+  const msg = '📍 ' + (currentLocationData.city || 'Location') + ', ' + (currentLocationData.country || '');
+  socket.emit('send_message', { conversation_id: conversationId, receiver_id: otherUserId, content: msg,
+    location_data: { latitude: currentLocationData.latitude, longitude: currentLocationData.longitude,
+      accuracy: currentLocationData.accuracy, city: currentLocationData.city, country: currentLocationData.country }
+  });
+  showLocationStatus('Location shared!', 'success');
+  setTimeout(() => { document.getElementById('location-modal').classList.add('hidden'); location.reload(); }, 1500);
+  this.disabled = false; this.innerHTML = '<i class="fas fa-share"></i> Send Location';
+});
+
+// ── LOCATION IN CHAT INPUT ────────────────────────────────────────
+let chatLocationData = null;
+const chatBtn  = document.getElementById('chatShareLocationBtn');
+const clearBtn = document.getElementById('clearLocationBtn');
+
+chatBtn.addEventListener('click', function() {
+  if (!navigator.geolocation) { alert('Geolocation not supported'); return; }
+  this.disabled = true; this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Getting...';
+  navigator.geolocation.getCurrentPosition(function(pos) {
+    chatLocationData = { latitude: pos.coords.latitude, longitude: pos.coords.longitude, accuracy: pos.coords.accuracy, timestamp: new Date() };
+    fetch('https://nominatim.openstreetmap.org/reverse?format=json&lat=' + pos.coords.latitude + '&lon=' + pos.coords.longitude)
+      .then(r => r.json()).then(d => {
+        if (d.address) {
+          chatLocationData.city    = d.address.city || d.address.town || 'Location';
+          chatLocationData.country = d.address.country || '';
+          chatLocationData.address = chatLocationData.city + ', ' + chatLocationData.country;
+        }
+        displayChatLocation(chatLocationData);
+        chatBtn.disabled = false; chatBtn.innerHTML = '<i class="fas fa-map-marker-alt"></i> Share Location';
+      }).catch(() => { displayChatLocation(chatLocationData); chatBtn.disabled = false; chatBtn.innerHTML = '<i class="fas fa-map-marker-alt"></i> Share Location'; });
+  }, function() { alert('Unable to get location'); chatBtn.disabled = false; chatBtn.innerHTML = '<i class="fas fa-map-marker-alt"></i> Share Location'; });
+});
+
+function displayChatLocation(d) {
+  document.getElementById('chatLocationCity').textContent    = d.address || (d.latitude.toFixed(4) + ', ' + d.longitude.toFixed(4));
+  document.getElementById('chatLocationCoords').textContent  = 'Coordinates: ' + d.latitude.toFixed(4) + ', ' + d.longitude.toFixed(4);
+  document.getElementById('chatLocationAccuracy').textContent= 'Accuracy: ±' + Math.round(d.accuracy) + 'm';
+  document.getElementById('chatLocationTime').textContent    = 'Captured: ' + d.timestamp.toLocaleTimeString();
+  document.getElementById('chatLocationDisplay').style.display = 'block';
+}
+
+clearBtn.addEventListener('click', function() {
+  chatLocationData = null;
+  document.getElementById('chatLocationDisplay').style.display = 'none';
+});
+
+async function sendMessageWithLocation() {
+  const msg  = document.getElementById('message-input').value.trim();
+  const cid  = document.getElementById('conversationId').value;
+  if (!chatLocationData) return;
+  try {
+    const r = await fetch('/send-message', { method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ message: msg, location: chatLocationData, conversation_id: parseInt(cid) }) });
+    const d = await r.json();
+    if (r.ok) { document.getElementById('message-input').value = ''; chatLocationData = null; document.getElementById('chatLocationDisplay').style.display='none'; location.reload(); }
+    else alert('Error: ' + d.error);
+  } catch(e) { alert('Failed: ' + e.message); }
+}
+
+scrollToBottom();
+</script>
 {% endblock %}

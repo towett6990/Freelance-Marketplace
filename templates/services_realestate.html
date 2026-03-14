@@ -1,0 +1,169 @@
+{% extends 'base.html' %}
+{% block title %}Real Estate — Property Listings Kenya{% endblock %}
+{% block content %}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<div class="mp-page">
+
+  <header class="mp-hero re-hero">
+    <div class="hero-mesh"></div>
+    <div class="hero-inner">
+      <div class="hero-icon-wrap"><i class="fas fa-building"></i></div>
+      <h1 class="hero-title">Real <span class="re-accent">Estate</span></h1>
+      <p class="hero-sub">{{ services|length }} properties listed — for sale, rent &amp; short stay</p>
+    </div>
+  </header>
+
+  <div class="mp-layout">
+
+    <aside class="mp-sidebar">
+      <form method="GET" action="{{ url_for('list_real_estate') }}">
+        <div class="sb-block">
+          <div class="sb-head"><i class="fas fa-sliders-h"></i><span>Filters</span><a href="{{ url_for('list_real_estate') }}" class="clear-link">Clear</a></div>
+
+          <div class="ff"><label class="fl">Search</label>
+            <div class="si-wrap"><i class="fas fa-search si"></i><input type="text" name="q" class="fi" placeholder="Apartment, house, land..." value="{{ q or '' }}"></div>
+          </div>
+
+          <div class="ff"><label class="fl">Listing Type</label>
+            <div class="chip-row">
+              <label class="chip {% if not listing_type %}ca{% endif %}"><input type="radio" name="listing_type" value="" {% if not listing_type %}checked{% endif %}>All</label>
+              {% for lt in ['For Sale','For Rent','Short Stay'] %}
+              <label class="chip {% if listing_type == lt %}ca{% endif %}"><input type="radio" name="listing_type" value="{{ lt }}" {% if listing_type == lt %}checked{% endif %}>{{ lt }}</label>
+              {% endfor %}
+            </div>
+          </div>
+
+          <div class="ff"><label class="fl">Property Type</label>
+            <select name="property_type" class="fs">
+              <option value="">All Types</option>
+              {% for pt in ['Apartment','House','Townhouse','Villa','Land','Commercial','Office','Studio'] %}
+              <option {% if property_type == pt %}selected{% endif %}>{{ pt }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="ff"><label class="fl">Bedrooms</label>
+            <div class="chip-row">
+              <label class="chip {% if not bedrooms %}ca{% endif %}"><input type="radio" name="bedrooms" value="" {% if not bedrooms %}checked{% endif %}>Any</label>
+              {% for b in ['Studio','1','2','3','4','5','6+'] %}
+              <label class="chip {% if bedrooms == b %}ca{% endif %}"><input type="radio" name="bedrooms" value="{{ b }}" {% if bedrooms == b %}checked{% endif %}>{{ b }}</label>
+              {% endfor %}
+            </div>
+          </div>
+
+          <div class="ff"><label class="fl">City</label>
+            <select name="location_city" class="fs">
+              <option value="">All Cities</option>
+              {% for c in ['Nairobi','Mombasa','Kisumu','Nakuru','Eldoret','Thika','Machakos','Nyeri','Meru'] %}
+              <option {% if location_city == c %}selected{% endif %}>{{ c }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="ff"><label class="fl">Furnished</label>
+            <select name="furnished" class="fs">
+              <option value="">Any</option>
+              {% for f in ['Furnished','Semi-Furnished','Unfurnished'] %}
+              <option {% if furnished == f %}selected{% endif %}>{{ f }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="ff"><label class="fl">Price Range (KES)</label>
+            <div class="rr"><input type="number" name="min_price" class="fi rh" placeholder="Min" value="{{ min_price or '' }}"><span class="rd">—</span><input type="number" name="max_price" class="fi rh" placeholder="Max" value="{{ max_price or '' }}"></div>
+          </div>
+
+          <div class="ff"><label class="fl">Sort By</label>
+            <select name="sort" class="fs">
+              <option value="newest" {% if sort_by == 'newest' or not sort_by %}selected{% endif %}>Newest First</option>
+              <option value="price_low" {% if sort_by == 'price_low' %}selected{% endif %}>Price: Low → High</option>
+              <option value="price_high" {% if sort_by == 'price_high' %}selected{% endif %}>Price: High → Low</option>
+            </select>
+          </div>
+        </div>
+        <button type="submit" class="btn-apply"><i class="fas fa-bolt"></i> Apply Filters</button>
+      </form>
+
+      <div class="sb-cta">
+        <i class="fas fa-home"></i>
+        <p>Have a property?</p>
+        <a href="{{ url_for('create_service') }}?category=real-estate" class="btn-post">List Property</a>
+      </div>
+    </aside>
+
+    <main class="mp-main">
+      <div class="res-bar">
+        <span class="rc"><strong>{{ services|length }}</strong> properties found
+          {% if listing_type %}<span class="rtag">{{ listing_type }}</span>{% endif %}
+          {% if location_city %}<span class="rtag">{{ location_city }}</span>{% endif %}
+        </span>
+        <div class="vtog">
+          <button class="vb va" id="gv"><i class="fas fa-th-large"></i></button>
+          <button class="vb" id="lv"><i class="fas fa-list"></i></button>
+        </div>
+      </div>
+
+      {% if services %}
+      <div class="prop-grid" id="pg">
+        {% for svc in services %}
+        {% set cd = svc.custom_data or {} %}
+        {% set sym = 'KSh' if (svc.currency or 'KES') == 'KES' else '$' %}
+        {% set lt = cd.get('listing_type','For Sale') %}
+        <article class="prop-card">
+          <div class="prop-img-wrap">
+            {% if svc.images %}
+              <img src="{{ url_for('static', filename='uploads/services/' ~ svc.images[0].filename) }}" alt="{{ svc.title }}" loading="lazy">
+            {% else %}
+              <div class="prop-img-ph" style="background:linear-gradient(135deg,#022c22,#065f46)"><i class="fas fa-building"></i></div>
+            {% endif %}
+            {% if cd.get('property_type') %}<span class="prop-type-badge">{{ cd.get('property_type') }}</span>{% endif %}
+            <span class="prop-listing-badge {{ 'for-sale' if lt == 'For Sale' else 'for-rent' }}">{{ lt }}</span>
+            {% if svc.images and svc.images|length > 1 %}<span class="img-count"><i class="fas fa-images"></i> {{ svc.images|length }}</span>{% endif %}
+          </div>
+          <div class="prop-body">
+            <h3 class="prop-title"><a href="{{ url_for('service_detail', service_id=svc.id) }}">{{ svc.title }}</a></h3>
+            {% if cd.get('location_city') or cd.get('neighborhood') %}
+            <div class="prop-loc"><i class="fas fa-map-marker-alt"></i>{{ cd.get('neighborhood','') }}{% if cd.get('neighborhood') and cd.get('location_city') %}, {% endif %}{{ cd.get('location_city','') }}</div>
+            {% endif %}
+            <div class="prop-stats">
+              {% if cd.get('bedrooms') %}<span class="ps"><i class="fas fa-bed"></i> {{ cd.get('bedrooms') }} bed</span>{% endif %}
+              {% if cd.get('bathrooms') %}<span class="ps"><i class="fas fa-bath"></i> {{ cd.get('bathrooms') }} bath</span>{% endif %}
+              {% if cd.get('area_sqm') %}<span class="ps"><i class="fas fa-vector-square"></i> {{ cd.get('area_sqm') }} m²</span>{% endif %}
+              {% if cd.get('furnished') %}<span class="ps"><i class="fas fa-couch"></i> {{ cd.get('furnished') }}</span>{% endif %}
+            </div>
+            <div class="prop-price">{{ sym }} {{ "{:,.0f}".format(svc.price|float) }}</div>
+            <div class="prop-footer">
+              <div class="seller-info">
+                <div class="s-av">{{ (svc.seller.username[0] if svc.seller else 'A')|upper }}</div>
+                <span class="s-name">{{ svc.seller.username if svc.seller else 'Agent' }}</span>
+                {% set r = svc.get_average_rating() %}{% if r > 0 %}<span class="s-rat">⭐ {{ "%.1f"|format(r) }}</span>{% endif %}
+              </div>
+              <a href="{{ url_for('service_detail', service_id=svc.id) }}" class="btn-view" style="background:linear-gradient(135deg,#059669,#10b981)">View →</a>
+            </div>
+          </div>
+        </article>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div class="empty"><div class="empty-ico"><i class="fas fa-building"></i></div><h3>No properties found</h3><p>Try adjusting your filters.</p><a href="{{ url_for('list_real_estate') }}" class="btn-apply" style="display:inline-flex;width:auto;padding:.6rem 1.5rem;margin-top:1rem">Clear Filters</a></div>
+      {% endif %}
+    </main>
+  </div>
+</div>
+
+{% include '_mp_css.html' %}
+<style>
+.re-hero{background:linear-gradient(135deg,#022c22 0%,#064e3b 50%,#065f46 100%)}
+.re-hero .hero-icon-wrap{background:rgba(16,185,129,.15);border-color:rgba(16,185,129,.35);color:#34d399}
+.re-accent{background:linear-gradient(135deg,#34d399,#10b981);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.prop-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:1.1rem}
+</style>
+<script>
+var pg=document.getElementById('pg'),gv=document.getElementById('gv'),lv=document.getElementById('lv');
+gv.onclick=function(){pg.className='prop-grid';gv.classList.add('va');lv.classList.remove('va')};
+lv.onclick=function(){pg.className='prop-list-view';lv.classList.add('va');gv.classList.remove('va')};
+</script>
+{% endblock %}

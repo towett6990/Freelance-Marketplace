@@ -1,300 +1,554 @@
 {% extends "base.html" %}
+{% block title %}{{ user.username }} — Profile{% endblock %}
+
+{% block styles %}
+<style>
+/* ══ PAGE WRAPPER ══════════════════════════════════════ */
+.profile-page { background: #080c1a; min-height: 100vh; padding-bottom: 4rem; }
+.container { max-width: 1200px; margin: 0 auto; padding: 0 1.5rem; }
+
+/* ══ HERO ══════════════════════════════════════════════ */
+.profile-hero { position: relative; padding: 3rem 0 2.5rem; overflow: hidden; }
+.hero-bg {
+  position: absolute; inset: 0;
+  background: linear-gradient(135deg, #0d1225 0%, #0a1628 50%, #0d1225 100%);
+  border-bottom: 1px solid rgba(0,255,200,.1);
+}
+.hero-bg::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse at 30% 50%, rgba(0,255,200,.06) 0%, transparent 60%);
+}
+.hero-content {
+  position: relative; display: flex; align-items: flex-start;
+  gap: 2rem; flex-wrap: wrap;
+}
+
+/* Avatar */
+.profile-avatar-wrap { position: relative; flex-shrink: 0; }
+.profile-avatar, .avatar-placeholder {
+  width: 120px; height: 120px; border-radius: 50%;
+  border: 3px solid rgba(0,255,200,.3);
+  box-shadow: 0 0 30px rgba(0,255,200,.2);
+  object-fit: cover;
+}
+.avatar-placeholder {
+  background: linear-gradient(135deg, #00ffc8, #00d4ff);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 2.8rem; font-weight: 700; color: #0a0e27;
+}
+.verified-badge {
+  position: absolute; bottom: 4px; right: 4px;
+  width: 28px; height: 28px; border-radius: 50%;
+  background: #22c55e; border: 3px solid #0d1225;
+  display: flex; align-items: center; justify-content: center;
+  color: #fff; font-size: .75rem;
+}
+
+/* Hero text */
+.hero-info { flex: 1; min-width: 220px; }
+.hero-name { color: #fff; font-size: 1.9rem; font-weight: 800; margin: 0 0 .6rem; }
+.hero-chips { display: flex; flex-wrap: wrap; gap: .4rem; margin-bottom: .8rem; }
+.chip {
+  display: inline-flex; align-items: center; gap: .3rem;
+  padding: .25rem .75rem; border-radius: 20px;
+  font-size: .75rem; font-weight: 600; letter-spacing: .02em;
+}
+.chip-seller  { background: rgba(0,255,200,.12); color: #00ffc8; border: 1px solid rgba(0,255,200,.25); }
+.chip-buyer   { background: rgba(99,102,241,.12); color: #818cf8; border: 1px solid rgba(99,102,241,.25); }
+.chip-admin   { background: rgba(239,68,68,.12);  color: #f87171; border: 1px solid rgba(239,68,68,.25); }
+.chip-verified{ background: rgba(34,197,94,.12);  color: #4ade80; border: 1px solid rgba(34,197,94,.25); }
+.chip-pending { background: rgba(245,158,11,.12); color: #fbbf24; border: 1px solid rgba(245,158,11,.25); }
+
+.hero-bio { color: #94a3b8; font-size: .95rem; line-height: 1.6; margin: 0 0 .5rem; max-width: 560px; }
+.hero-meta { color: #4b5563; font-size: .82rem; margin: 0; }
+.hero-meta i { margin-right: .35rem; }
+.muted { color: #4b5563 !important; }
+
+/* Action buttons */
+.hero-actions { display: flex; flex-direction: column; gap: .6rem; margin-left: auto; align-self: center; }
+.btn-hero-edit, .btn-hero-add {
+  display: inline-flex; align-items: center; gap: .5rem;
+  padding: .6rem 1.2rem; border-radius: 10px;
+  font-size: .85rem; font-weight: 600; text-decoration: none;
+  transition: all .25s; white-space: nowrap;
+}
+.btn-hero-edit {
+  background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.15); color: #e2e8f0;
+}
+.btn-hero-edit:hover { background: rgba(255,255,255,.12); color: #fff; }
+.btn-hero-add {
+  background: linear-gradient(135deg, #00ffc8, #00d4ff); color: #0a0e27; border: none;
+}
+.btn-hero-add:hover { box-shadow: 0 0 20px rgba(0,255,200,.4); transform: translateY(-1px); }
+
+/* ══ STATS BAR ══════════════════════════════════════════ */
+.stats-bar {
+  background: #0d1225; border-bottom: 1px solid rgba(255,255,255,.06);
+  padding: 1.1rem 0;
+}
+.stats-grid {
+  display: flex; align-items: center; justify-content: center;
+  gap: 0; flex-wrap: wrap;
+}
+.stat-item {
+  display: flex; flex-direction: column; align-items: center;
+  padding: 0 2.5rem; gap: .15rem;
+}
+.stat-value { color: #fff; font-size: 1.5rem; font-weight: 700; }
+.stat-label { color: #64748b; font-size: .75rem; text-transform: uppercase; letter-spacing: .06em; }
+.stat-divider { width: 1px; height: 40px; background: rgba(255,255,255,.08); }
+
+/* ══ BODY GRID ══════════════════════════════════════════ */
+.profile-body { padding-top: 2rem; }
+.profile-grid {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: 2rem;
+  align-items: start;
+}
+@media(max-width:900px) {
+  .profile-grid { grid-template-columns: 1fr; }
+}
+
+/* ══ SECTION HEADER ═════════════════════════════════════ */
+.section-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 1.2rem;
+}
+.section-header h2 {
+  color: #fff; font-size: 1.15rem; font-weight: 700; margin: 0;
+}
+.section-header h2 i { color: #00ffc8; margin-right: .5rem; }
+.btn-add-small {
+  display: inline-flex; align-items: center; gap: .4rem;
+  padding: .4rem .9rem; border-radius: 8px;
+  background: linear-gradient(135deg,#00ffc8,#00d4ff);
+  color: #0a0e27; font-size: .78rem; font-weight: 700;
+  text-decoration: none; transition: all .2s;
+}
+.btn-add-small:hover { box-shadow: 0 0 14px rgba(0,255,200,.4); }
+
+/* ══ SERVICES GRID ══════════════════════════════════════ */
+.services-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 1.2rem;
+}
+.service-card {
+  background: #0d1225; border: 1px solid rgba(255,255,255,.07);
+  border-radius: 14px; overflow: hidden; text-decoration: none;
+  transition: all .25s; display: flex; flex-direction: column;
+}
+.service-card:hover {
+  border-color: rgba(0,255,200,.25);
+  transform: translateY(-3px);
+  box-shadow: 0 8px 28px rgba(0,0,0,.4);
+}
+.scard-img { height: 140px; overflow: hidden; }
+.scard-img img { width: 100%; height: 100%; object-fit: cover; transition: transform .3s; }
+.service-card:hover .scard-img img { transform: scale(1.05); }
+.scard-img-placeholder {
+  height: 140px; background: rgba(255,255,255,.04);
+  display: flex; align-items: center; justify-content: center;
+  color: #2d3748; font-size: 2.5rem;
+}
+.scard-body { padding: .9rem; flex: 1; display: flex; flex-direction: column; }
+.scard-title { color: #e2e8f0; font-size: .9rem; font-weight: 600; margin: 0 0 .4rem; line-height: 1.3; }
+.scard-desc { color: #64748b; font-size: .78rem; line-height: 1.5; flex: 1; margin: 0 0 .6rem; }
+.scard-footer { display: flex; align-items: center; justify-content: space-between; }
+.scard-price { color: #00ffc8; font-weight: 700; font-size: .88rem; }
+.scard-rating { color: #fbbf24; font-size: .75rem; }
+.scard-rating i { font-size: .7rem; }
+
+/* ══ EMPTY STATE ════════════════════════════════════════ */
+.empty-state {
+  text-align: center; padding: 3rem 1.5rem;
+  background: #0d1225; border: 1px dashed rgba(255,255,255,.1);
+  border-radius: 16px;
+}
+.empty-state i { font-size: 2.8rem; color: #2d3748; margin-bottom: 1rem; display: block; }
+.empty-state p { color: #64748b; margin: 0 0 1rem; }
+.btn-primary-sm {
+  display: inline-flex; align-items: center; gap: .4rem;
+  padding: .55rem 1.2rem; border-radius: 8px;
+  background: linear-gradient(135deg,#00ffc8,#00d4ff);
+  color: #0a0e27; font-weight: 700; font-size: .85rem;
+  text-decoration: none;
+}
+
+/* ══ SIDEBAR ════════════════════════════════════════════ */
+.profile-sidebar { display: flex; flex-direction: column; gap: 1.2rem; }
+.sidebar-card {
+  background: #0d1225; border: 1px solid rgba(255,255,255,.07);
+  border-radius: 16px; padding: 1.2rem;
+}
+.sidebar-title {
+  color: #fff; font-size: .95rem; font-weight: 700;
+  margin: 0 0 1rem; display: flex; align-items: center; gap: .5rem;
+}
+.sidebar-title i { color: #00ffc8; }
+.badge-count {
+  margin-left: auto; background: rgba(0,255,200,.12);
+  color: #00ffc8; font-size: .7rem; padding: .1rem .5rem;
+  border-radius: 20px; font-weight: 600;
+}
+
+/* About list */
+.about-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: .65rem; }
+.about-list li { display: flex; align-items: center; gap: .6rem; color: #94a3b8; font-size: .85rem; }
+.about-list li i { color: #4b5563; width: 16px; text-align: center; flex-shrink: 0; }
+
+/* Rating summary */
+.rating-summary { text-align: center; padding: .75rem 0 1rem; border-bottom: 1px solid rgba(255,255,255,.07); margin-bottom: 1rem; }
+.rating-big { color: #fff; font-size: 2.5rem; font-weight: 800; line-height: 1; }
+.rating-max { font-size: 1rem; color: #64748b; }
+.rating-stars { margin: .4rem 0 .25rem; }
+.rating-count { color: #64748b; font-size: .78rem; }
+.star-filled { color: #f59e0b; }
+.star-empty  { color: #2d3748; }
+
+/* Reviews list */
+.reviews-list { display: flex; flex-direction: column; gap: 1rem; }
+.review-item { padding-bottom: 1rem; border-bottom: 1px solid rgba(255,255,255,.05); }
+.review-item:last-child { border-bottom: none; padding-bottom: 0; }
+.review-header { display: flex; align-items: flex-start; justify-content: space-between; gap: .5rem; margin-bottom: .4rem; }
+.review-author-info { display: flex; align-items: center; gap: .5rem; }
+.review-avatar {
+  width: 32px; height: 32px; border-radius: 50%;
+  object-fit: cover; flex-shrink: 0;
+}
+.review-avatar-ph {
+  background: linear-gradient(135deg,#667eea,#764ba2);
+  display: flex; align-items: center; justify-content: center;
+  font-size: .85rem; font-weight: 700; color: #fff;
+}
+.review-name { color: #e2e8f0; font-size: .82rem; font-weight: 600; display: block; }
+.review-date { color: #4b5563; font-size: .7rem; }
+.review-stars i { font-size: .7rem; }
+.review-text { color: #94a3b8; font-size: .82rem; line-height: 1.5; margin: 0; }
+.empty-state-sm {
+  text-align: center; padding: 1.5rem;
+  color: #4b5563; font-size: .85rem;
+}
+.empty-state-sm i { display: block; font-size: 1.6rem; margin-bottom: .5rem; }
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .profile-hero { padding: 2rem 0 1.5rem; }
+  .hero-content { flex-direction: column; align-items: center; text-align: center; }
+  .profile-avatar, .avatar-placeholder { width: 100px; height: 100px; }
+  .hero-name { font-size: 1.5rem; }
+  .hero-actions { margin-left: 0; margin-top: 1rem; width: 100%; }
+  .hero-actions a { width: 100%; justify-content: center; }
+  .stats-grid { gap: 0.5rem; }
+  .stat-item { padding: 0.5rem 1rem; }
+  .stat-divider { height: 30px; }
+  .services-grid { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 480px) {
+  .container { padding: 0 1rem; }
+  .profile-avatar, .avatar-placeholder { width: 80px; height: 80px; font-size: 2rem; }
+  .hero-name { font-size: 1.3rem; }
+  .chip { font-size: 0.7rem; padding: 0.2rem 0.5rem; }
+  .stat-item { padding: 0.25rem 0.75rem; }
+  .stat-value { font-size: 1.2rem; }
+  .profile-grid { gap: 1rem; }
+  .sidebar-card { padding: 1rem; }
+}
+</style>
+{% endblock %}
 {% block content %}
-<section class="bg-gradient-to-br from-slate-50 to-blue-50 min-h-screen py-12">
-  <div class="max-w-6xl mx-auto px-6">
+<div class="profile-page">
 
-    <!-- Profile Header -->
-    <div class="bg-white rounded-3xl shadow-2xl overflow-hidden mb-8">
-      <div class="bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 px-8 py-12">
-        <div class="flex flex-col md:flex-row items-center gap-8">
+  {# ══════════════════════════════════════════════════
+     HERO BANNER
+  ══════════════════════════════════════════════════ #}
+  <div class="profile-hero">
+    <div class="hero-bg"></div>
+    <div class="hero-content container">
 
-          <!-- Avatar Section -->
-          <div class="relative">
-            <div class="w-32 h-32 bg-white bg-opacity-20 rounded-full flex items-center justify-center border-4 border-white border-opacity-30">
-              <i class="fas fa-user text-white text-4xl"></i>
-            </div>
-            {% if user.is_verified %}
-            <div class="absolute -bottom-2 -right-2 bg-green-500 text-white rounded-full p-2 shadow-lg">
-              <i class="fas fa-check text-xs"></i>
-            </div>
-            {% endif %}
+      {# Avatar #}
+      <div class="profile-avatar-wrap">
+        {% if user.avatar %}
+          <img src="{{ url_for('static', filename='uploads/avatars/' ~ user.avatar) }}"
+               alt="{{ user.username }}" class="profile-avatar">
+        {% else %}
+          <div class="profile-avatar avatar-placeholder">
+            {{ (user.username or 'U')[0].upper() }}
           </div>
+        {% endif %}
 
-          <!-- Profile Info -->
-          <div class="flex-1 text-center md:text-left text-white">
-            <h1 class="text-4xl font-bold mb-2">{{ user.display_name() }}</h1>
-            <p class="text-blue-100 text-lg mb-4">Professional Freelancer</p>
+        {# Online / verification badge #}
+        {% if user.id_verified %}
+          <span class="verified-badge" title="ID Verified"><i class="fas fa-check-circle"></i></span>
+        {% endif %}
+      </div>
 
-            <!-- Verification Status -->
-            <div class="flex items-center justify-center md:justify-start gap-4 mb-6">
-              <div class="flex items-center gap-2">
-                <span class="text-sm font-medium">Status:</span>
-                {% if user.is_verified %}
-                  <span class="bg-green-500 bg-opacity-20 text-green-100 px-3 py-1 rounded-full text-sm font-medium border border-green-400 border-opacity-30">
-                    <i class="fas fa-shield-alt mr-1"></i>Verified
-                  </span>
-                {% else %}
-                  <span class="bg-yellow-500 bg-opacity-20 text-yellow-100 px-3 py-1 rounded-full text-sm font-medium border border-yellow-400 border-opacity-30">
-                    <i class="fas fa-clock mr-1"></i>Pending
-                  </span>
-                {% endif %}
-              </div>
-            </div>
+      {# Name + role chips #}
+      <div class="hero-info">
+        <h1 class="hero-name">{{ user.username or 'Anonymous' }}</h1>
 
-            <!-- Stats -->
-            <div class="grid grid-cols-3 gap-6 text-center">
-              <div>
-                <div class="text-2xl font-bold">{{ services|length }}</div>
-                <div class="text-blue-100 text-sm">Services</div>
-              </div>
-              <div>
-                <div class="text-2xl font-bold">4.8</div>
-                <div class="text-blue-100 text-sm">Rating</div>
-              </div>
-              <div>
-                <div class="text-2xl font-bold">127</div>
-                <div class="text-blue-100 text-sm">Reviews</div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Action Buttons -->
-          {% if current_user.id == user.id %}
-          <div class="flex flex-col gap-3">
-            <a href="{{ url_for('edit_profile') }}"
-               class="bg-white bg-opacity-20 text-white px-6 py-3 rounded-xl hover:bg-opacity-30 transition duration-300 border border-white border-opacity-30">
-              <i class="fas fa-edit mr-2"></i>Edit Profile
-            </a>
-            <a href="{{ url_for('create_service') }}"
-               class="bg-green-500 text-white px-6 py-3 rounded-xl hover:bg-green-600 transition duration-300">
-              <i class="fas fa-plus mr-2"></i>Add Service
-            </a>
-          </div>
+        <div class="hero-chips">
+          {# Role badge - now based on can_sell instead of role #}
+          {% if user.can_sell %}
+            <span class="chip chip-seller"><i class="fas fa-store"></i> Seller</span>
+          {% elif user.role == 'admin' %}
+            <span class="chip chip-admin"><i class="fas fa-shield-alt"></i> Admin</span>
           {% else %}
-          <div class="flex flex-col gap-3">
-            <a href="{{ url_for('message_user', user_id=user.id) }}"
-               class="bg-blue-500 text-white px-6 py-3 rounded-xl hover:bg-blue-600 transition duration-300">
-              <i class="fas fa-envelope mr-2"></i>Message
-            </a>
-            <a href="{{ url_for('conversations') }}"
-               class="bg-gray-100 text-gray-800 px-6 py-3 rounded-xl hover:bg-gray-200 transition duration-300">
-              <i class="fas fa-comments mr-2"></i>View Chat
-            </a>
-          </div>
+            <span class="chip chip-buyer"><i class="fas fa-user"></i> Buyer</span>
           {% endif %}
 
+          {# Verification status #}
+          {% if user.id_verified %}
+            <span class="chip chip-verified"><i class="fas fa-id-card"></i> ID Verified</span>
+          {% elif user.verification_status == 'pending' %}
+            <span class="chip chip-pending"><i class="fas fa-clock"></i> Pending Verification</span>
+          {% endif %}
         </div>
-      </div>
-    </div>
 
-    <!-- Services Section -->
-    <div class="mb-12">
-      <div class="flex items-center justify-between mb-8">
-        <h2 class="text-3xl font-bold text-gray-800">Services</h2>
-        {% if current_user.id == user.id %}
-        <a href="{{ url_for('create_service') }}"
-           class="bg-blue-600 text-white px-6 py-3 rounded-xl hover:bg-blue-700 transition duration-300">
-          <i class="fas fa-plus mr-2"></i>Add New Service
-        </a>
+        {# Bio #}
+        {% if user.bio %}
+          <p class="hero-bio">{{ user.bio }}</p>
+        {% else %}
+          <p class="hero-bio muted">No bio yet.</p>
         {% endif %}
+
+        {# Member since #}
+        <p class="hero-meta"><i class="fas fa-calendar-alt"></i> Member since {{ member_since }}</p>
       </div>
 
-      {% if services %}
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        {% for service in services %}
-        <div class="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition duration-300">
-
-          <!-- Service Image -->
-          <div class="aspect-w-16 aspect-h-9 bg-gray-200">
-            {% if service.image_list %}
-              <img src="{{ url_for('static', filename='uploads/services/' ~ service.image_list[0]) }}"
-                   class="w-full h-48 object-cover"
-                   alt="{{ service.title }}">
-            {% else %}
-              <div class="w-full h-48 bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center">
-                <i class="fas fa-image text-gray-400 text-3xl"></i>
-              </div>
-            {% endif %}
-          </div>
-
-          <!-- Service Content -->
-          <div class="p-6">
-            <h3 class="text-xl font-bold text-gray-800 mb-2">{{ service.title }}</h3>
-            <p class="text-gray-600 text-sm mb-4 line-clamp-2">{{ service.description[:120] }}{% if service.description|length > 120 %}...{% endif %}</p>
-
-            <div class="flex items-center justify-between mb-4">
-              <div class="text-2xl font-bold text-green-600">
-                ${{ "%.2f"|format(service.price) }}
-              </div>
-              {% if service.category %}
-              <span class="bg-blue-100 text-blue-800 text-xs px-3 py-1 rounded-full">
-                {{ service.category }}
-              </span>
-              {% endif %}
-            </div>
-
-            <div class="flex gap-3">
-              <a href="{{ url_for('service_detail', service_id=service.id) }}"
-                 class="flex-1 bg-gray-100 text-gray-800 text-center py-2 px-4 rounded-lg hover:bg-gray-200 transition duration-300 text-sm font-medium">
-                View Details
-              </a>
-              {% if current_user.id == user.id %}
-              <a href="{{ url_for('edit_service', id=service.id) }}"
-                 class="bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition duration-300 text-sm font-medium">
-                <i class="fas fa-edit"></i>
-              </a>
-              {% endif %}
-            </div>
-          </div>
-
+      {# Action buttons (only shown to profile owner) #}
+      {% if current_user.is_authenticated and current_user.id == user.id %}
+        <div class="hero-actions">
+          <a href="{{ url_for('edit_profile') }}" class="btn-hero-edit">
+            <i class="fas fa-pen"></i> Edit Profile
+          </a>
+          {% if user.can_sell %}
+            <a href="{{ url_for('post_service') }}" class="btn-hero-add">
+              <i class="fas fa-plus"></i> Add Service
+            </a>
+          {% else %}
+            {# Show "Become a Seller" button for users who can sell but haven't enabled it #}
+            <form method="POST" action="{{ url_for('become_seller') }}" style="display:inline;">
+              <button type="submit" class="btn-hero-add" style="border:none;cursor:pointer;">
+                <i class="fas fa-store"></i> Enable Selling
+              </button>
+            </form>
+          {% endif %}
         </div>
-        {% endfor %}
-      </div>
-      {% else %}
-      <div class="bg-white rounded-2xl shadow-lg p-12 text-center">
-        <div class="w-24 h-24 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6">
-          <i class="fas fa-plus-circle text-blue-600 text-3xl"></i>
+      {% elif current_user.is_authenticated and current_user.id != user.id %}
+        <div class="hero-actions">
+          <a href="{{ url_for('profile', username=user.username) }}" class="btn-hero-edit">
+            <i class="fas fa-comment"></i> Message
+          </a>
         </div>
-        <h3 class="text-2xl font-bold text-gray-800 mb-4">No Services Yet</h3>
-        <p class="text-gray-600 mb-8">This freelancer hasn't uploaded any services yet.</p>
-        {% if current_user.id == user.id %}
-        <a href="{{ url_for('create_service') }}"
-           class="bg-blue-600 text-white px-8 py-3 rounded-xl hover:bg-blue-700 transition duration-300 inline-block">
-          <i class="fas fa-upload mr-2"></i>Create Your First Service
-        </a>
-        {% endif %}
-      </div>
       {% endif %}
     </div>
+  </div>
 
-    <!-- Reviews Section -->
-    <div class="bg-white rounded-2xl shadow-lg p-8">
-      <h2 class="text-2xl font-bold text-gray-800 mb-6">Reviews & Ratings</h2>
-      <div class="text-center py-12">
-        <div class="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-4">
-          <i class="fas fa-star text-yellow-500 text-xl"></i>
-        </div>
-        <p class="text-gray-600">No reviews yet</p>
+  {# ══════════════════════════════════════════════════
+     STATS BAR
+  ══════════════════════════════════════════════════ #}
+  <div class="stats-bar">
+    <div class="container stats-grid">
+      <div class="stat-item">
+        <span class="stat-value">{{ total_services }}</span>
+        <span class="stat-label">Services</span>
+      </div>
+      <div class="stat-divider"></div>
+      <div class="stat-item">
+        <span class="stat-value">
+          {% if avg_rating > 0 %}
+            <i class="fas fa-star" style="color:#f59e0b;font-size:.9em"></i> {{ avg_rating }}
+          {% else %}
+            —
+          {% endif %}
+        </span>
+        <span class="stat-label">Avg Rating</span>
+      </div>
+      <div class="stat-divider"></div>
+      <div class="stat-item">
+        <span class="stat-value">{{ total_reviews }}</span>
+        <span class="stat-label">Reviews</span>
+      </div>
+      <div class="stat-divider"></div>
+      <div class="stat-item">
+        <span class="stat-value">{{ completed_orders }}</span>
+        <span class="stat-label">Completed</span>
       </div>
     </div>
-
   </div>
-</section>
 
-<style>
-  @keyframes fade-in {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-  .animate-fade-in {
-    animation: fade-in 0.7s ease-out;
-  }
-  
-  /* Media Preview Grid */
-  .media-preview-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-    gap: 1rem;
-    margin-top: 1rem;
-  }
-  
-  .media-preview-item {
-    position: relative;
-    border-radius: 8px;
-    overflow: hidden;
-    background: #2a2a2a;
-    aspect-ratio: 4/3;
-    transition: all 0.3s ease;
-  }
-  
-  .media-preview-item:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-  }
-  
-  .preview-media {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
-  }
-  
-  .media-overlay {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    background: linear-gradient(transparent, rgba(0, 0, 0, 0.8));
-    padding: 0.5rem;
-    transform: translateY(100%);
-    transition: all 0.3s ease;
-  }
-  
-  .media-preview-item:hover .media-overlay {
-    transform: translateY(0);
-  }
-  
-  .media-price {
-    color: #10b981;
-    font-size: 0.8rem;
-    font-weight: 600;
-    display: flex;
-    align-items: center;
-    gap: 0.3rem;
-    margin-bottom: 0.3rem;
-  }
-  
-  .media-type {
-    color: #9ca3af;
-    font-size: 0.7rem;
-    display: flex;
-    align-items: center;
-    gap: 0.3rem;
-  }
-  
-  .line-clamp-2 {
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-  }
-  
-  .line-clamp-3 {
-    display: -webkit-box;
-    -webkit-line-clamp: 3;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-  }
+  {# ══════════════════════════════════════════════════
+     MAIN BODY
+  ══════════════════════════════════════════════════ #}
+  <div class="container profile-body">
+    <div class="profile-grid">
 
-  /* Contact Link */
-  .contact-link {
-    color: #2563eb;
-    text-decoration: none;
-    font-size: 0.875rem;
-    font-weight: 500;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.25rem;
-    margin-top: 0.25rem;
-    padding: 0.5rem 0.75rem;
-    background: rgba(37, 99, 235, 0.1);
-    border-radius: 6px;
-    transition: all 0.3s ease;
-  }
+      {# ── LEFT: services ──────────────────────────── #}
+      <div class="profile-main">
+        <div class="section-header">
+          <h2><i class="fas fa-th-large"></i> Services</h2>
+          {% if current_user.is_authenticated and current_user.id == user.id and user.can_sell %}
+            <a href="{{ url_for('post_service') }}" class="btn-add-small">
+              <i class="fas fa-plus"></i> Add New
+            </a>
+          {% endif %}
+        </div>
 
-  .contact-link:hover {
-    background: rgba(37, 99, 235, 0.2);
-    color: #1d4ed8;
-    text-decoration: none;
-    transform: translateY(-1px);
-  }
+        {% if services %}
+          <div class="services-grid">
+            {% for service in services %}
+              <a href="{{ url_for('service_detail', service_id=service.id) }}" class="service-card">
+                {# Image #}
+                {% if service.images %}
+                  <div class="scard-img">
+                    <img src="{{ url_for('static', filename='uploads/services/' ~ service.images[0].filename) }}"
+                         alt="{{ service.title }}">
+                  </div>
+                {% else %}
+                  <div class="scard-img scard-img-placeholder">
+                    <i class="fas fa-image"></i>
+                  </div>
+                {% endif %}
 
-  /* Responsive adjustments */
-  @media (max-width: 768px) {
-    .media-preview-grid {
-      grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-      gap: 0.75rem;
-    }
-  }
-</style>
+                <div class="scard-body">
+                  <h3 class="scard-title">{{ service.title }}</h3>
+                  <p class="scard-desc">{{ (service.description or '')[:90] }}{% if (service.description or '')|length > 90 %}…{% endif %}</p>
+                  <div class="scard-footer">
+                    <span class="scard-price">KES {{ "{:,.0f}".format(service.price) }}</span>
+                    {% set rating = service.get_average_rating() %}
+                    {% set rcount = service.get_review_count() %}
+                    {% if rcount > 0 %}
+                      <span class="scard-rating">
+                        <i class="fas fa-star"></i> {{ rating }} ({{ rcount }})
+                      </span>
+                    {% endif %}
+                  </div>
+                </div>
+              </a>
+            {% endfor %}
+          </div>
+
+        {% else %}
+          <div class="empty-state">
+            <i class="fas fa-box-open"></i>
+            {% if current_user.is_authenticated and current_user.id == user.id %}
+              <p>You haven't posted any services yet.</p>
+              {% if user.can_sell %}
+                <a href="{{ url_for('post_service') }}" class="btn-primary-sm">
+                  <i class="fas fa-plus"></i> Create Your First Service
+                </a>
+              {% else %}
+                <form method="POST" action="{{ url_for('become_seller') }}" style="display:inline;">
+                  <button type="submit" class="btn-primary-sm" style="border:none;cursor:pointer;">
+                    <i class="fas fa-store"></i> Enable Selling
+                  </button>
+                </form>
+              {% endif %}
+            {% else %}
+              <p>This user hasn't posted any services yet.</p>
+            {% endif %}
+          </div>
+        {% endif %}
+      </div>
+
+      {# ── RIGHT: sidebar ──────────────────────────── #}
+      <div class="profile-sidebar">
+
+        {# About card #}
+        <div class="sidebar-card">
+          <h3 class="sidebar-title"><i class="fas fa-user-circle"></i> About</h3>
+          <ul class="about-list">
+            <li>
+              <i class="fas fa-envelope"></i>
+              {% if current_user.is_authenticated and current_user.id == user.id %}
+                {{ user.email }}
+              {% else %}
+                <span class="muted">Hidden for privacy</span>
+              {% endif %}
+            </li>
+            {% if user.mpesa_phone and current_user.is_authenticated and current_user.id == user.id %}
+              <li><i class="fas fa-mobile-alt"></i> {{ user.mpesa_phone }}</li>
+            {% endif %}
+            <li><i class="fas fa-calendar-alt"></i> Joined {{ member_since }}</li>
+            <li>
+              <i class="fas fa-shield-alt"></i>
+              {% if user.id_verified %}
+                <span style="color:#22c55e">Identity Verified</span>
+              {% elif user.verification_status == 'pending' %}
+                <span style="color:#f59e0b">Verification Pending</span>
+              {% else %}
+                <span class="muted">Not Verified</span>
+              {% endif %}
+            </li>
+          </ul>
+        </div>
+
+        {# Reviews sidebar #}
+        <div class="sidebar-card">
+          <h3 class="sidebar-title"><i class="fas fa-star"></i> Reviews
+            <span class="badge-count">{{ total_reviews }}</span>
+          </h3>
+
+          {% if all_reviews %}
+            {# Rating breakdown #}
+            <div class="rating-summary">
+              <div class="rating-big">
+                {{ avg_rating }}<span class="rating-max">/5</span>
+              </div>
+              <div class="rating-stars">
+                {% for i in range(1, 6) %}
+                  <i class="fas fa-star {% if i <= avg_rating|round %}star-filled{% else %}star-empty{% endif %}"></i>
+                {% endfor %}
+              </div>
+              <div class="rating-count">{{ total_reviews }} review{{ 's' if total_reviews != 1 }}</div>
+            </div>
+
+            {# Recent reviews (max 5) #}
+            <div class="reviews-list">
+              {% for review in all_reviews[:5] %}
+                <div class="review-item">
+                  <div class="review-header">
+                    <div class="review-author-info">
+                      {% if review.reviewer and review.reviewer.avatar %}
+                        <img src="{{ url_for('static', filename='uploads/avatars/' ~ review.reviewer.avatar) }}"
+                             class="review-avatar" alt="">
+                      {% else %}
+                        <div class="review-avatar review-avatar-ph">
+                          {{ (review.reviewer.username or 'U')[0].upper() if review.reviewer else 'U' }}
+                        </div>
+                      {% endif %}
+                      <div>
+                        <span class="review-name">{{ review.reviewer.username if review.reviewer else 'Anonymous' }}</span>
+                        <span class="review-date">{{ review.created_at.strftime('%d %b %Y') if review.created_at else '' }}</span>
+                      </div>
+                    </div>
+                    <div class="review-stars">
+                      {% for i in range(1, 6) %}
+                        <i class="fas fa-star {% if i <= review.overall_rating %}star-filled{% else %}star-empty{% endif %}"></i>
+                      {% endfor %}
+                    </div>
+                  </div>
+                  {% if review.comment %}
+                    <p class="review-text">{{ review.comment }}</p>
+                  {% endif %}
+                </div>
+              {% endfor %}
+            </div>
+
+          {% else %}
+            <div class="empty-state-sm">
+              <i class="fas fa-comment-slash"></i>
+              <p>No reviews yet</p>
+            </div>
+          {% endif %}
+        </div>
+
+      </div>{# /sidebar #}
+    </div>{# /profile-grid #}
+  </div>{# /container #}
+</div>{# /profile-page #}
 {% endblock %}

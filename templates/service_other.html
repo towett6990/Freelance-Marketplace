@@ -1,0 +1,135 @@
+{% extends 'base.html' %}
+{% block title %}Other Listings — General Marketplace{% endblock %}
+{% block content %}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<div class="mp-page">
+
+  <header class="mp-hero other-hero">
+    <div class="hero-mesh"></div>
+    <div class="hero-inner">
+      <div class="hero-icon-wrap"><i class="fas fa-th-large"></i></div>
+      <h1 class="hero-title">General <span class="ot-accent">Listings</span></h1>
+      <p class="hero-sub">{{ services|length }} items — furniture, books, pets, tools and more</p>
+    </div>
+  </header>
+
+  <div class="mp-layout">
+
+    <aside class="mp-sidebar">
+      <form method="GET" action="{{ url_for('list_other') }}">
+        <div class="sb-block">
+          <div class="sb-head"><i class="fas fa-sliders-h"></i><span>Filters</span><a href="{{ url_for('list_other') }}" class="clear-link">Clear</a></div>
+
+          <div class="ff"><label class="fl">Search</label>
+            <div class="si-wrap"><i class="fas fa-search si"></i><input type="text" name="q" class="fi" placeholder="Anything..." value="{{ q or '' }}"></div>
+          </div>
+
+          <div class="ff"><label class="fl">Sub-Category</label>
+            <input type="text" name="sub_cat" class="fi" placeholder="e.g. Furniture, Books, Pets" value="{{ sub_cat or '' }}">
+          </div>
+
+          <div class="ff"><label class="fl">Condition</label>
+            <div class="chip-row">
+              <label class="chip {% if not condition %}ca{% endif %}"><input type="radio" name="condition" value="" {% if not condition %}checked{% endif %}>Any</label>
+              {% for c in ['New','Like New','Good','Fair'] %}
+              <label class="chip {% if condition == c %}ca{% endif %}"><input type="radio" name="condition" value="{{ c }}" {% if condition == c %}checked{% endif %}>{{ c }}</label>
+              {% endfor %}
+            </div>
+          </div>
+
+          <div class="ff"><label class="fl">Price (KES)</label>
+            <div class="rr"><input type="number" name="min_price" class="fi rh" placeholder="Min" value="{{ min_price or '' }}"><span class="rd">—</span><input type="number" name="max_price" class="fi rh" placeholder="Max" value="{{ max_price or '' }}"></div>
+          </div>
+
+          <div class="ff"><label class="fl">Sort By</label>
+            <select name="sort" class="fs">
+              <option value="newest" {% if sort_by == 'newest' or not sort_by %}selected{% endif %}>Newest First</option>
+              <option value="price_low" {% if sort_by == 'price_low' %}selected{% endif %}>Price: Low → High</option>
+              <option value="price_high" {% if sort_by == 'price_high' %}selected{% endif %}>Price: High → Low</option>
+              <option value="rating" {% if sort_by == 'rating' %}selected{% endif %}>Highest Rated</option>
+            </select>
+          </div>
+        </div>
+        <button type="submit" class="btn-apply"><i class="fas fa-bolt"></i> Apply Filters</button>
+      </form>
+
+      <div class="sb-cta">
+        <i class="fas fa-plus-circle"></i>
+        <p>Have something to sell?</p>
+        <a href="{{ url_for('create_service') }}?category=other" class="btn-post">Post Listing</a>
+      </div>
+    </aside>
+
+    <main class="mp-main">
+      <div class="res-bar">
+        <span class="rc"><strong>{{ services|length }}</strong> listings found
+          {% if sub_cat %}<span class="rtag">{{ sub_cat }}</span>{% endif %}
+          {% if condition %}<span class="rtag">{{ condition }}</span>{% endif %}
+        </span>
+        <div class="vtog">
+          <button class="vb va" id="gv"><i class="fas fa-th-large"></i></button>
+          <button class="vb" id="lv"><i class="fas fa-list"></i></button>
+        </div>
+      </div>
+
+      {% if services %}
+      <div class="prod-grid" id="pg">
+        {% for svc in services %}
+        {% set cd = svc.custom_data or {} %}
+        {% set sym = 'KSh' if (svc.currency or 'KES') == 'KES' else '$' %}
+        {% set cond_cls = cd.get('condition','').lower().replace(' ','-') %}
+        <article class="prod-card">
+          <a href="{{ url_for('service_detail', service_id=svc.id) }}" class="card-img-link">
+            {% if svc.images %}
+              <img src="{{ url_for('static', filename='uploads/services/' ~ svc.images[0].filename) }}" class="card-img" alt="{{ svc.title }}" loading="lazy">
+            {% else %}
+              <div class="card-img-ph" style="background:linear-gradient(135deg,#1c1917,#44403c)"><i class="fas fa-box-open"></i></div>
+            {% endif %}
+            {% if cd.get('condition') %}<span class="cond-badge cond-{{ cond_cls }}">{{ cd.get('condition') }}</span>{% endif %}
+          </a>
+          <div class="card-body">
+            <h3 class="card-title"><a href="{{ url_for('service_detail', service_id=svc.id) }}">{{ svc.title }}</a></h3>
+            <div class="card-meta-row">
+              {% if cd.get('sub_category') %}<span class="cm"><i class="fas fa-tag"></i> {{ cd.get('sub_category') }}</span>{% endif %}
+              {% if cd.get('location') %}<span class="cm"><i class="fas fa-map-marker-alt"></i> {{ cd.get('location') }}</span>{% endif %}
+              {% if cd.get('price_type') %}<span class="cm"><i class="fas fa-exchange-alt"></i> {{ cd.get('price_type') }}</span>{% endif %}
+            </div>
+            {% if svc.price and svc.price > 0 %}
+            <div class="card-price">{{ sym }} {{ "{:,.0f}".format(svc.price|float) }}</div>
+            {% else %}
+            <div class="card-price" style="color:#fbbf24">Negotiable</div>
+            {% endif %}
+            <div class="card-footer-row">
+              <div class="seller-info">
+                <div class="s-av">{{ (svc.seller.username[0] if svc.seller else 'S')|upper }}</div>
+                <span class="s-name">{{ svc.seller.username if svc.seller else 'Seller' }}</span>
+                {% set r = svc.get_average_rating() %}{% if r > 0 %}<span class="s-rat">⭐ {{ "%.1f"|format(r) }}</span>{% endif %}
+              </div>
+              <a href="{{ url_for('service_detail', service_id=svc.id) }}" class="btn-view" style="background:linear-gradient(135deg,#57534e,#44403c)">View →</a>
+            </div>
+          </div>
+        </article>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div class="empty"><div class="empty-ico"><i class="fas fa-box-open"></i></div><h3>No listings found</h3><p>Be the first to post in this category!</p><a href="{{ url_for('create_service') }}?category=other" class="btn-apply" style="display:inline-flex;width:auto;padding:.6rem 1.5rem;margin-top:1rem">Post Now</a></div>
+      {% endif %}
+    </main>
+  </div>
+</div>
+
+{% include '_mp_css.html' %}
+<style>
+.other-hero{background:linear-gradient(135deg,#1c1917 0%,#292524 50%,#44403c 100%)}
+.other-hero .hero-icon-wrap{background:rgba(120,113,108,.2);border-color:rgba(120,113,108,.4);color:#d6d3d1}
+.ot-accent{background:linear-gradient(135deg,#d6d3d1,#a8a29e);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+</style>
+<script>
+var pg=document.getElementById('pg'),gv=document.getElementById('gv'),lv=document.getElementById('lv');
+gv.onclick=function(){pg.className='prod-grid';gv.classList.add('va');lv.classList.remove('va')};
+lv.onclick=function(){pg.className='prod-list';lv.classList.add('va');gv.classList.remove('va')};
+</script>
+{% endblock %}

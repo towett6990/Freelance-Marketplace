@@ -1,0 +1,630 @@
+{% extends 'base.html' %}
+{% block title %}Seller Dashboard — FreelancingHub{% endblock %}
+{% block content %}
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+<style>
+:root{--bg:#0a0e27;--bg2:#0f1429;--bg3:#1a1f3a;--cyan:#00ffc8;--blue:#00d4ff;
+  --purple:#a855f7;--orange:#f97316;--green:#22c55e;--red:#ef4444;--yellow:#eab308;
+  --txt:#e0e0e0;--muted:#a0a0a0;--bdr:rgba(0,255,200,.12)}
+
+.db-wrap{max-width:1400px;margin:0 auto;padding:2rem 2rem 5rem;font-family:'Inter',sans-serif}
+
+/* ── HEADER ── */
+.db-header{
+  background:linear-gradient(135deg,#0f0c29,#1a1a2e,#16213e);
+  border:1px solid var(--bdr);border-radius:20px;padding:2rem 2.5rem;
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:2rem;position:relative;overflow:hidden}
+.db-header::before{content:'';position:absolute;inset:0;
+  background:radial-gradient(circle at 80% 50%,rgba(0,255,200,.06),transparent 55%)}
+.db-header-left{position:relative;z-index:2}
+.db-hello{color:var(--muted);font-size:.9rem;margin-bottom:.3rem}
+.db-hello strong{color:var(--cyan)}
+.db-title{font-family:'Poppins',sans-serif;font-size:1.8rem;font-weight:800;color:#fff}
+.db-header-right{display:flex;gap:.8rem;position:relative;z-index:2}
+.db-btn{padding:.7rem 1.4rem;border-radius:10px;font-weight:600;font-size:.88rem;
+  text-decoration:none;display:inline-flex;align-items:center;gap:.4rem;
+  transition:all .3s;cursor:pointer;border:none;font-family:inherit}
+.db-btn-solid{background:linear-gradient(135deg,var(--cyan),var(--blue));color:#0a0e27}
+.db-btn-solid:hover{box-shadow:0 0 20px rgba(0,255,200,.5);transform:translateY(-2px);color:#0a0e27}
+.db-btn-ghost{background:transparent;color:var(--cyan);border:1.5px solid var(--cyan)}
+.db-btn-ghost:hover{background:rgba(0,255,200,.1)}
+
+/* ── KPI CARDS ── */
+.db-kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1.2rem;margin-bottom:2rem}
+.db-kpi{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);
+  border-radius:16px;padding:1.4rem 1.6rem;position:relative;overflow:hidden;
+  transition:transform .3s,border-color .3s}
+.db-kpi:hover{transform:translateY(-4px);border-color:rgba(0,255,200,.25)}
+.db-kpi::after{content:'';position:absolute;top:-40%;right:-30%;
+  width:120px;height:120px;border-radius:50%;opacity:.06;
+  background:var(--kpi-color,var(--cyan))}
+.db-kpi-icon{width:42px;height:42px;border-radius:12px;
+  background:rgba(255,255,255,.06);display:flex;align-items:center;
+  justify-content:center;font-size:1.1rem;margin-bottom:.9rem;
+  color:var(--kpi-color,var(--cyan))}
+.db-kpi-val{font-family:'Poppins',sans-serif;font-size:1.9rem;font-weight:800;
+  color:#fff;line-height:1;margin-bottom:.3rem}
+.db-kpi-lbl{color:var(--muted);font-size:.8rem;font-weight:500;text-transform:uppercase;letter-spacing:.04em}
+.db-kpi-change{display:inline-flex;align-items:center;gap:.3rem;font-size:.75rem;
+  font-weight:600;margin-top:.5rem;padding:.2rem .5rem;border-radius:20px}
+.db-kpi-change.up{color:var(--green);background:rgba(34,197,94,.1)}
+.db-kpi-change.down{color:var(--red);background:rgba(239,68,68,.1)}
+.db-kpi-change.neutral{color:var(--muted);background:rgba(255,255,255,.06)}
+
+/* ── TWO COLUMN LAYOUT ── */
+.db-row{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-bottom:1.5rem}
+.db-row-3{display:grid;grid-template-columns:2fr 1fr;gap:1.5rem;margin-bottom:1.5rem}
+.db-row-wide{grid-column:1/-1}
+
+/* ── CARDS ── */
+.db-card{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);
+  border-radius:16px;padding:1.5rem;height:100%}
+.db-card-title{font-family:'Poppins',sans-serif;font-size:.95rem;font-weight:700;
+  color:#fff;margin-bottom:1.2rem;display:flex;align-items:center;gap:.6rem}
+.db-card-title i{color:var(--cyan);font-size:.9rem}
+.db-card-title .db-badge{background:rgba(0,255,200,.12);color:var(--cyan);
+  font-size:.7rem;padding:.2rem .55rem;border-radius:20px;font-weight:700;
+  margin-left:auto}
+
+/* ── CHART ── */
+.db-chart-wrap{position:relative;height:200px;margin-bottom:.5rem}
+canvas{max-height:200px}
+.db-chart-labels{display:flex;justify-content:space-between;padding:0 4px;
+  color:var(--muted);font-size:.72rem}
+
+/* ── RATING BREAKDOWN ── */
+.db-rating-big{text-align:center;padding:1rem 0 1.5rem}
+.db-rating-num{font-family:'Poppins',sans-serif;font-size:3.5rem;font-weight:900;
+  background:linear-gradient(135deg,var(--cyan),var(--blue));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  line-height:1}
+.db-rating-stars{color:var(--yellow);font-size:1.1rem;margin:.4rem 0}
+.db-rating-count{color:var(--muted);font-size:.82rem}
+.db-rbar-row{display:flex;align-items:center;gap:.8rem;margin-bottom:.5rem}
+.db-rbar-lbl{color:var(--muted);font-size:.78rem;width:14px;text-align:right;flex-shrink:0}
+.db-rbar-track{flex:1;height:6px;background:rgba(255,255,255,.08);border-radius:3px;overflow:hidden}
+.db-rbar-fill{height:100%;border-radius:3px;
+  background:linear-gradient(90deg,var(--cyan),var(--blue));
+  transition:width .8s ease}
+.db-rbar-count{color:var(--muted);font-size:.75rem;width:24px;text-align:right;flex-shrink:0}
+
+/* ── TOP SERVICES ── */
+.db-svc-row{display:flex;align-items:center;gap:.9rem;
+  padding:.75rem 0;border-bottom:1px solid rgba(255,255,255,.06)}
+.db-svc-row:last-child{border-bottom:none}
+.db-svc-rank{font-family:'Poppins',sans-serif;font-size:.85rem;font-weight:800;
+  color:rgba(255,255,255,.2);width:18px;flex-shrink:0}
+.db-svc-img{width:40px;height:40px;border-radius:8px;object-fit:cover;
+  background:rgba(255,255,255,.08);flex-shrink:0;display:flex;align-items:center;
+  justify-content:center;color:var(--cyan);font-size:.9rem}
+.db-svc-info{flex:1;min-width:0}
+.db-svc-name{color:#e0e0e0;font-size:.85rem;font-weight:600;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.db-svc-cat{color:var(--muted);font-size:.73rem}
+.db-svc-orders{color:var(--cyan);font-size:.78rem;font-weight:700;flex-shrink:0}
+
+/* ── RESPONSE TIME ── */
+.db-resp-display{text-align:center;padding:1.5rem 1rem}
+.db-resp-num{font-family:'Poppins',sans-serif;font-size:2.8rem;font-weight:900;
+  background:linear-gradient(135deg,var(--cyan),var(--blue));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.db-resp-lbl{color:var(--muted);font-size:.82rem}
+.db-resp-tip{font-size:.75rem;padding:.3rem .8rem;border-radius:20px;
+  display:inline-flex;align-items:center;gap:.3rem;margin-top:.5rem}
+.db-resp-tip.fast{background:rgba(34,197,94,.1);color:var(--green)}
+.db-resp-tip.medium{background:rgba(234,179,8,.1);color:var(--yellow)}
+.db-resp-tip.slow{background:rgba(239,68,68,.1);color:var(--red)}
+
+/* ── CUSTOMER STATS ── */
+.db-cust-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-top:.5rem}
+.db-cust-stat{background:rgba(255,255,255,.04);border-radius:12px;
+  padding:1.1rem;text-align:center}
+.db-cust-val{font-family:'Poppins',sans-serif;font-size:1.8rem;font-weight:800;color:#fff}
+.db-cust-lbl{color:var(--muted);font-size:.75rem;margin-top:.2rem}
+
+/* ── ORDERS TABLE ── */
+.db-table{width:100%;border-collapse:collapse;font-size:.84rem}
+.db-table th{color:var(--muted);font-weight:600;text-align:left;
+  padding:.6rem .8rem;border-bottom:1px solid rgba(255,255,255,.08);
+  font-size:.75rem;text-transform:uppercase;letter-spacing:.04em}
+.db-table td{padding:.75rem .8rem;border-bottom:1px solid rgba(255,255,255,.05);
+  color:var(--txt);vertical-align:middle}
+.db-table tr:last-child td{border-bottom:none}
+.db-table tr:hover td{background:rgba(255,255,255,.03)}
+.db-status{display:inline-flex;align-items:center;gap:.35rem;
+  font-size:.73rem;font-weight:600;padding:.25rem .65rem;border-radius:20px}
+.db-status.completed{background:rgba(34,197,94,.12);color:var(--green)}
+.db-status.pending{background:rgba(234,179,8,.12);color:var(--yellow)}
+.db-status.cancelled{background:rgba(239,68,68,.12);color:var(--red)}
+.db-status.paid{background:rgba(0,212,255,.12);color:var(--blue)}
+
+/* ── RECENT REVIEWS ── */
+.db-review-item{padding:.9rem 0;border-bottom:1px solid rgba(255,255,255,.06)}
+.db-review-item:last-child{border-bottom:none}
+.db-review-meta{display:flex;align-items:center;gap:.6rem;margin-bottom:.4rem}
+.db-review-av{width:26px;height:26px;border-radius:50%;object-fit:cover;
+  background:rgba(255,255,255,.1);display:flex;align-items:center;
+  justify-content:center;color:#777;font-size:.65rem;flex-shrink:0}
+.db-review-name{color:#e0e0e0;font-size:.82rem;font-weight:600}
+.db-review-stars{color:var(--yellow);font-size:.75rem;margin-left:auto}
+.db-review-date{color:var(--muted);font-size:.73rem}
+.db-review-text{color:var(--muted);font-size:.83rem;line-height:1.5;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+
+/* ── EMPTY ── */
+.db-empty{text-align:center;padding:2rem;color:var(--muted);font-size:.88rem}
+.db-empty i{font-size:1.8rem;display:block;margin-bottom:.6rem;
+  color:rgba(0,255,200,.2)}
+
+/* ── RESPONSIVE ── */
+@media(max-width:1024px){
+  .db-row,.db-row-3{grid-template-columns:1fr}
+}
+@media(max-width:640px){
+  .db-wrap{padding:1rem 1rem 4rem}
+  .db-kpi-grid{grid-template-columns:repeat(2,1fr)}
+  .db-header{flex-direction:column;gap:1rem;align-items:flex-start}
+  .db-title{font-size:1.4rem}
+}
+</style>
+
+<div class="db-wrap">
+
+  <!-- ═══ HEADER ═══ -->
+  <div class="db-header">
+    <div class="db-header-left">
+      <div class="db-hello">Welcome back, <strong>{{ user.display_name() }}</strong></div>
+      <div class="db-title">Seller Dashboard 📊</div>
+    </div>
+    <div class="db-header-right">
+      <a href="{{ url_for('create_service') }}" class="db-btn db-btn-solid">
+        <i class="fas fa-plus"></i> New Listing
+      </a>
+      <a href="{{ url_for('profile', username=user.username) }}" class="db-btn db-btn-ghost">
+        <i class="fas fa-user"></i> My Profile
+      </a>
+    </div>
+  </div>
+
+  <!-- ═══ KPI CARDS ═══ -->
+  <div class="db-kpi-grid">
+
+    <!-- Total Revenue -->
+    <div class="db-kpi" style="--kpi-color:var(--cyan)">
+      <div class="db-kpi-icon"><i class="fas fa-wallet"></i></div>
+      <div class="db-kpi-val">KSh {{ "{:,.0f}".format(total_revenue) }}</div>
+      <div class="db-kpi-lbl">Total Revenue</div>
+    </div>
+
+    <!-- Monthly Revenue -->
+    <div class="db-kpi" style="--kpi-color:var(--blue)">
+      <div class="db-kpi-icon"><i class="fas fa-chart-line"></i></div>
+      <div class="db-kpi-val">KSh {{ "{:,.0f}".format(monthly_revenue) }}</div>
+      <div class="db-kpi-lbl">This Month</div>
+      {% if rev_change_pct is not none %}
+      <div class="db-kpi-change {{ 'up' if rev_change_pct >= 0 else 'down' }}">
+        <i class="fas fa-arrow-{{ 'up' if rev_change_pct >= 0 else 'down' }}"></i>
+        {{ rev_change_pct|abs }}% vs last month
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- Total Orders -->
+    <div class="db-kpi" style="--kpi-color:var(--purple)">
+      <div class="db-kpi-icon"><i class="fas fa-shopping-bag"></i></div>
+      <div class="db-kpi-val">{{ total_orders }}</div>
+      <div class="db-kpi-lbl">Total Orders</div>
+      <div class="db-kpi-change neutral">
+        {{ completed_orders }} completed · {{ pending_orders }} pending
+      </div>
+    </div>
+
+    <!-- Avg Rating -->
+    <div class="db-kpi" style="--kpi-color:var(--yellow)">
+      <div class="db-kpi-icon"><i class="fas fa-star"></i></div>
+      <div class="db-kpi-val">{{ "%.1f"|format(avg_rating) }}</div>
+      <div class="db-kpi-lbl">Avg. Rating</div>
+      <div class="db-kpi-change neutral">{{ total_reviews }} review{{ 's' if total_reviews != 1 }}</div>
+    </div>
+
+    <!-- Active Listings -->
+    <div class="db-kpi" style="--kpi-color:var(--green)">
+      <div class="db-kpi-icon"><i class="fas fa-briefcase"></i></div>
+      <div class="db-kpi-val">{{ total_services }}</div>
+      <div class="db-kpi-lbl">Active Listings</div>
+    </div>
+
+    <!-- Unique Customers -->
+    <div class="db-kpi" style="--kpi-color:var(--orange)">
+      <div class="db-kpi-icon"><i class="fas fa-users"></i></div>
+      <div class="db-kpi-val">{{ unique_buyers }}</div>
+      <div class="db-kpi-lbl">Unique Customers</div>
+      {% if repeat_buyers > 0 %}
+      <div class="db-kpi-change up">
+        <i class="fas fa-redo"></i> {{ repeat_buyers }} repeat buyers
+      </div>
+      {% endif %}
+    </div>
+
+  </div>
+
+  <!-- ═══ ROW 1: EARNINGS CHART + RATING BREAKDOWN ═══ -->
+  <div class="db-row-3">
+
+    <!-- Monthly Earnings Chart -->
+    <div class="db-card">
+      <div class="db-card-title">
+        <i class="fas fa-chart-bar"></i> Monthly Earnings
+        <span class="db-badge">Last 6 months</span>
+      </div>
+      <div class="db-chart-wrap">
+        <canvas id="earningsChart"></canvas>
+      </div>
+      <div class="db-chart-labels">
+        {% for m in monthly_chart %}
+        <span>{{ m.label }}</span>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Rating Breakdown -->
+    <div class="db-card">
+      <div class="db-card-title"><i class="fas fa-star"></i> Ratings</div>
+      {% if total_reviews > 0 %}
+      <div class="db-rating-big">
+        <div class="db-rating-num">{{ "%.1f"|format(avg_rating) }}</div>
+        <div class="db-rating-stars">
+          {% for i in range(1,6) %}
+            {% if i <= avg_rating|int %}
+              <i class="fas fa-star"></i>
+            {% elif i <= avg_rating + 0.5 %}
+              <i class="fas fa-star-half-alt"></i>
+            {% else %}
+              <i class="far fa-star"></i>
+            {% endif %}
+          {% endfor %}
+        </div>
+        <div class="db-rating-count">{{ total_reviews }} review{{ 's' if total_reviews != 1 }}</div>
+      </div>
+      {% for star in [5,4,3,2,1] %}
+      {% set count = rating_breakdown.get(star, 0) %}
+      {% set pct = ((count / total_reviews) * 100)|round|int if total_reviews else 0 %}
+      <div class="db-rbar-row">
+        <span class="db-rbar-lbl">{{ star }}</span>
+        <div class="db-rbar-track">
+          <div class="db-rbar-fill" style="width:{{ pct }}%"></div>
+        </div>
+        <span class="db-rbar-count">{{ count }}</span>
+      </div>
+      {% endfor %}
+      {% else %}
+      <div class="db-empty"><i class="fas fa-star"></i> No reviews yet</div>
+      {% endif %}
+    </div>
+
+  </div>
+
+  <!-- ═══ ROW 2: TOP SERVICES + RESPONSE TIME + CUSTOMERS ═══ -->
+  <div class="db-row">
+
+    <!-- Top Services -->
+    <div class="db-card">
+      <div class="db-card-title"><i class="fas fa-trophy"></i> Top Services</div>
+      {% if top_services %}
+        {% for svc in top_services %}
+        {% set order_count = recent_orders|selectattr('service_id','equalto',svc.id)|list|length %}
+        <div class="db-svc-row">
+          <div class="db-svc-rank">{{ loop.index }}</div>
+          <div class="db-svc-img">
+            {% if svc.images and svc.images[0] %}
+              <img src="{{ url_for('static', filename='uploads/services/' ~ svc.images[0].filename) }}"
+                   style="width:40px;height:40px;border-radius:8px;object-fit:cover" alt="">
+            {% else %}
+              <i class="fas fa-briefcase"></i>
+            {% endif %}
+          </div>
+          <div class="db-svc-info">
+            <div class="db-svc-name">{{ svc.title }}</div>
+            <div class="db-svc-cat">{{ svc.category.name if svc.category else '—' }}</div>
+          </div>
+          <div class="db-svc-orders">{{ order_count }} orders</div>
+        </div>
+        {% endfor %}
+      {% else %}
+      <div class="db-empty"><i class="fas fa-briefcase"></i> No listings yet<br>
+        <a href="{{ url_for('create_service') }}" style="color:var(--cyan);font-size:.82rem">
+          Create your first listing →
+        </a>
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- Response Time + Customer Stats -->
+    <div style="display:flex;flex-direction:column;gap:1.5rem">
+
+      <div class="db-card">
+        <div class="db-card-title"><i class="fas fa-clock"></i> Response Time</div>
+        {% if avg_response_hrs is not none %}
+        <div class="db-resp-display">
+          <div class="db-resp-num">{{ avg_response_hrs }}h</div>
+          <div class="db-resp-lbl">average response to questions</div>
+          {% if avg_response_hrs <= 2 %}
+          <div class="db-resp-tip fast"><i class="fas fa-bolt"></i> Excellent — keep it up!</div>
+          {% elif avg_response_hrs <= 12 %}
+          <div class="db-resp-tip medium"><i class="fas fa-check"></i> Good response time</div>
+          {% else %}
+          <div class="db-resp-tip slow"><i class="fas fa-exclamation-triangle"></i> Try to respond faster</div>
+          {% endif %}
+        </div>
+        {% else %}
+        <div class="db-empty"><i class="fas fa-comments"></i> No Q&A activity yet</div>
+        {% endif %}
+      </div>
+
+      <div class="db-card">
+        <div class="db-card-title"><i class="fas fa-users"></i> Customers</div>
+        <div class="db-cust-grid">
+          <div class="db-cust-stat">
+            <div class="db-cust-val">{{ unique_buyers }}</div>
+            <div class="db-cust-lbl">Unique Buyers</div>
+          </div>
+          <div class="db-cust-stat">
+            <div class="db-cust-val">{{ repeat_buyers }}</div>
+            <div class="db-cust-lbl">Repeat Buyers</div>
+          </div>
+          <div class="db-cust-stat">
+            <div class="db-cust-val">{{ completed_orders }}</div>
+            <div class="db-cust-lbl">Completed</div>
+          </div>
+          <div class="db-cust-stat">
+            <div class="db-cust-val">{{ pending_orders }}</div>
+            <div class="db-cust-lbl">Pending</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ═══ ROW 3: RECENT ORDERS + RECENT REVIEWS ═══ -->
+  <div class="db-row">
+
+    <!-- Recent Orders -->
+    <div class="db-card">
+      <div class="db-card-title">
+        <i class="fas fa-receipt"></i> Recent Orders
+        <span class="db-badge">{{ total_orders }} total</span>
+      </div>
+      {% if recent_orders %}
+      <div style="overflow-x:auto">
+        <table class="db-table">
+          <thead>
+            <tr>
+              <th>Service</th>
+              <th>Buyer</th>
+              <th>Amount</th>
+              <th>Status</th>
+              <th>Date</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for order in recent_orders %}
+            <tr>
+              <td>
+                <a href="{{ url_for('service_detail', service_id=order.service_id) }}"
+                   style="color:var(--cyan);text-decoration:none;font-weight:500">
+                  {{ order.service.title[:30] ~ '…' if order.service and order.service.title|length > 30
+                     else (order.service.title if order.service else '—') }}
+                </a>
+              </td>
+              <td style="color:var(--muted)">
+                {{ order.buyer.display_name() if order.buyer else '—' }}
+              </td>
+              <td style="color:var(--cyan);font-weight:600">
+                KSh {{ "{:,.0f}".format(order.amount|float) }}
+              </td>
+              <td>
+                <span class="db-status {{ order.status }}">
+                  <i class="fas fa-circle" style="font-size:.4rem"></i>
+                  {{ order.status|title }}
+                </span>
+              </td>
+              <td style="color:var(--muted);font-size:.78rem">
+                {{ order.created_at.strftime('%b %d') if order.created_at else '—' }}
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div class="db-empty">
+        <i class="fas fa-shopping-bag"></i>
+        No orders yet — share your listings to get your first order!
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- Recent Reviews -->
+    <div class="db-card">
+      <div class="db-card-title">
+        <i class="fas fa-star"></i> Recent Reviews
+        <span class="db-badge">{{ total_reviews }} total</span>
+      </div>
+      {% if all_reviews %}
+        {% for review in all_reviews %}
+        <div class="db-review-item">
+          <div class="db-review-meta">
+            {% if review.buyer and review.buyer.avatar %}
+              <img src="{{ url_for('static', filename='uploads/avatars/' ~ review.buyer.avatar) }}"
+                   class="db-review-av" alt="">
+            {% else %}
+              <div class="db-review-av"><i class="fas fa-user"></i></div>
+            {% endif %}
+            <span class="db-review-name">
+              {{ review.buyer.display_name() if review.buyer else 'Anonymous' }}
+            </span>
+            <span class="db-review-stars">
+              {% for i in range(1,6) %}
+                <i class="fa{{ 's' if i <= review.overall_rating else 'r' }} fa-star"></i>
+              {% endfor %}
+            </span>
+          </div>
+          {% if review.created_at %}
+          <div class="db-review-date">{{ review.created_at.strftime('%b %d, %Y') }}</div>
+          {% endif %}
+          {% if review.comment %}
+          <div class="db-review-text">{{ review.comment }}</div>
+          {% else %}
+          <div class="db-review-text" style="font-style:italic">No written review</div>
+          {% endif %}
+        </div>
+        {% endfor %}
+      {% else %}
+      <div class="db-empty">
+        <i class="fas fa-star"></i>
+        No reviews yet — complete orders to start receiving feedback!
+      </div>
+      {% endif %}
+    </div>
+
+  </div>
+
+  <!-- ═══ ROW 4: MY LISTINGS ═══ -->
+  <div class="db-card">
+    <div class="db-card-title">
+      <i class="fas fa-list"></i> My Listings
+      <span class="db-badge">{{ total_services }}</span>
+      <a href="{{ url_for('create_service') }}"
+         style="margin-left:auto;color:var(--cyan);font-size:.8rem;text-decoration:none;
+                display:inline-flex;align-items:center;gap:.3rem">
+        <i class="fas fa-plus"></i> Add New
+      </a>
+    </div>
+    {% if my_services %}
+    <div style="overflow-x:auto">
+      <table class="db-table">
+        <thead>
+          <tr>
+            <th>Title</th>
+            <th>Category</th>
+            <th>Price</th>
+            <th>Rating</th>
+            <th>Reviews</th>
+            <th>Created</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for svc in my_services %}
+          <tr>
+            <td>
+              <a href="{{ url_for('service_detail', service_id=svc.id) }}"
+                 style="color:#e0e0e0;text-decoration:none;font-weight:500">
+                {{ svc.title[:40] ~ '…' if svc.title|length > 40 else svc.title }}
+              </a>
+            </td>
+            <td style="color:var(--muted)">{{ svc.category.name if svc.category else '—' }}</td>
+            <td style="color:var(--cyan);font-weight:600">
+              KSh {{ "{:,.0f}".format(svc.price|float) }}
+            </td>
+            <td>
+              <span style="color:var(--yellow)">★</span>
+              <span style="color:#e0e0e0">{{ "%.1f"|format(svc.get_average_rating()) }}</span>
+            </td>
+            <td style="color:var(--muted)">{{ svc.get_review_count() }}</td>
+            <td style="color:var(--muted);font-size:.78rem">
+              {{ svc.created_at.strftime('%b %d, %Y') if svc.created_at else '—' }}
+            </td>
+            <td>
+              <a href="{{ url_for('service_detail', service_id=svc.id) }}"
+                 style="color:var(--cyan);font-size:.78rem;text-decoration:none">View</a>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="db-empty">
+      <i class="fas fa-briefcase"></i>
+      You haven't posted any listings yet.<br>
+      <a href="{{ url_for('create_service') }}" style="color:var(--cyan)">
+        Create your first listing →
+      </a>
+    </div>
+    {% endif %}
+  </div>
+
+</div>
+
+<!-- Chart.js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script>
+const chartData = {
+  labels: [{% for m in monthly_chart %}"{{ m.label }}"{% if not loop.last %},{% endif %}{% endfor %}],
+  values: [{% for m in monthly_chart %}{{ m.value }}{% if not loop.last %},{% endif %}{% endfor %}]
+};
+
+const ctx = document.getElementById('earningsChart');
+if (ctx) {
+  new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: chartData.labels,
+      datasets: [{
+        label: 'Revenue (KSh)',
+        data: chartData.values,
+        backgroundColor: chartData.values.map((v, i) =>
+          i === chartData.values.length - 1
+            ? 'rgba(0,255,200,0.85)'
+            : 'rgba(0,255,200,0.25)'
+        ),
+        borderColor: 'rgba(0,255,200,0.6)',
+        borderWidth: 1,
+        borderRadius: 6,
+        borderSkipped: false,
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: ctx => ' KSh ' + ctx.raw.toLocaleString()
+          },
+          backgroundColor: 'rgba(15,20,41,0.95)',
+          borderColor: 'rgba(0,255,200,0.3)',
+          borderWidth: 1,
+          titleColor: '#e0e0e0',
+          bodyColor: '#00ffc8',
+          padding: 10,
+        }
+      },
+      scales: {
+        x: {
+          display: false,
+          grid: { display: false }
+        },
+        y: {
+          display: true,
+          grid: { color: 'rgba(255,255,255,0.05)' },
+          ticks: {
+            color: '#666',
+            font: { size: 10 },
+            callback: v => 'KSh ' + v.toLocaleString()
+          },
+          border: { display: false }
+        }
+      }
+    }
+  });
+}
+</script>
+
+{% endblock %}

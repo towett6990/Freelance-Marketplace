@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}Place Order{% endblock %}
+{% block content %}
+<div style="max-width:520px;margin:0 auto;text-align:center">
+  <h1 style="color:#00ff88;margin-bottom:.5rem">🛒 Confirm Order</h1>
+  <p style="color:#64748b;margin-bottom:2rem">Review your order before confirming</p>
+  <div style="background:rgba(255,255,255,.04);border:1px solid rgba(0,255,200,.15);border-radius:16px;padding:2rem;margin-bottom:1.5rem;text-align:left">
+    <h3 style="color:#e2e8f0;margin:0 0 1rem">{{ offer.title }}</h3>
+    <p style="color:#94a3b8;margin-bottom:1.5rem">{{ offer.description }}</p>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+      <div style="background:rgba(0,255,200,.05);border-radius:8px;padding:1rem;text-align:center">
+        <div style="color:#64748b;font-size:.75rem;text-transform:uppercase">Amount</div>
+        <div style="color:#00ffc8;font-size:1.4rem;font-weight:800">KES {{ "{:,.0f}".format(offer.price) }}</div>
+      </div>
+      <div style="background:rgba(255,255,255,.04);border-radius:8px;padding:1rem;text-align:center">
+        <div style="color:#64748b;font-size:.75rem;text-transform:uppercase">Delivery</div>
+        <div style="color:#fff;font-size:1.4rem;font-weight:800">{{ offer.delivery_days }} days</div>
+      </div>
+    </div>
+  </div>
+  <form method="POST">
+    <button type="submit" style="width:100%;background:linear-gradient(135deg,#00ffc8,#00d4ff);color:#060d1a;padding:1rem;border:none;border-radius:12px;font-weight:800;font-size:1rem;cursor:pointer">
+      ✅ Confirm & Place Order
+    </button>
+  </form>
+  <a href="{{ url_for('features.offer_detail', oid=offer.id) }}" style="display:block;margin-top:1rem;color:#64748b;text-decoration:none;font-size:.9rem">← Back to offer</a>
+</div>
+{% endblock %}

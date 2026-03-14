@@ -1,397 +1,54 @@
 {% extends "base.html" %}
-
 {% block title %}Review Order #{{ order.id }}{% endblock %}
-
 {% block content %}
-<div class="max-w-4xl mx-auto py-8">
-  <!-- Header -->
-  <div class="text-center mb-8">
-    <h1 class="text-4xl font-bold text-white mb-4">Review Your Order</h1>
-    <p class="text-xl text-gray-300">Share your experience with "{{ order.title }}"</p>
-  </div>
-
-  <!-- Order Summary -->
-  <div class="bg-gradient-to-r from-blue-900 to-purple-900 rounded-2xl p-6 mb-8">
-    <div class="flex items-center gap-6">
-      {% if order.service.image_list %}
-        <img src="{{ url_for('static', filename='uploads/services/' ~ order.service.image_list[0]) }}"
-             alt="{{ order.title }}" class="w-20 h-20 object-cover rounded-lg">
-      {% endif %}
-      <div class="flex-1">
-        <h2 class="text-xl font-bold text-white mb-2">{{ order.title }}</h2>
-        <p class="text-gray-300 mb-2">Completed by {{ order.seller.display_name() }}</p>
-        <div class="flex items-center gap-4">
-          <span class="text-green-400 font-semibold">{{ order.price }} {{ order.currency }}</span>
-          <span class="text-gray-400">Order #{{ order.id }}</span>
+<style>
+.container { max-width: 600px; margin: 3rem auto; padding: 0 1rem; }
+.card { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 20px; padding: 2rem; }
+.card h1 { color: #fff; font-size: 1.6rem; font-weight: 700; margin-bottom: 0.5rem; }
+.card p { color: #aaa; margin-bottom: 2rem; }
+.rating-group { margin-bottom: 1.5rem; }
+.rating-group label { display: block; color: #ccc; font-size: 0.9rem; margin-bottom: 0.5rem; font-weight: 500; }
+.stars { display: flex; gap: 0.5rem; margin-bottom: 0.25rem; }
+.star { font-size: 1.8rem; cursor: pointer; color: #333; transition: color 0.1s; }
+.star.active { color: #fbbf24; }
+.star:hover { color: #fbbf24; }
+input[type=hidden] { display: none; }
+textarea { width: 100%; padding: 0.85rem 1rem; background: #1a1a1a; border: 1px solid #333; border-radius: 10px; color: #fff; font-size: 0.95rem; box-sizing: border-box; resize: vertical; font-family: inherit; margin-bottom: 1.5rem; }
+textarea:focus { outline: none; border-color: #fbbf24; }
+.submit-btn { width: 100%; padding: 1rem; background: linear-gradient(135deg, #fbbf24, #d97706); border: none; border-radius: 12px; color: #000; font-size: 1.1rem; font-weight: 700; cursor: pointer; }
+.submit-btn:hover { opacity: 0.85; }
+.back-link { display: block; text-align: center; margin-top: 1rem; color: #888; text-decoration: none; font-size: 0.9rem; }
+</style>
+<div class="container">
+  <div class="card">
+    <h1>⭐ Leave a Review</h1>
+    <p>Order #{{ order.id }} — {{ order.title or 'Service Order' }}</p>
+    <form method="POST">
+      {% for field, label in [('overall_rating','Overall Rating'),('communication_rating','Communication'),('quality_rating','Quality of Work'),('timeliness_rating','Timeliness')] %}
+      <div class="rating-group">
+        <label>{{ label }}</label>
+        <div class="stars" data-field="{{ field }}">
+          {% for i in range(1,6) %}
+          <span class="star" data-value="{{ i }}" onclick="setRating('{{ field }}', {{ i }})">★</span>
+          {% endfor %}
         </div>
+        <input type="hidden" name="{{ field }}" id="{{ field }}" value="5">
       </div>
-    </div>
-  </div>
-
-  <!-- Review Form -->
-  <div class="modern-form-container">
-    <form method="POST" id="reviewForm">
-      <!-- Overall Rating -->
-      <div class="form-card">
-        <h2 class="card-title">
-          <i class="fas fa-star"></i>
-          Overall Rating
-        </h2>
-
-        <div class="rating-section">
-          <div class="rating-stars" id="overall-rating">
-            <input type="hidden" name="rating" id="rating-input" required>
-            {% for i in range(1, 6) %}
-              <i class="far fa-star star" data-rating="{{ i }}"></i>
-            {% endfor %}
-          </div>
-          <p class="rating-text" id="rating-text">Click to rate</p>
-        </div>
-      </div>
-
-      <!-- Detailed Ratings -->
-      <div class="form-card">
-        <h2 class="card-title">
-          <i class="fas fa-chart-bar"></i>
-          Detailed Ratings
-        </h2>
-
-        <div class="detailed-ratings">
-          <div class="rating-item">
-            <label class="rating-label">Communication</label>
-            <div class="rating-stars small" id="communication-rating">
-              <input type="hidden" name="communication_rating">
-              {% for i in range(1, 6) %}
-                <i class="far fa-star star" data-rating="{{ i }}"></i>
-              {% endfor %}
-            </div>
-          </div>
-
-          <div class="rating-item">
-            <label class="rating-label">Quality of Work</label>
-            <div class="rating-stars small" id="quality-rating">
-              <input type="hidden" name="quality_rating">
-              {% for i in range(1, 6) %}
-                <i class="far fa-star star" data-rating="{{ i }}"></i>
-              {% endfor %}
-            </div>
-          </div>
-
-          <div class="rating-item">
-            <label class="rating-label">Timeliness</label>
-            <div class="rating-stars small" id="timeliness-rating">
-              <input type="hidden" name="timeliness_rating">
-              {% for i in range(1, 6) %}
-                <i class="far fa-star star" data-rating="{{ i }}"></i>
-              {% endfor %}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Review Comment -->
-      <div class="form-card">
-        <h2 class="card-title">
-          <i class="fas fa-comment"></i>
-          Your Review
-        </h2>
-
-        <div class="form-row">
-          <div class="form-field">
-            <label class="field-label">Share your experience (optional)</label>
-            <textarea
-              name="comment"
-              class="field-textarea"
-              rows="5"
-              placeholder="Tell others about your experience with this seller and service..."
-            ></textarea>
-            <p class="text-sm text-gray-400 mt-2">
-              Your review helps other buyers make informed decisions and helps sellers improve their services.
-            </p>
-          </div>
-        </div>
-      </div>
-
-      <!-- Submit -->
-      <div class="submit-section">
-        <button type="submit" class="submit-btn" id="submit-btn" disabled>
-          <i class="fas fa-paper-plane"></i>
-          Submit Review
-        </button>
-        <a href="{{ url_for('order_detail', order_id=order.id) }}" class="cancel-btn">
-          <i class="fas fa-times"></i>
-          Skip Review
-        </a>
-      </div>
+      {% endfor %}
+      <label style="display:block;color:#ccc;font-size:0.9rem;margin-bottom:0.5rem;">Your Review</label>
+      <textarea name="comment" rows="5" placeholder="Share your experience working with this seller..."></textarea>
+      <button type="submit" class="submit-btn"><i class="fas fa-star"></i> Submit Review</button>
     </form>
+    <a href="{{ url_for('order_detail', order_id=order.id) }}" class="back-link">← Back to Order</a>
   </div>
 </div>
-
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-  // Overall rating functionality
-  const overallRating = document.getElementById('overall-rating');
-  const ratingInput = document.getElementById('rating-input');
-  const ratingText = document.getElementById('rating-text');
-  const submitBtn = document.getElementById('submit-btn');
-
-  function initializeRatingSystem(container, input, textElement = null) {
-    const stars = container.querySelectorAll('.star');
-
-    stars.forEach(star => {
-      star.addEventListener('click', function() {
-        const rating = this.dataset.rating;
-        input.value = rating;
-
-        // Update stars
-        stars.forEach((s, index) => {
-          if (index < rating) {
-            s.classList.remove('far');
-            s.classList.add('fas', 'filled');
-          } else {
-            s.classList.remove('fas', 'filled');
-            s.classList.add('far');
-          }
-        });
-
-        // Update text if provided
-        if (textElement) {
-          const ratingTexts = ['', 'Poor', 'Fair', 'Good', 'Very Good', 'Excellent'];
-          textElement.textContent = ratingTexts[rating];
-        }
-
-        // Enable submit button
-        submitBtn.disabled = !ratingInput.value;
-      });
-
-      star.addEventListener('mouseover', function() {
-        const rating = this.dataset.rating;
-        stars.forEach((s, index) => {
-          if (index < rating) {
-            s.classList.add('hover');
-          }
-        });
-      });
-
-      star.addEventListener('mouseout', function() {
-        stars.forEach(s => s.classList.remove('hover'));
-      });
-    });
-  }
-
-  // Initialize overall rating
-  initializeRatingSystem(overallRating, ratingInput, ratingText);
-
-  // Initialize detailed ratings
-  initializeRatingSystem(
-    document.getElementById('communication-rating'),
-    document.querySelector('input[name="communication_rating"]')
-  );
-  initializeRatingSystem(
-    document.getElementById('quality-rating'),
-    document.querySelector('input[name="quality_rating"]')
-  );
-  initializeRatingSystem(
-    document.getElementById('timeliness-rating'),
-    document.querySelector('input[name="timeliness_rating"]')
-  );
-});
+function setRating(field, value) {
+  document.getElementById(field).value = value;
+  const stars = document.querySelectorAll('[data-field="' + field + '"] .star');
+  stars.forEach((s, i) => s.classList.toggle('active', i < value));
+}
+// Set all defaults to 5
+['overall_rating','communication_rating','quality_rating','timeliness_rating'].forEach(f => setRating(f, 5));
 </script>
-
-<style>
-.modern-form-container {
-  background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 24px;
-  padding: 2rem;
-}
-
-.form-card {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 16px;
-  padding: 2rem;
-  margin-bottom: 2rem;
-}
-
-.card-title {
-  color: #00d4ff;
-  font-size: 1.5rem;
-  font-weight: 600;
-  margin-bottom: 1.5rem;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-/* Rating System */
-.rating-section {
-  text-align: center;
-  padding: 2rem;
-}
-
-.rating-stars {
-  display: flex;
-  justify-content: center;
-  gap: 0.5rem;
-  margin-bottom: 1rem;
-}
-
-.rating-stars .star {
-  font-size: 2rem;
-  color: #d1d5db;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.rating-stars .star.filled {
-  color: #fbbf24;
-}
-
-.rating-stars .star.hover {
-  color: #fbbf24;
-  transform: scale(1.1);
-}
-
-.rating-stars.small .star {
-  font-size: 1.5rem;
-}
-
-.rating-text {
-  color: #9ca3af;
-  font-size: 1.1rem;
-  font-weight: 500;
-}
-
-/* Detailed Ratings */
-.detailed-ratings {
-  display: grid;
-  gap: 1.5rem;
-}
-
-.rating-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1rem;
-  background: rgba(255, 255, 255, 0.02);
-  border-radius: 12px;
-}
-
-.rating-label {
-  color: #e5e7eb;
-  font-weight: 500;
-  font-size: 1rem;
-}
-
-.form-row {
-  margin-bottom: 1.5rem;
-}
-
-.field-label {
-  color: #e0e0e0;
-  font-weight: 500;
-  margin-bottom: 0.5rem;
-  font-size: 0.95rem;
-}
-
-.field-textarea {
-  background: linear-gradient(145deg, #2a2a2a, #1f1f1f);
-  border: 2px solid #404040;
-  border-radius: 12px;
-  padding: 1rem;
-  color: #ffffff;
-  font-size: 1rem;
-  width: 100%;
-  resize: vertical;
-  transition: all 0.3s ease;
-}
-
-.field-textarea:focus {
-  outline: none;
-  border-color: #00d4ff;
-  box-shadow: 0 0 20px rgba(0, 212, 255, 0.3);
-}
-
-.submit-section {
-  text-align: center;
-  margin-top: 2rem;
-  display: flex;
-  gap: 1rem;
-  justify-content: center;
-}
-
-.submit-btn {
-  background: linear-gradient(135deg, #00d4ff, #0099cc);
-  color: white;
-  border: none;
-  padding: 1rem 3rem;
-  border-radius: 12px;
-  font-size: 1.1rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 20px rgba(0, 212, 255, 0.4);
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.submit-btn:hover:not(:disabled) {
-  background: linear-gradient(135deg, #00b8e6, #0088bb);
-  transform: translateY(-2px);
-  box-shadow: 0 8px 30px rgba(0, 212, 255, 0.5);
-}
-
-.submit-btn:disabled {
-  background: #4b5563;
-  cursor: not-allowed;
-  transform: none;
-  box-shadow: none;
-}
-
-.cancel-btn {
-  background: linear-gradient(135deg, #666666, #555555);
-  color: white;
-  border: none;
-  padding: 1rem 2rem;
-  border-radius: 12px;
-  font-size: 1.1rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  text-decoration: none;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.cancel-btn:hover {
-  background: linear-gradient(135deg, #777777, #666666);
-  transform: translateY(-2px);
-  color: white;
-}
-
-@media (max-width: 768px) {
-  .modern-form-container {
-    padding: 1.5rem;
-  }
-
-  .rating-item {
-    flex-direction: column;
-    gap: 1rem;
-    text-align: center;
-  }
-
-  .submit-section {
-    flex-direction: column;
-    align-items: center;
-  }
-
-  .rating-stars .star {
-    font-size: 1.5rem;
-  }
-}
-</style>
 {% endblock %}

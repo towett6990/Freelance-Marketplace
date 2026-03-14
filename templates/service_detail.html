@@ -2,33 +2,33 @@
 {% block title %}{{ service.title }}{% endblock %}
 
 {% block content %}
-<section class="bg-gradient-to-b from-blue-50 to-white py-16">
-  <div class="max-w-6xl mx-auto px-6">
+<section style="background: linear-gradient(180deg, rgba(10,31,46,0.95) 0%, rgba(10,31,46,1) 100%); padding: 4rem 0;">
+  <div style="max-width: 72rem; margin: 0 auto; padding: 0 1.5rem;">
 
     <!-- Service Header -->
-    <div class="text-center mb-12">
-      <h1 class="text-4xl font-extrabold text-gray-800 mb-4">{{ service.title }}</h1>
-      <p class="text-lg text-gray-600">Professional service by {{ service.seller.username or service.seller.email if service.seller else 'Unknown Seller' }}</p>
+    <div style="text-align: center; margin-bottom: 3rem;">
+      <h1 style="font-size: 2.25rem; font-weight: 800; color: var(--heading-color); margin-bottom: 1rem;">{{ service.title }}</h1>
+      <p style="font-size: 1.125rem; color: #9ca3af;">Professional service by {{ service.seller.username or service.seller.email if service.seller else 'Unknown Seller' }}</p>
     </div>
 
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
+    <div style="display: grid; grid-template-columns: 1fr; gap: 3rem; @media (min-width: 1024px) { grid-template-columns: 1fr 1fr; }">
 
       <!-- Service Media Gallery -->
-      <div class="order-2 lg:order-1">
-        <div class="bg-white rounded-2xl shadow-xl overflow-hidden">
+      <div style="order: 2; @media (min-width: 1024px) { order: 1; }">
+        <div style="background: var(--main-bg); border-radius: 1rem; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); overflow: hidden; border: 1px solid var(--main-border);">
           {% if service.image_list or service.video_list %}
             <div class="media-gallery-full">
               {% for img in service.image_list %}
               <div class="media-item-full">
                 <img src="{{ url_for('static', filename='uploads/services/' ~ img) }}"
-                     class="w-full object-contain"
+                     style="width: 100%; object-fit: contain;"
                      alt="{{ service.title }}">
               </div>
               {% endfor %}
               {% for vid in service.video_list %}
               <div class="media-item-full">
                 <video src="{{ url_for('static', filename='uploads/services/' ~ vid) }}"
-                       class="w-full object-contain"
+                       style="width: 100%; object-fit: contain;"
                        controls
                        alt="{{ service.title }}">
                 </video>
@@ -36,10 +36,10 @@
               {% endfor %}
             </div>
           {% else %}
-            <div class="w-full h-96 bg-gray-200 flex items-center justify-center">
-              <div class="text-center text-gray-500">
-                <i class="fas fa-image text-4xl mb-4"></i>
-                <p>No Media Available</p>
+            <div style="width: 100%; height: 24rem; background: rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center;">
+              <div style="text-align: center; color: #6b7280;">
+                <i class="fas fa-image" style="font-size: 2.25rem; margin-bottom: 1rem;"></i>
+                <p>No media available</p>
               </div>
             </div>
           {% endif %}
@@ -47,117 +47,246 @@
       </div>
 
       <!-- Service Details -->
-      <div class="order-1 lg:order-2">
-        <div class="bg-white rounded-2xl shadow-xl p-8">
+      <div style="order: 1; @media (min-width: 1024px) { order: 2; }">
+        <div style="background: var(--main-bg); border-radius: 1rem; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); padding: 2rem; border: 1px solid var(--main-border);">
 
           <!-- Price -->
-          <div class="mb-6">
-            <p class="text-sm font-medium text-gray-500 uppercase tracking-wide">Starting Price</p>
-            <p class="text-4xl font-bold text-green-600">${{ "%.2f"|format(service.price) }}</p>
+          <div style="margin-bottom: 1.5rem;">
+            <p style="font-size: 0.875rem; font-weight: 500; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.05em;">Starting Price</p>
+            <p style="font-size: 2.25rem; font-weight: 700; color: var(--link-color);">KES {{ "%.2f"|format(service.price) }}</p>
           </div>
 
           <!-- M-Pesa Payment Section -->
-          <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded-lg mb-6">
-            <h3 class="text-lg font-semibold text-gray-800 mb-2">Pay with M-Pesa</h3>
-            <form id="mpesa-payment-form" class="space-y-2">
-              <label class="block text-gray-700 font-medium">Phone Number (07xxxxxxxx format):</label>
-              <input type="tel" id="buyer-phone" name="phone" placeholder="07xxxxxxxx"
-                     class="w-full p-2 border rounded-lg bg-white text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-yellow-400" required>
-              <label class="block text-gray-700 font-medium">Amount (KES):</label>
-              <input type="number" id="payment-amount" name="amount" value="{{ service.price|int }}"
-                     class="w-full p-2 border rounded-lg bg-white text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-yellow-400" required min="1">
-              <button type="submit"
-                      class="w-full bg-green-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-green-700 transition duration-300">
-                Pay with M-Pesa
-              </button>
-            </form>
-            <p id="payment-status" class="mt-2 text-gray-600"></p>
+          <div style="background: rgba(234, 179, 8, 0.1); border-left: 4px solid #eab308; padding: 1rem; border-radius: 0.5rem; margin-bottom: 1.5rem;">
+            <h3 style="font-size: 1.125rem; font-weight: 600; color: var(--heading-color); margin-bottom: 0.5rem;">💳 Pay with M-Pesa</h3>
+            <p style="color: #d1d5db; margin-bottom: 1rem;">Secure payment with M-Pesa. Enter your phone numbers on the next page.</p>
+            <a href="{{ url_for('payment_page', service_id=service.id) }}"
+               style="width: 100%; background: var(--link-color); color: #0a1f2e; font-weight: 600; padding: 0.75rem 1rem; border-radius: 0.5rem; display: flex; align-items: center; justify-content: center; gap: 0.5rem; text-decoration: none;">
+              <i class="fas fa-mobile-alt"></i>
+              <span>Proceed to Payment</span>
+            </a>
           </div>
 
           <!-- Description -->
-          <div class="mb-8">
-            <h3 class="text-xl font-semibold text-gray-800 mb-3">Description</h3>
-            <p class="text-gray-600 leading-relaxed">{{ service.description }}</p>
+          <div style="margin-bottom: 2rem;">
+            <h3 style="font-size: 1.25rem; font-weight: 600; color: var(--heading-color); margin-bottom: 0.75rem;">Description</h3>
+            <p style="color: #d1d5db; line-height: 1.625;">{{ service.description }}</p>
           </div>
 
           <!-- Seller Info -->
-          <div class="mb-8">
-            <h3 class="text-xl font-semibold text-gray-800 mb-3">About the Seller</h3>
-            <div class="flex items-center space-x-4">
-              <div class="w-12 h-12 bg-gray-300 rounded-full flex items-center justify-center">
-                <i class="fas fa-user text-gray-600"></i>
+          <div style="margin-bottom: 2rem;">
+            <h3 style="font-size: 1.25rem; font-weight: 600; color: var(--heading-color); margin-bottom: 0.75rem;">About the Seller</h3>
+            <div style="display: flex; align-items: center; gap: 1rem;">
+              <div style="width: 3rem; height: 3rem; background: linear-gradient(135deg, var(--link-color), #3b82f6); border-radius: 9999px; display: flex; align-items: center; justify-content: center; color: #0a1f2e; font-weight: bold;">
+                {{ (service.seller.username or service.seller.email)[0]|upper }}
               </div>
               <div>
-                <p class="font-medium text-gray-800">{{ service.seller.username or service.seller.email if service.seller else 'Unknown Seller' }}</p>
-                <p class="text-sm text-gray-500">Verified Seller</p>
-                {% if service.contact_methods %}
-                  <div id="contact-section" class="contact-methods-section">
-                    <h4 class="contact-title">Contact the Seller</h4>
-                    <div class="contact-methods-grid">
-                      {% if service.contact_methods.phone %}
-                      <a href="tel:{{ service.contact_methods.phone }}" class="contact-method-detail" onclick="makeCall('{{ service.contact_methods.phone }}')">
-                        <i class="fas fa-phone"></i>
-                        <span>{{ service.contact_methods.phone }}</span>
-                      </a>
-                      {% endif %}
-                      {% if service.contact_methods.email %}
-                      <a href="mailto:{{ service.contact_methods.email }}" class="contact-method-detail" onclick="sendEmail('{{ service.contact_methods.email }}')">
-                        <i class="fas fa-envelope"></i>
-                        <span>{{ service.contact_methods.email }}</span>
-                      </a>
-                      {% endif %}
-                      {% if service.contact_methods.whatsapp %}
-                      <a href="https://wa.me/{{ service.contact_methods.whatsapp|replace('+', '') }}" class="contact-method-detail" target="_blank">
-                        <i class="fab fa-whatsapp"></i>
-                        <span>WhatsApp</span>
-                      </a>
-                      {% endif %}
-                      {% if service.contact_methods.instagram %}
-                      <a href="{% if 'http' in service.contact_methods.instagram %}{{ service.contact_methods.instagram }}{% else %}https://instagram.com/{{ service.contact_methods.instagram|replace('@', '') }}{% endif %}" class="contact-method-detail" target="_blank">
-                        <i class="fab fa-instagram"></i>
-                        <span>Instagram</span>
-                      </a>
-                      {% endif %}
-                      {% if service.contact_methods.facebook %}
-                      <a href="{% if 'http' in service.contact_methods.facebook %}{{ service.contact_methods.facebook }}{% else %}https://facebook.com/{{ service.contact_methods.facebook }}{% endif %}" class="contact-method-detail" target="_blank">
-                        <i class="fab fa-facebook"></i>
-                        <span>Facebook</span>
-                      </a>
-                      {% endif %}
-                    </div>
-                  </div>
-                {% endif %}
+                <p style="font-weight: 500; color: var(--body-color);">{{ service.seller.username or service.seller.email if service.seller else 'Unknown Seller' }}</p>
+                <p style="font-size: 0.875rem; color: var(--link-color); font-weight: 600;">✓ Verified Seller</p>
               </div>
             </div>
           </div>
 
+          <!-- Contact Methods -->
+          {% if service.contact_methods %}
+          <div style="margin-bottom: 2rem;">
+            <h3 style="font-size: 1.25rem; font-weight: 600; color: var(--heading-color); margin-bottom: 0.75rem;">📞 Contact Methods</h3>
+            <div class="contact-methods-grid">
+              {% if service.contact_methods.phone %}
+              <a href="tel:{{ service.contact_methods.phone }}" class="contact-method-detail">
+                <i class="fas fa-phone"></i>
+                <span>{{ service.contact_methods.phone }}</span>
+              </a>
+              {% endif %}
+              {% if service.contact_methods.email %}
+              <a href="mailto:{{ service.contact_methods.email }}" class="contact-method-detail">
+                <i class="fas fa-envelope"></i>
+                <span>Email</span>
+              </a>
+              {% endif %}
+              {% if service.contact_methods.whatsapp %}
+              <a href="https://wa.me/{{ service.contact_methods.whatsapp|replace('+', '')|replace(' ', '') }}" class="contact-method-detail" target="_blank">
+                <i class="fab fa-whatsapp"></i>
+                <span>WhatsApp</span>
+              </a>
+              {% endif %}
+              {% if service.contact_methods.instagram %}
+              <a href="https://instagram.com/{{ service.contact_methods.instagram|replace('@', '')|replace('http', '') }}" class="contact-method-detail" target="_blank">
+                <i class="fab fa-instagram"></i>
+                <span>Instagram</span>
+              </a>
+              {% endif %}
+              {% if service.contact_methods.facebook %}
+              <a href="https://facebook.com/{{ service.contact_methods.facebook|replace('http', '') }}" class="contact-method-detail" target="_blank">
+                <i class="fab fa-facebook"></i>
+                <span>Facebook</span>
+              </a>
+              {% endif %}
+            </div>
+          </div>
+          {% endif %}
+
           <!-- Action Buttons -->
-          <div class="space-y-4">
+          <div style="display: flex; flex-direction: column; gap: 0.75rem;">
             {% if current_user.is_authenticated and service.seller and current_user.id != service.seller.id %}
-            <a href="{{ url_for('message_user', user_id=service.seller.id) }}"
-               class="w-full bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg hover:bg-blue-700 transition duration-300 flex items-center justify-center space-x-2">
-              <i class="fas fa-envelope"></i>
-              <span>Message Seller</span>
-            </a>
-            {% if service.contact_methods %}
-            <a href="#contact-section" onclick="showContactMethods(); return false;" class="btn btn-success w-full bg-green-600 text-white font-semibold py-3 px-6 rounded-lg hover:bg-green-700 transition duration-300 flex items-center justify-center space-x-2 cursor-pointer" style="text-decoration: none;">
-              <i class="fas fa-phone"></i>
-              <span>Contact Seller</span>
-            </a>
-            {% endif %}
+              <!-- Contact Button -->
+              <button
+                onclick="showContactModal()"
+                style="width: 100%; background: #3b82f6; color: white; font-weight: 600; padding: 0.75rem 1.5rem; border-radius: 0.5rem; display: flex; align-items: center; justify-content: center; gap: 0.5rem; border: none; cursor: pointer;">
+                <i class="fas fa-phone"></i>
+                <span>📞 Contact Seller</span>
+              </button>
+               
+              <!-- Payment Button -->
+              <a href="{{ url_for('payment_page', service_id=service.id) }}"
+                 style="width: 100%; background: var(--link-color); color: #0a1f2e; font-weight: 600; padding: 0.75rem 1.5rem; border-radius: 0.5rem; display: flex; align-items: center; justify-content: center; gap: 0.5rem; text-decoration: none;">
+                <i class="fas fa-credit-card"></i>
+                <span>💳 Buy Now</span>
+              </a>
 
             {% elif not current_user.is_authenticated %}
-            <a href="{{ url_for('login') }}"
-               class="w-full bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg hover:bg-blue-700 transition duration-300 flex items-center justify-center space-x-2">
-              <i class="fas fa-sign-in-alt"></i>
-              <span>Login to Message Seller</span>
-            </a>
+              <a href="{{ url_for('login') }}"
+                 style="width: 100%; background: #3b82f6; color: white; font-weight: 600; padding: 0.75rem 1.5rem; border-radius: 0.5rem; display: flex; align-items: center; justify-content: center; gap: 0.5rem; text-decoration: none;">
+                <i class="fas fa-sign-in-alt"></i>
+                <span>Login to Contact Seller</span>
+              </a>
+            {% else %}
+              <div style="background: rgba(55, 65, 81, 0.5); color: #9ca3af; font-weight: 600; padding: 0.75rem 1.5rem; border-radius: 0.5rem; text-align: center;">
+                This is your service
+              </div>
             {% endif %}
           </div>
 
         </div>
       </div>
 
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- REVIEWS & RATINGS SECTION -->
+    <!-- ============================================================ -->
+    <div style="margin-top: 4rem; background: var(--main-bg); border-radius: 1rem; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); padding: 2rem; border: 1px solid var(--main-border);">
+         
+        <!-- Reviews Header -->
+        <div style="display: flex; flex-direction: column; @media (min-width: 768px) { flex-direction: row; } justify-content: space-between; align-items: flex-start; @media (min-width: 768px) { align-items: center; } margin-bottom: 2rem; gap: 1rem;">
+            <h3 style="font-size: 1.5rem; font-weight: 700; color: var(--heading-color);">Reviews & Ratings</h3>
+            
+            <!-- Rating Summary Box -->
+            <div style="display: flex; align-items: center; gap: 1rem; padding: 1rem 1.5rem; background: rgba(99, 102, 241, 0.1); border-radius: 0.75rem; border: 1px solid rgba(99, 102, 241, 0.3);">
+                <div style="text-align: center;">
+                    <div style="font-size: 1.875rem; font-weight: 700; color: #818cf8;" id="avgRating">0</div>
+                    <div style="color: #fbbf24; font-size: 1.125rem;" id="avgStars">☆☆☆☆☆</div>
+                </div>
+                <div style="text-align: left;">
+                    <div style="font-weight: 600; color: #d1d5db;" id="reviewCount">No reviews yet</div>
+                    <div style="font-size: 0.75rem; color: #9ca3af;">Based on verified purchases</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Add Review Button -->
+        {% if current_user.is_authenticated and not current_user.can_sell and current_user.id != service.seller_id %}
+        <button id="addReviewBtn" style="margin-bottom: 1.5rem; padding: 0.75rem 1.5rem; background: #6366f1; color: white; font-weight: 600; border-radius: 0.5rem; display: flex; align-items: center; gap: 0.5rem; border: none; cursor: pointer;" onclick="openReviewForm()">
+            <i class="fas fa-star"></i> Write a Review
+        </button>
+        {% elif current_user.is_authenticated and not current_user.can_sell %}
+        <p style="color: #9ca3af; font-size: 0.875rem; margin-bottom: 1.5rem;">You can only review services you've purchased from.</p>
+        {% endif %}
+        
+        <!-- Reviews List -->
+        <div class="reviews-list" id="reviewsList">
+            <p style="text-align: center; color: #9ca3af; padding: 2.5rem;">Loading reviews...</p>
+        </div>
+        
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- REVIEW FORM MODAL -->
+    <!-- ============================================================ -->
+    <div id="reviewModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full mx-4 max-h-[90vh] overflow-y-auto">
+            
+            <!-- Header -->
+            <div class="bg-gradient-to-r from-indigo-600 to-purple-600 p-6 text-white">
+                <div class="flex justify-between items-center">
+                    <h2 class="text-xl font-bold">Write a Review</h2>
+                    <span class="cursor-pointer text-2xl" onclick="closeReviewForm()">&times;</span>
+                </div>
+            </div>
+            
+            <!-- Body -->
+            <form id="reviewForm" class="p-6 space-y-5">
+                
+                <!-- Overall Rating -->
+                <div>
+                    <label class="block font-semibold text-gray-700 mb-2">Overall Rating *</label>
+                    <div class="stars-input text-2xl cursor-pointer" id="overallRating">
+                        <span data-value="1" class="text-gray-300 mr-1">★</span>
+                        <span data-value="2" class="text-gray-300 mr-1">★</span>
+                        <span data-value="3" class="text-gray-300 mr-1">★</span>
+                        <span data-value="4" class="text-gray-300 mr-1">★</span>
+                        <span data-value="5" class="text-gray-300">★</span>
+                    </div>
+                    <input type="hidden" id="overallRatingValue" value="0">
+                </div>
+                
+                <!-- Communication Rating -->
+                <div>
+                    <label class="block font-semibold text-gray-700 mb-2">Communication (optional)</label>
+                    <div class="stars-input text-xl cursor-pointer" id="communicationRating">
+                        <span data-value="1" class="text-gray-300 mr-1">★</span>
+                        <span data-value="2" class="text-gray-300 mr-1">★</span>
+                        <span data-value="3" class="text-gray-300 mr-1">★</span>
+                        <span data-value="4" class="text-gray-300 mr-1">★</span>
+                        <span data-value="5" class="text-gray-300">★</span>
+                    </div>
+                    <input type="hidden" id="communicationRatingValue" value="0">
+                <!-- Quality Rating -->
+                <div>
+                    <label class="block font-semibold text-gray-700 mb-2">Quality (optional)</label>
+                    <div class="stars-input text-xl cursor-pointer" id="qualityRating">
+                        <span data-value="1" class="text-gray-300 mr-1">★</span>
+                        <span data-value="2" class="text-gray-300 mr-1">★</span>
+                        <span data-value="3" class="text-gray-300 mr-1">★</span>
+                        <span data-value="4" class="text-gray-300 mr-1">★</span>
+                        <span data-value="5" class="text-gray-300">★</span>
+                    </div>
+                    <input type="hidden" id="qualityRatingValue" value="0">
+                </div>
+                
+                <!-- Timeliness Rating -->
+                <div>
+                    <label class="block font-semibold text-gray-700 mb-2">Timeliness (optional)</label>
+                    <div class="stars-input text-xl cursor-pointer" id="timelinessRating">
+                        <span data-value="1" class="text-gray-300 mr-1">★</span>
+                        <span data-value="2" class="text-gray-300 mr-1">★</span>
+                        <span data-value="3" class="text-gray-300 mr-1">★</span>
+                        <span data-value="4" class="text-gray-300 mr-1">★</span>
+                        <span data-value="5" class="text-gray-300">★</span>
+                    </div>
+                    <input type="hidden" id="timelinessRatingValue" value="0">
+                </div>
+                
+                <!-- Comment -->
+                       <div>
+                             <label for="reviewComment" class="block font-semibold text-gray-700 mb-2">Your Review (optional)</label>
+                            <textarea 
+        id="reviewComment" 
+        placeholder="Share your experience with this service..." 
+        rows="4" 
+        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent resize-none bg-white text-gray-900"
+        style="color: #111; background-color: #fff; -webkit-appearance: none; -webkit-text-fill-color: #111;">
+             </textarea>
+                </div>
+                
+                <!-- Submit Button -->
+                <button 
+    type="submit" 
+    class="w-full px-6 py-3 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700 transition duration-300">
+    Submit Review
+</button>
+            </form>
+        </div>
     </div>
 
     <!-- Similar Services Section -->
@@ -182,7 +311,7 @@
             <h3 class="text-xl font-semibold text-gray-800 mb-2">{{ item.title }}</h3>
             <p class="text-gray-600 text-sm mb-4">{{ item.description[:100] }}{% if item.description|length > 100 %}...{% endif %}</p>
             <div class="flex justify-between items-center">
-              <span class="text-2xl font-bold text-green-600">${{ "%.2f"|format(item.price) }}</span>
+              <span class="text-2xl font-bold text-green-600">KES {{ "%.2f"|format(item.price) }}</span>
               <a href="{{ url_for('service_detail', service_id=item.id) }}"
                  class="bg-gray-100 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-200 transition duration-300">
                 View Details
@@ -197,6 +326,114 @@
 
   </div>
 </section>
+
+<!-- Contact Seller Modal -->
+<div id="contact-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50">
+  <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full mx-4 p-0 overflow-hidden animate-fade-in">
+    
+    <!-- Header -->
+    <div class="bg-gradient-to-r from-green-600 to-green-700 p-6 text-white">
+      <h2 class="text-2xl font-bold mb-2">📞 Contact Seller</h2>
+      <p class="text-green-100">{{ service.seller.username or service.seller.email if service.seller else 'Seller' }}</p>
+    </div>
+
+    <!-- Body -->
+    <div class="p-6 space-y-4">
+      <p class="text-gray-700 text-center mb-6">Choose how you want to reach the seller:</p>
+
+      <!-- WhatsApp Option -->
+      {% if service.contact_methods and service.contact_methods.whatsapp %}
+      <button 
+        onclick="openWhatsApp('{{ service.contact_methods.whatsapp|replace('+', '')|replace(' ', '') }}')"
+        class="w-full flex items-center gap-3 bg-green-50 hover:bg-green-100 border-2 border-green-500 text-green-700 font-bold py-4 px-6 rounded-xl transition duration-300 transform hover:scale-105"
+      >
+        <i class="fab fa-whatsapp text-3xl"></i>
+        <div class="text-left">
+          <div class="text-lg">WhatsApp</div>
+          <div class="text-xs text-green-600">Message on WhatsApp</div>
+        </div>
+        <i class="fas fa-chevron-right ml-auto"></i>
+      </button>
+      {% endif %}
+
+      <!-- Call Option -->
+      {% if service.contact_methods and service.contact_methods.phone %}
+      <button 
+        onclick="callSeller('{{ service.contact_methods.phone }}')"
+        class="w-full flex items-center gap-3 bg-blue-50 hover:bg-blue-100 border-2 border-blue-500 text-blue-700 font-bold py-4 px-6 rounded-xl transition duration-300 transform hover:scale-105"
+      >
+        <i class="fas fa-phone text-3xl"></i>
+        <div class="text-left">
+          <div class="text-lg">Call</div>
+          <div class="text-xs text-blue-600">{{ service.contact_methods.phone }}</div>
+        </div>
+        <i class="fas fa-chevron-right ml-auto"></i>
+      </button>
+      {% endif %}
+
+      <!-- In-App Chat Option -->
+      <button 
+        onclick="startInAppChat({{ service.id }})"
+        class="w-full flex items-center gap-3 bg-purple-50 hover:bg-purple-100 border-2 border-purple-500 text-purple-700 font-bold py-4 px-6 rounded-xl transition duration-300 transform hover:scale-105"
+      >
+        <i class="fas fa-comments text-3xl"></i>
+        <div class="text-left">
+          <div class="text-lg">In-App Chat</div>
+          <div class="text-xs text-purple-600">Use our messaging</div>
+        </div>
+        <i class="fas fa-chevron-right ml-auto"></i>
+      </button>
+
+      <!-- Email Option -->
+      {% if service.contact_methods and service.contact_methods.email %}
+      <button 
+        onclick="emailSeller('{{ service.contact_methods.email }}')"
+        class="w-full flex items-center gap-3 bg-orange-50 hover:bg-orange-100 border-2 border-orange-500 text-orange-700 font-bold py-4 px-6 rounded-xl transition duration-300 transform hover:scale-105"
+      >
+        <i class="fas fa-envelope text-3xl"></i>
+        <div class="text-left">
+          <div class="text-lg">Email</div>
+          <div class="text-xs text-orange-600">{{ service.contact_methods.email }}</div>
+        </div>
+        <i class="fas fa-chevron-right ml-auto"></i>
+      </button>
+      {% endif %}
+    </div>
+
+    <!-- Footer -->
+    <div class="bg-gray-50 p-4 border-t border-gray-200">
+      <button 
+        onclick="closeContactModal()"
+        class="w-full bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-lg transition"
+      >
+        Close
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Confirmation Modal -->
+<div id="confirmation-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50">
+  <div class="bg-white rounded-2xl shadow-2xl max-w-sm w-full mx-4 p-6 animate-fade-in">
+    <h3 id="confirm-title" class="text-xl font-bold text-gray-800 mb-2"></h3>
+    <p id="confirm-message" class="text-gray-600 mb-6"></p>
+    
+    <div class="flex gap-3">
+      <button 
+        onclick="closeConfirmModal()"
+        class="flex-1 bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-lg transition"
+      >
+        Cancel
+      </button>
+      <button 
+        id="confirm-btn"
+        class="flex-1 bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg transition"
+      >
+        Yes, Proceed
+      </button>
+    </div>
+  </div>
+</div>
 
 <style>
   /* Media Gallery Full Display Styles */
@@ -231,21 +468,10 @@
     width: 100%;
   }
 
-  /* Contact Methods Section */
-  .contact-methods-section {
-    margin-top: 1rem;
-  }
-
-  .contact-title {
-    font-size: 1rem;
-    font-weight: 600;
-    color: #374151;
-    margin-bottom: 0.75rem;
-  }
-
+  /* Contact Methods Grid */
   .contact-methods-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
     gap: 0.75rem;
   }
 
@@ -266,7 +492,7 @@
     background: rgba(37, 99, 235, 0.2);
     color: #1d4ed8;
     text-decoration: none;
-    transform: translateY(-1px);
+    transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
   }
 
@@ -277,192 +503,316 @@
   .contact-method-detail span {
     font-weight: 500;
   }
+
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+      transform: scale(0.95);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+  
+  .animate-fade-in {
+    animation: fade-in 0.3s ease-out;
+  }
+  
+  /* Mobile Responsive */
+  @media (max-width: 768px) {
+    section[style*="padding: 4rem 0"] { padding: 2rem 0 !important; }
+    h1[style*="font-size: 2.25rem"] { font-size: 1.5rem !important; }
+    div[style*="grid-template-columns: 1fr; gap: 3rem"] { gap: 1.5rem !important; }
+    div[style*="background: var(--main-bg)"]:nth-of-type(2) { padding: 1.5rem !important; }
+    .contact-methods-grid { grid-template-columns: 1fr !important; }
+    .media-gallery-full { padding: 0.5rem; }
+    .media-item-full { max-height: 300px; }
+  }
+  
+  /* Modal Mobile */
+  @media (max-width: 768px) {
+    #reviewModal > div,
+    #contact-modal > div,
+    #confirmation-modal > div {
+      width: 95vw !important;
+      max-width: 95vw !important;
+      margin: 0.5rem !important;
+      max-height: 90vh !important;
+      overflow-y: auto !important;
+    }
+    #reviewModal .p-6,
+    #contact-modal .p-6 { padding: 1rem !important; }
+    .stars-input { font-size: 1.5rem !important; }
+    button[class*="w-full"][onclick] { min-height: 44px; }
+  }
 </style>
 
 <script>
-function makeCall(phoneNumber) {
-  window.location.href = 'tel:' + phoneNumber;
-  setTimeout(function() {
-    if (confirm('Would you like to call ' + phoneNumber + '?')) {
-      window.location.href = 'tel:' + phoneNumber;
-    }
-  }, 100);
-}
-
-function sendEmail(emailAddress) {
-  window.location.href = 'mailto:' + emailAddress;
-  setTimeout(function() {
-    if (confirm('Would you like to send an email to ' + emailAddress + '?')) {
-      window.location.href = 'mailto:' + emailAddress;
-    }
-  }, 100);
-}
-
-function showContactMethods() {
-  const contactSection = document.querySelector('.contact-methods-section');
-  if (contactSection) {
-    contactSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    contactSection.style.boxShadow = '0 0 20px rgba(37, 99, 235, 0.5)';
-    setTimeout(() => { contactSection.style.boxShadow = ''; }, 2000);
+  function showContactModal() {
+    document.getElementById('contact-modal').classList.remove('hidden');
   }
-}
 
-// M-PESA Payment Form
-const mpesaForm = document.getElementById('mpesa-payment-form');
-const statusEl = document.getElementById('payment-status');
+  function closeContactModal() {
+    document.getElementById('contact-modal').classList.add('hidden');
+  }
 
-if (mpesaForm) {
-  mpesaForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const phone = document.getElementById('buyer-phone').value.trim();
-    const amount = document.getElementById('payment-amount').value;
+  function closeConfirmModal() {
+    document.getElementById('confirmation-modal').classList.add('hidden');
+  }
 
-    if (!phone) {
-      statusEl.textContent = "Please enter your phone number.";
-      statusEl.classList.add('text-red-500');
-      statusEl.classList.remove('text-green-600', 'text-yellow-700');
-      return;
-    }
+  function openWhatsApp(phone) {
+    const message = "Hi! I'm interested in your service on Freelance Marketplace.";
+    const encodedMessage = encodeURIComponent(message);
+    const whatsappUrl = `https://wa.me/${phone}?text=${encodedMessage}`;
+    
+    document.getElementById('confirm-title').textContent = '📱 Open WhatsApp?';
+    document.getElementById('confirm-message').textContent = `You'll be redirected to WhatsApp to message the seller.`;
+    document.getElementById('confirm-btn').onclick = () => {
+      window.open(whatsappUrl, '_blank');
+      closeConfirmModal();
+      closeContactModal();
+    };
+    
+    document.getElementById('confirmation-modal').classList.remove('hidden');
+  }
 
-    if (!amount || amount < 1) {
-      statusEl.textContent = "Please enter a valid amount.";
-      statusEl.classList.add('text-red-500');
-      statusEl.classList.remove('text-green-600', 'text-yellow-700');
-      return;
-    }
+  function callSeller(phone) {
+    document.getElementById('confirm-title').textContent = '📞 Make a Call?';
+    document.getElementById('confirm-message').textContent = `Call seller at ${phone}?`;
+    document.getElementById('confirm-btn').onclick = () => {
+      window.location.href = `tel:${phone}`;
+      closeConfirmModal();
+      closeContactModal();
+    };
+    
+    document.getElementById('confirmation-modal').classList.remove('hidden');
+  }
 
-    statusEl.textContent = "Initiating STK Push...";
-    statusEl.classList.remove('text-red-500', 'text-green-600');
-    statusEl.classList.add('text-yellow-700');
+  function emailSeller(email) {
+    const subject = encodeURIComponent("Service Inquiry from Freelance Marketplace");
+    const body = encodeURIComponent("Hi,\n\nI'm interested in your service. Could you provide more details?\n\nThank you!");
+    
+    document.getElementById('confirm-title').textContent = '✉️ Send Email?';
+    document.getElementById('confirm-message').textContent = `Email will be sent to ${email}.`;
+    document.getElementById('confirm-btn').onclick = () => {
+      window.location.href = `mailto:${email}?subject=${subject}&body=${body}`;
+      closeConfirmModal();
+      closeContactModal();
+    };
+    
+    document.getElementById('confirmation-modal').classList.remove('hidden');
+  }
 
-    try {
-      const formData = new FormData(mpesaForm);
-      const res = await fetch(`{{ url_for('pay_service', service_id=service.id) }}`, {
-        method: 'POST',
-        body: formData
-      });
-      const data = await res.json();
+  function startInAppChat(sellerId) {
+    document.getElementById('confirm-title').textContent = '💬 Start Chat?';
+    document.getElementById('confirm-message').textContent = `Open in-app messaging with the seller?`;
+    document.getElementById('confirm-btn').onclick = () => {
+      window.location.href = `/start_chat/${sellerId}`;
+    };
+    
+    document.getElementById('confirmation-modal').classList.remove('hidden');
+  }
 
-      if (data.ResponseCode === '0') {
-        // Show popup modal for M-Pesa payment guidance
-        showMpesaPaymentModal(phone, amount);
+  // Close modals when clicking outside
+  document.getElementById('contact-modal').addEventListener('click', function(e) {
+    if (e.target === this) closeContactModal();
+  });
+
+  document.getElementById('confirmation-modal').addEventListener('click', function(e) {
+    if (e.target === this) closeConfirmModal();
+  });
+
+  // ============================================================
+  // REVIEWS & RATINGS JAVASCRIPT
+  // ============================================================
+  
+  // Load reviews when page loads
+  document.addEventListener('DOMContentLoaded', function() {
+    const serviceId = {{ service.id }};
+    loadServiceReviews(serviceId);
+    setupStarRatings();
+  });
+
+  // Set up star rating interactions
+  function setupStarRatings() {
+    const ratingContainers = [
+      { id: 'overallRating', inputId: 'overallRatingValue' },
+      { id: 'communicationRating', inputId: 'communicationRatingValue' },
+      { id: 'qualityRating', inputId: 'qualityRatingValue' },
+      { id: 'timelinessRating', inputId: 'timelinessRatingValue' }
+    ];
+    
+    ratingContainers.forEach(container => {
+      const stars = document.querySelectorAll(`#${container.id} span`);
+      const input = document.getElementById(container.inputId);
+      
+      stars.forEach(star => {
+        star.addEventListener('click', () => {
+          const value = parseInt(star.dataset.value);
+          input.value = value;
+          
+          // Update star colors
+          stars.forEach(s => {
+            if (parseInt(s.dataset.value) <= value) {
+              s.classList.remove('text-gray-300');
+              s.classList.add('text-yellow-400');
+            } else {
+              s.classList.remove('text-yellow-400');
+              s.classList.add('text-gray-300');
+            }
+          });
+        });
         
-        statusEl.textContent = "STK Push sent! Please check your phone.";
-        statusEl.classList.remove('text-red-500', 'text-yellow-700');
-        statusEl.classList.add('text-green-600');
+        star.addEventListener('mouseover', () => {
+          const value = parseInt(star.dataset.value);
+          stars.forEach(s => {
+            if (parseInt(s.dataset.value) <= value) {
+              s.classList.remove('text-gray-300');
+              s.classList.add('text-yellow-400');
+            }
+          });
+        });
+      });
+      
+      const containerEl = document.getElementById(container.id);
+      containerEl.addEventListener('mouseleave', () => {
+        const currentValue = parseInt(input.value);
+        stars.forEach(s => {
+          if (parseInt(s.dataset.value) <= currentValue) {
+            s.classList.remove('text-gray-300');
+            s.classList.add('text-yellow-400');
+          } else {
+            s.classList.remove('text-yellow-400');
+            s.classList.add('text-gray-300');
+          }
+        });
+      });
+    });
+  }
 
+  // Load service reviews
+  function loadServiceReviews(serviceId) {
+    fetch(`/api/review/service/${serviceId}`)
+      .then(response => response.json())
+      .then(data => {
+        const reviewsList = document.getElementById('reviewsList');
+        
+        // Update rating summary
+        const avgRating = data.average_rating || 0;
+        const reviewCount = data.review_count || 0;
+        
+        document.getElementById('avgRating').textContent = avgRating.toFixed(1);
+        
+        // Display stars
+        const starCount = Math.round(avgRating);
+        let stars = '';
+        for (let i = 1; i <= 5; i++) {
+          stars += i <= starCount ? '★' : '☆';
+        }
+        document.getElementById('avgStars').textContent = stars;
+        
+        // Update review count
+        document.getElementById('reviewCount').textContent = reviewCount + (reviewCount === 1 ? ' review' : ' reviews');
+        
+        // Display reviews
+        if (!data.reviews || data.reviews.length === 0) {
+          reviewsList.innerHTML = '<p class="text-center text-gray-500 py-10">No reviews yet. Be the first to review!</p>';
+          return;
+        }
+        
+        reviewsList.innerHTML = data.reviews.map(review => `
+          <div class="bg-gray-50 rounded-xl p-5 mb-4 border border-gray-100">
+            <div class="flex justify-between items-start mb-3">
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-gradient-to-br from-indigo-400 to-purple-500 rounded-full flex items-center justify-center text-white font-bold">
+                  ${(review.buyer_name || 'U')[0].toUpperCase()}
+                </div>
+                <div>
+                  <div class="font-semibold text-gray-800">${review.buyer_name || 'Unknown User'}</div>
+                  <div class="text-yellow-400 text-sm">${'★'.repeat(review.overall_rating)}${'☆'.repeat(5-review.overall_rating)}</div>
+                  <div class="text-gray-400 text-xs">${new Date(review.created_at).toLocaleDateString()}</div>
+                </div>
+              </div>
+            </div>
+            ${review.comment ? `<p class="text-gray-600 mt-3 leading-relaxed">${review.comment}</p>` : ''}
+            ${review.communication_rating || review.quality_rating ? `
+              <div class="text-xs text-gray-500 mt-3 pt-3 border-t border-gray-200">
+                ${review.communication_rating ? `<span class="mr-3">Communication: ${'★'.repeat(review.communication_rating)}${'☆'.repeat(5-review.communication_rating)}</span>` : ''}
+                ${review.quality_rating ? `<span class="mr-3">Quality: ${'★'.repeat(review.quality_rating)}${'☆'.repeat(5-review.quality_rating)}</span>` : ''}
+                ${review.timeliness_rating ? `<span>Timeliness: ${'★'.repeat(review.timeliness_rating)}${'☆'.repeat(5-review.timeliness_rating)}</span>` : ''}
+              </div>
+            ` : ''}
+          </div>
+        `).join('');
+      })
+      .catch(error => {
+        console.error('Error loading reviews:', error);
+        document.getElementById('reviewsList').innerHTML = '<p class="text-red-500 text-center py-10">Error loading reviews</p>';
+      });
+  }
+
+  // Open review form modal
+  function openReviewForm() {
+    document.getElementById('reviewModal').classList.remove('hidden');
+  }
+
+  // Close review form modal
+  function closeReviewForm() {
+    document.getElementById('reviewModal').classList.add('hidden');
+  }
+
+  // Handle review form submission
+  document.getElementById('reviewForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const overallRating = parseInt(document.getElementById('overallRatingValue').value);
+    
+    if (overallRating === 0) {
+      alert('Please select an overall rating');
+      return;
+    }
+    
+    const review = {
+      service_id: {{ service.id }},
+      overall_rating: overallRating,
+      communication_rating: parseInt(document.getElementById('communicationRatingValue').value) || null,
+      quality_rating: parseInt(document.getElementById('qualityRatingValue').value) || null,
+      timeliness_rating: parseInt(document.getElementById('timelinessRatingValue').value) || null,
+      comment: document.getElementById('reviewComment').value.trim() || null
+    };
+    
+    try {
+      const response = await fetch('/api/review/add', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(review)
+      });
+      
+      const result = await response.json();
+      
+      if (response.ok) {
+        alert('Review submitted successfully!');
+        closeReviewForm();
+        document.getElementById('reviewForm').reset();
+        // Reset stars
+        document.querySelectorAll('.stars-input span').forEach(s => {
+          s.classList.remove('text-yellow-400');
+          s.classList.add('text-gray-300');
+        });
+        loadServiceReviews({{ service.id }});
       } else {
-        statusEl.textContent = data.errorMessage || "Payment initiation failed.";
-        statusEl.classList.add('text-red-500');
-        statusEl.classList.remove('text-green-600', 'text-yellow-700');
+        alert('Error: ' + (result.error || 'Failed to submit review'));
       }
-
-    } catch (err) {
-      statusEl.textContent = "Error connecting to payment gateway.";
-      statusEl.classList.add('text-red-500');
-      statusEl.classList.remove('text-green-600', 'text-yellow-700');
-      console.error(err);
+    } catch (error) {
+      console.error('Error:', error);
+      alert('Error submitting review');
     }
   });
-}
 
-// M-Pesa Payment Modal
-function showMpesaPaymentModal(phone, amount) {
-  // Create modal HTML
-  const modalHTML = `
-    <div id="mpesa-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div class="bg-white rounded-2xl p-8 max-w-md mx-4 shadow-2xl">
-        <div class="text-center mb-6">
-          <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <i class="fas fa-mobile-alt text-2xl text-green-600"></i>
-          </div>
-          <h3 class="text-2xl font-bold text-gray-800 mb-2">Check Your Phone</h3>
-          <p class="text-gray-600">STK Push sent to your phone</p>
-        </div>
-        
-        <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-          <div class="flex items-center justify-between mb-2">
-            <span class="text-sm text-gray-600">Phone Number:</span>
-            <span class="font-mono font-medium">${phone}</span>
-          </div>
-          <div class="flex items-center justify-between mb-2">
-            <span class="text-sm text-gray-600">Amount:</span>
-            <span class="font-mono font-medium text-green-600">KES ${amount}</span>
-          </div>
-          <div class="flex items-center justify-between">
-            <span class="text-sm text-gray-600">Reference:</span>
-            <span class="font-mono font-medium">Payment</span>
-          </div>
-        </div>
-        
-        <div class="text-left mb-6">
-          <h4 class="font-semibold text-gray-800 mb-2">Next Steps:</h4>
-          <ol class="text-sm text-gray-600 space-y-2">
-            <li class="flex items-start">
-              <span class="bg-green-100 text-green-600 rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold mr-2 mt-0.5">1</span>
-              Check your phone for M-Pesa prompt
-            </li>
-            <li class="flex items-start">
-              <span class="bg-green-100 text-green-600 rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold mr-2 mt-0.5">2</span>
-              Open the M-Pesa prompt
-            </li>
-            <li class="flex items-start">
-              <span class="bg-green-100 text-green-600 rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold mr-2 mt-0.5">3</span>
-              Enter your M-Pesa PIN to complete payment
-            </li>
-            <li class="flex items-start">
-              <span class="bg-green-100 text-green-600 rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold mr-2 mt-0.5">4</span>
-              Wait for payment confirmation
-            </li>
-          </ol>
-        </div>
-        
-        <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-6">
-          <div class="flex items-center">
-            <i class="fas fa-info-circle text-yellow-600 mr-2"></i>
-            <p class="text-sm text-yellow-800">
-              The M-Pesa prompt will arrive within 30 seconds. If not received, check your phone settings or contact M-Pesa support.
-            </p>
-          </div>
-        </div>
-        
-        <button onclick="closeMpesaModal()" 
-                class="w-full bg-green-600 text-white font-semibold py-3 px-4 rounded-lg hover:bg-green-700 transition duration-300">
-          I've Completed Payment
-        </button>
-      </div>
-    </div>
-  `;
-  
-  // Add modal to page
-  document.body.insertAdjacentHTML('beforeend', modalHTML);
-  
-  // Add animation
-  setTimeout(() => {
-    document.getElementById('mpesa-modal').classList.add('opacity-100');
-  }, 10);
-}
-
-function closeMpesaModal() {
-  const modal = document.getElementById('mpesa-modal');
-  if (modal) {
-    modal.remove();
-  }
-}
-
-// Close modal when clicking outside
-document.addEventListener('click', function(event) {
-  const modal = document.getElementById('mpesa-modal');
-  if (modal && event.target === modal) {
-    closeMpesaModal();
-  }
-});
-
-// Close modal with Escape key
-document.addEventListener('keydown', function(event) {
-  if (event.key === 'Escape') {
-    closeMpesaModal();
-  }
-});
+  // Close modal when clicking outside
+  document.getElementById('reviewModal').addEventListener('click', function(e) {
+    if (e.target === this) closeReviewForm();
+  });
 </script>
 {% endblock %}

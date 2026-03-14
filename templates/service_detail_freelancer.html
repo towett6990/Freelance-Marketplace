@@ -1,0 +1,881 @@
+{% extends 'base.html' %}
+{% block title %}{{ service.title }}{% endblock %}
+{% block content %}
+<div class="freelancer-detail-container">
+  <!-- Header Banner -->
+  <div class="detail-header">
+    <div class="header-bg-pattern"></div>
+  </div>
+
+  <div class="detail-content">
+    <!-- Left Column - Profile Card -->
+    <aside class="profile-sidebar">
+      <div class="profile-card">
+        <!-- Avatar -->
+        <div class="profile-avatar-section">
+          {% if service.seller and service.seller.avatar %}
+            <img 
+              src="{{ url_for('static', filename='uploads/avatars/' ~ service.seller.avatar) }}" 
+              class="profile-avatar"
+              alt="{{ service.seller.username }}"
+            >
+          {% else %}
+            <div class="avatar-placeholder-large">
+              <i class="fas fa-user"></i>
+            </div>
+          {% endif %}
+          
+          {% if service.seller and service.seller.is_verified %}
+            <span class="verified-badge">
+              <i class="fas fa-check-circle"></i> Verified
+            </span>
+          {% endif %}
+          {% if service.seller and service.seller.seller_level %}
+          {% set lvl = service.seller.seller_level.level %}
+          {% set lvl_map = {"top_rated": ("⭐ Top Rated", "#00ffc8"), ("level_2"): ("🥇 Level 2", "#f59e0b"), ("level_1"): ("🥈 Level 1", "#22c55e"), ("active_seller"): ("✅ Active", "#3b82f6")} %}
+          {% if lvl in ["top_rated","level_2","level_1"] %}
+          {% set lvl_labels = {"top_rated":"⭐ Top Rated","level_2":"🥇 Level 2","level_1":"🥈 Level 1"} %}
+          {% set lvl_colors = {"top_rated":"#00ffc8","level_2":"#f59e0b","level_1":"#22c55e"} %}
+          <span style="display:inline-flex;align-items:center;gap:.3rem;background:{{ lvl_colors[lvl] }}18;color:{{ lvl_colors[lvl] }};border:1px solid {{ lvl_colors[lvl] }}44;padding:.2rem .6rem;border-radius:9999px;font-size:.72rem;font-weight:700;margin-top:.3rem">
+            {{ lvl_labels[lvl] }}
+          </span>
+          {% endif %}
+          {% endif %}
+        </div>
+
+        <!-- Name & Rating -->
+        <div class="profile-info">
+          <h2 class="profile-name">{{ service.seller.username if service.seller else 'Anonymous' }}</h2>
+          
+          <div class="profile-rating">
+            {% set avg_rating = service.get_average_rating() %}
+            <div class="stars-display">
+              {% for i in range(5) %}
+                {% if i < avg_rating|int %}
+                  <i class="fas fa-star star-filled"></i>
+                {% elif i < avg_rating %}
+                  <i class="fas fa-star-half-alt star-half"></i>
+                {% else %}
+                  <i class="far fa-star star-empty"></i>
+                {% endif %}
+              {% endfor %}
+            </div>
+            <span class="rating-value">{{ "%.1f"|format(avg_rating) }}</span>
+            <span class="review-count">({{ service.get_review_count() }} reviews)</span>
+          </div>
+        </div>
+
+        <!-- Hourly Rate Card -->
+        <div class="rate-card">
+          <div class="rate-label">Hourly Rate</div>
+          {% if service.custom_data and service.custom_data.hourly_rate %}
+            <div class="rate-amount">KES {{ "%.0f"|format(service.custom_data.hourly_rate) }}</div>
+          {% else %}
+            <div class="rate-amount">KES {{ "%.0f"|format(service.price) }}</div>
+          {% endif %}
+        </div>
+
+        <!-- Contact Button -->
+        <div class="contact-section">
+          {% if current_user.is_authenticated and current_user.id != service.seller_id %}
+            <a href="{{ url_for('message_user', user_id=service.seller_id) }}" class="btn-contact-primary">
+              <i class="fas fa-envelope"></i>
+              Contact Developer
+            </a>
+            <a href="{{ url_for('start_chat', service_id=service.id) }}" class="btn-contact-secondary">
+              <i class="fas fa-comments"></i>
+              Start Chat
+            </a>
+          {% elif not current_user.is_authenticated %}
+            <a href="{{ url_for('login') }}" class="btn-contact-primary">
+              <i class="fas fa-sign-in-alt"></i>
+              Login to Contact
+            </a>
+          {% else %}
+            <div class="own-service-note">
+              <i class="fas fa-info-circle"></i>
+              This is your service
+            </div>
+          {% endif %}
+
+          <!-- ❤️ Favorite button — visible to everyone -->
+          {% if current_user.is_authenticated %}
+          <form method="POST" action="{{ url_for('features.toggle_favorite', sid=service.id) }}" style="margin-top:.75rem">
+            <button type="submit" style="width:100%;padding:.7rem;border-radius:10px;border:1px solid {{ '#ef4444' if is_favorited else 'rgba(255,255,255,.15)' }};background:{{ 'rgba(239,68,68,.12)' if is_favorited else 'rgba(255,255,255,.04)' }};color:{{ '#ef4444' if is_favorited else '#94a3b8' }};font-weight:600;cursor:pointer;font-size:.9rem;transition:all .2s">
+              {{ '❤️ Saved' if is_favorited else '🤍 Save Service' }}
+            </button>
+          </form>
+          {% else %}
+          <a href="{{ url_for('login') }}" style="display:block;margin-top:.75rem;text-align:center;width:100%;padding:.7rem;border-radius:10px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04);color:#64748b;font-size:.9rem;text-decoration:none">🤍 Save Service</a>
+          {% endif %}
+
+          <!-- 📦 Packages -->
+          {% if packages %}
+          <a href="{{ url_for('features.view_packages', sid=service.id) }}" style="display:block;margin-top:.6rem;text-align:center;padding:.7rem;border-radius:10px;border:1px solid rgba(0,255,200,.2);background:rgba(0,255,200,.06);color:#00ffc8;text-decoration:none;font-weight:600;font-size:.9rem">
+            📦 View Packages ({{ packages|length }})
+          </a>
+          {% endif %}
+
+          <!-- ⚙️ Manage packages — seller only -->
+          {% if current_user.is_authenticated and current_user.id == service.seller_id %}
+          <a href="{{ url_for('features.manage_packages', sid=service.id) }}" style="display:block;margin-top:.5rem;text-align:center;padding:.55rem;border-radius:8px;border:1px solid rgba(167,139,250,.2);background:rgba(167,139,250,.06);color:#a78bfa;text-decoration:none;font-size:.82rem">
+            ⚙️ Manage Packages
+          </a>
+          {% endif %}
+        </div>
+
+        <!-- Quick Info -->
+        <div class="quick-info">
+          {% if service.custom_data and service.custom_data.years_experience %}
+          <div class="info-item">
+            <i class="fas fa-briefcase"></i>
+            <span>{{ service.custom_data.years_experience }} Years Experience</span>
+          </div>
+          {% endif %}
+          
+          {% if service.custom_data and service.custom_data.availability %}
+          <div class="info-item">
+            <i class="fas fa-clock"></i>
+            <span>{{ service.custom_data.availability }}</span>
+          </div>
+          {% endif %}
+          
+          <div class="info-item">
+            <i class="fas fa-calendar-alt"></i>
+            <span>Joined {{ service.seller.created_at.strftime('%b %Y') if service.seller and service.seller.created_at else 'Recently' }}</span>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Right Column - Main Content -->
+    <main class="detail-main">
+      <!-- Service Title -->
+      <div class="service-title-section">
+        <h1 class="service-title">{{ service.title }}</h1>
+        
+        {% if service.custom_data and service.custom_data.experience_level %}
+        <div class="experience-tag tag-{{ service.custom_data.experience_level|lower }}">
+          <i class="fas fa-certificate"></i>
+          {{ service.custom_data.experience_level }} Level Developer
+        </div>
+        {% endif %}
+      </div>
+
+      <!-- Image Gallery -->
+      {% if service.images and service.images|length > 0 %}
+      <div class="gallery-section">
+        <div class="main-image">
+          <img 
+            src="{{ url_for('static', filename='uploads/services/' ~ service.images[0].filename) }}" 
+            alt="{{ service.title }}"
+          >
+        </div>
+        {% if service.images|length > 1 %}
+        <div class="thumbnail-grid">
+          {% for img in service.images[1:5] %}
+          <div class="thumbnail">
+            <img 
+              src="{{ url_for('static', filename='uploads/services/' ~ img.filename) }}" 
+              alt="Work sample {{ loop.index }}"
+            >
+          </div>
+          {% endfor %}
+          {% if service.images|length > 5 %}
+          <div class="thumbnail more">
+            <span>+{{ service.images|length - 5 }} more</span>
+          </div>
+          {% endif %}
+        </div>
+        {% endif %}
+      </div>
+      {% endif %}
+
+      <!-- About Section -->
+      <div class="content-section">
+        <h3 class="section-title">
+          <i class="fas fa-user"></i>
+          About This Developer
+        </h3>
+        <div class="section-content">
+          <p>{{ service.description }}</p>
+        </div>
+      </div>
+
+      <!-- Skills Section -->
+      {% if service.custom_data and service.custom_data.skills %}
+      <div class="content-section">
+        <h3 class="section-title">
+          <i class="fas fa-code"></i>
+          Technical Skills
+        </h3>
+        <div class="skills-grid">
+          {% for skill in service.custom_data.skills %}
+          <span class="skill-badge">{{ skill }}</span>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+
+      <!-- Portfolio Link -->
+      {% if service.custom_data and service.custom_data.portfolio_url %}
+      <div class="content-section">
+        <h3 class="section-title">
+          <i class="fas fa-external-link-alt"></i>
+          Portfolio
+        </h3>
+        <a href="{{ service.custom_data.portfolio_url }}" target="_blank" class="portfolio-link">
+          <i class="fas fa-globe"></i>
+          {{ service.custom_data.portfolio_url }}
+        </a>
+      </div>
+      {% endif %}
+
+      <!-- Delivery Time -->
+      {% if service.custom_data and service.custom_data.project_delivery_time %}
+      <div class="content-section">
+        <h3 class="section-title">
+          <i class="fas fa-truck"></i>
+          Project Delivery
+        </h3>
+        <div class="delivery-info">
+          <i class="fas fa-clock"></i>
+          <span>{{ service.custom_data.project_delivery_time }}</span>
+        </div>
+      </div>
+      {% endif %}
+
+      <!-- Reviews Section -->
+      <div class="content-section reviews-section">
+        <h3 class="section-title">
+          <i class="fas fa-star"></i>
+          Reviews & Ratings
+        </h3>
+        
+        {% if service.reviews and service.reviews|length > 0 %}
+        <div class="reviews-summary">
+          <div class="rating-big">
+            <span class="rating-number">{{ "%.1f"|format(service.get_average_rating()) }}</span>
+            <div class="stars-display">
+              {% for i in range(5) %}
+                {% if i < service.get_average_rating()|int %}
+                  <i class="fas fa-star star-filled"></i>
+                {% else %}
+                  <i class="far fa-star star-empty"></i>
+                {% endif %}
+              {% endfor %}
+            </div>
+            <span class="total-reviews">{{ service.get_review_count() }} reviews</span>
+          </div>
+        </div>
+        
+        <div class="reviews-list">
+          {% for review in service.reviews[:5] %}
+          <div class="review-card">
+            <div class="review-header">
+              <div class="reviewer-avatar">
+                {% if review.buyer and review.buyer.avatar %}
+                  <img src="{{ url_for('static', filename='uploads/avatars/' ~ review.buyer.avatar) }}" alt="">
+                {% else %}
+                  <i class="fas fa-user"></i>
+                {% endif %}
+              </div>
+              <div class="reviewer-info">
+                <span class="reviewer-name">{{ review.buyer.username if review.buyer else 'Anonymous' }}</span>
+                <span class="review-date">{{ review.created_at.strftime('%b %d, %Y') if review.created_at else 'Recent' }}</span>
+              </div>
+              <div class="review-rating">
+                {% for i in range(5) %}
+                  {% if i < review.overall_rating %}
+                    <i class="fas fa-star star-filled"></i>
+                  {% else %}
+                    <i class="far fa-star star-empty"></i>
+                  {% endif %}
+                {% endfor %}
+              </div>
+            </div>
+            {% if review.comment %}
+            <p class="review-comment">{{ review.comment }}</p>
+            {% endif %}
+          </div>
+          {% endfor %}
+        </div>
+        
+        {% if service.reviews|length > 5 %}
+        <a href="#" class="view-all-reviews">
+          View All {{ service.reviews|length }} Reviews
+        </a>
+        {% endif %}
+        {% else %}
+        <div class="no-reviews">
+          <i class="fas fa-star"></i>
+          <p>No reviews yet. Be the first to hire this developer!</p>
+        </div>
+        {% endif %}
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- Font Awesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+<style>
+/* Main Container */
+.freelancer-detail-container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #0f0c29 0%, #1a1a2e 50%, #16213e 100%);
+  padding-bottom: 3rem;
+}
+
+/* Header */
+.detail-header {
+  height: 120px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+.header-bg-pattern {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: 
+    radial-gradient(circle at 20% 50%, rgba(255,255,255,0.1) 0%, transparent 50%),
+    radial-gradient(circle at 80% 50%, rgba(255,255,255,0.1) 0%, transparent 50%);
+}
+
+/* Content Layout */
+.detail-content {
+  display: flex;
+  max-width: 1200px;
+  margin: -60px auto 0;
+  padding: 0 2rem;
+  gap: 2rem;
+  position: relative;
+  z-index: 1;
+}
+
+/* Profile Sidebar */
+.profile-sidebar {
+  width: 320px;
+  flex-shrink: 0;
+}
+
+.profile-card {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  padding: 2rem;
+  position: sticky;
+  top: 2rem;
+}
+
+/* Avatar */
+.profile-avatar-section {
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+.profile-avatar {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 4px solid rgba(102, 126, 234, 0.5);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+}
+
+.avatar-placeholder-large {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto;
+  font-size: 3rem;
+  color: white;
+}
+
+.verified-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: rgba(0, 200, 83, 0.2);
+  color: #00c853;
+  padding: 0.4rem 0.8rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  margin-top: 1rem;
+}
+
+/* Profile Info */
+.profile-info {
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+.profile-name {
+  color: white;
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+
+.profile-rating {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.stars-display {
+  display: flex;
+  gap: 2px;
+}
+
+.star-filled {
+  color: #ffc107;
+  font-size: 0.9rem;
+}
+
+.star-half {
+  color: #ffc107;
+  font-size: 0.9rem;
+}
+
+.star-empty {
+  color: #555;
+  font-size: 0.9rem;
+}
+
+.rating-value {
+  color: #ffc107;
+  font-weight: 700;
+  font-size: 1rem;
+}
+
+.review-count {
+  color: #888;
+  font-size: 0.85rem;
+}
+
+/* Rate Card */
+.rate-card {
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.2), rgba(118, 75, 162, 0.2));
+  border: 1px solid rgba(102, 126, 234, 0.3);
+  border-radius: 12px;
+  padding: 1rem;
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+.rate-label {
+  color: #a0a0a0;
+  font-size: 0.85rem;
+  margin-bottom: 0.25rem;
+}
+
+.rate-amount {
+  color: #00d4ff;
+  font-size: 1.8rem;
+  font-weight: 700;
+}
+
+/* Contact Buttons */
+.contact-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.btn-contact-primary, .btn-contact-secondary {
+  padding: 1rem;
+  border-radius: 10px;
+  font-weight: 600;
+  text-decoration: none;
+  text-align: center;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.btn-contact-primary {
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white;
+}
+
+.btn-contact-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+  color: white;
+  text-decoration: none;
+}
+
+.btn-contact-secondary {
+  background: rgba(40, 167, 69, 0.2);
+  color: #28a745;
+  border: 1px solid rgba(40, 167, 69, 0.3);
+}
+
+.btn-contact-secondary:hover {
+  background: rgba(40, 167, 69, 0.3);
+  color: #28a745;
+  text-decoration: none;
+}
+
+.own-service-note {
+  text-align: center;
+  padding: 1rem;
+  background: rgba(255, 193, 7, 0.1);
+  border: 1px solid rgba(255, 193, 7, 0.2);
+  border-radius: 10px;
+  color: #ffc107;
+  font-size: 0.9rem;
+}
+
+/* Quick Info */
+.quick-info {
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding-top: 1rem;
+}
+
+.info-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 0;
+  color: #a0a0a0;
+  font-size: 0.9rem;
+}
+
+.info-item i {
+  color: #667eea;
+  width: 20px;
+}
+
+/* Main Content */
+.detail-main {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Service Title */
+.service-title-section {
+  margin-bottom: 2rem;
+}
+
+.service-title {
+  color: white;
+  font-size: 2rem;
+  font-weight: 700;
+  line-height: 1.3;
+  margin-bottom: 1rem;
+}
+
+.experience-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.tag-expert {
+  background: rgba(255, 193, 7, 0.2);
+  color: #ffc107;
+  border: 1px solid rgba(255, 193, 7, 0.3);
+}
+
+.tag-intermediate {
+  background: rgba(0, 212, 255, 0.2);
+  color: #00d4ff;
+  border: 1px solid rgba(0, 212, 255, 0.3);
+}
+
+.tag-beginner {
+  background: rgba(40, 167, 69, 0.2);
+  color: #28a745;
+  border: 1px solid rgba(40, 167, 69, 0.3);
+}
+
+/* Gallery */
+.gallery-section {
+  margin-bottom: 2rem;
+}
+
+.main-image {
+  border-radius: 16px;
+  overflow: hidden;
+  margin-bottom: 1rem;
+}
+
+.main-image img {
+  width: 100%;
+  max-height: 400px;
+  object-fit: cover;
+}
+
+.thumbnail-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 0.75rem;
+}
+
+.thumbnail {
+  border-radius: 8px;
+  overflow: hidden;
+  aspect-ratio: 1;
+}
+
+.thumbnail img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.thumbnail.more {
+  background: rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #888;
+  font-size: 0.85rem;
+}
+
+/* Content Sections */
+.content-section {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.section-title {
+  color: white;
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.section-title i {
+  color: #667eea;
+}
+
+.section-content p {
+  color: #c0c0c0;
+  line-height: 1.7;
+  font-size: 1rem;
+}
+
+/* Skills Grid */
+.skills-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.skill-badge {
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.3), rgba(118, 75, 162, 0.3));
+  color: #a0a0ff;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  border: 1px solid rgba(102, 126, 234, 0.3);
+}
+
+/* Portfolio Link */
+.portfolio-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #00d4ff;
+  text-decoration: none;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+}
+
+.portfolio-link:hover {
+  color: #00b8e6;
+  transform: translateX(5px);
+  text-decoration: none;
+}
+
+/* Delivery Info */
+.delivery-info {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: #c0c0c0;
+}
+
+.delivery-info i {
+  color: #667eea;
+}
+
+/* Reviews */
+.reviews-summary {
+  text-align: center;
+  padding: 1.5rem;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 12px;
+  margin-bottom: 1.5rem;
+}
+
+.rating-big {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.rating-number {
+  color: #ffc107;
+  font-size: 3rem;
+  font-weight: 700;
+}
+
+.total-reviews {
+  color: #888;
+  font-size: 0.9rem;
+}
+
+.reviews-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.review-card {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 12px;
+  padding: 1rem;
+}
+
+.review-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.reviewer-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #888;
+}
+
+.reviewer-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.reviewer-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.reviewer-name {
+  color: white;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.review-date {
+  color: #666;
+  font-size: 0.75rem;
+}
+
+.review-rating {
+  display: flex;
+  gap: 2px;
+}
+
+.review-comment {
+  color: #a0a0a0;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.view-all-reviews {
+  display: block;
+  text-align: center;
+  color: #667eea;
+  text-decoration: none;
+  padding: 1rem;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.view-all-reviews:hover {
+  color: #764ba2;
+  text-decoration: none;
+}
+
+.no-reviews {
+  text-align: center;
+  padding: 2rem;
+  color: #666;
+}
+
+.no-reviews i {
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+  color: #555;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .detail-content {
+    flex-direction: column;
+  }
+  
+  .profile-sidebar {
+    width: 100%;
+  }
+  
+  .profile-card {
+    position: static;
+  }
+}
+
+@media (max-width: 768px) {
+  .detail-content {
+    padding: 0 1rem;
+  }
+  
+  .service-title {
+    font-size: 1.5rem;
+  }
+  
+  .thumbnail-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+</style>
+{% endblock %}
+

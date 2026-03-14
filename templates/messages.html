@@ -1,33 +1,171 @@
-<!-- templates/messages.html -->
 {% extends "base.html" %}
-{% block title %}Conversations - Messages{% endblock %}
+{% block title %}Messages - Freelance Marketplace{% endblock %}
+
 {% block content %}
-<section class="panel">
-  <h1>Conversations</h1>
-  {% if chats %}
-    <ul class="convo-list">
-      {% for c in chats %}
-        <li class="convo-item">
-          <a href="{{ url_for('chat', username=c.username) }}" class="convo-link">
-            <span class="convo-name">{{ c.username }}</span>
-            {% if c.unread_count and c.unread_count > 0 %}
-              <span class="badge">{{ c.unread_count }}</span>
-            {% endif %}
+<div class="container-fluid h-screen" style="display: flex; background: #f5f5f5;">
+  
+  <!-- Left Sidebar - Conversations List -->
+  <div class="w-25" style="width: 30%; background: #fff; border-right: 1px solid #ddd; display: flex; flex-direction: column;">
+    
+    <!-- Header -->
+    <div style="background: #27ae60; color: white; padding: 20px; border-bottom: 1px solid #ddd;">
+      <h3 style="margin: 0; font-size: 18px; font-weight: 600;">
+        💬 Messages
+      </h3>
+      <p style="margin: 5px 0 0 0; font-size: 12px; opacity: 0.9;">
+        {{ chats|length }} conversation{{ 's' if chats|length != 1 else '' }}
+      </p>
+    </div>
+
+    <!-- Search Bar -->
+    <div style="padding: 15px;">
+      <input 
+        type="text" 
+        id="search-input"
+        placeholder="🔍 Search conversations..." 
+        style="width: 100%; padding: 10px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px;"
+        autocomplete="off"
+      >
+    </div>
+
+    <!-- Conversations List -->
+    <div id="conversations-list" style="flex: 1; overflow-y: auto; padding: 0;">
+      {% if chats %}
+        {% for chat in chats %}
+          <a href="{{ url_for('chat', conversation_id=chat.conversation_id) }}" 
+             style="display: block; padding: 15px; border-bottom: 1px solid #f0f0f0; text-decoration: none; color: inherit; transition: background 0.2s;"
+             class="conversation-item"
+             onmouseover="this.style.background='#f9f9f9'"
+             onmouseout="this.style.background='transparent'"
+             data-username="{{ chat.username.lower() }}">
+            
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <!-- Avatar -->
+              <div style="width: 45px; height: 45px; border-radius: 50%; background: #27ae60; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; flex-shrink: 0;">
+                {{ chat.username[0:1].upper() }}
+              </div>
+
+              <!-- Chat Info -->
+              <div style="flex: 1; min-width: 0;">
+                <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px;">
+                  <h6 style="margin: 0; font-weight: 600; font-size: 14px; color: #333;">
+                    {{ chat.username }}
+                  </h6>
+                  {% if chat.unread_count > 0 %}
+                    <span style="background: #e74c3c; color: white; border-radius: 50%; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: bold;">
+                      {{ chat.unread_count }}
+                    </span>
+                  {% endif %}
+                </div>
+
+                <!-- Last Message Preview -->
+                <p style="margin: 0; font-size: 12px; color: #999; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                  {% if chat.last_message %}
+                    {% if chat.last_message %}
+  {{ chat.last_message.content[:40] }}{% if chat.last_message.content|length > 40 %}...{% endif %}
+{% else %}
+  No messages yet
+{% endif %}
+                  {% else %}
+                    No messages yet
+                  {% endif %}
+                </p>
+              </div>
+            </div>
           </a>
-        </li>
-      {% endfor %}
-    </ul>
-  {% else %}
-    <p>No conversations yet. Message a seller to start.</p>
-  {% endif %}
-</section>
+        {% endfor %}
+      {% else %}
+        <div style="padding: 40px 20px; text-align: center; color: #999;">
+          <div style="font-size: 48px; margin-bottom: 15px;">💬</div>
+          <p style="margin: 10px 0; font-size: 14px; font-weight: 500;">No conversations yet</p>
+          <p style="margin: 10px 0; font-size: 12px;">
+            <a href="{{ url_for('list_services') }}" style="color: #27ae60; text-decoration: none;">
+              Browse services →
+            </a>
+          </p>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Right Side - Chat View or Empty State -->
+  <div id="chat-area" style="flex: 1; background: white; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #999;">
+    <div style="text-align: center;">
+      <div style="font-size: 64px; margin-bottom: 20px;">💬</div>
+      <h4 style="font-size: 18px; color: #333; margin: 0 0 10px 0;">Freelance Marketplace</h4>
+      <p style="margin: 0; font-size: 14px; color: #999;">
+        Select a conversation to start messaging
+      </p>
+    </div>
+  </div>
+
+</div>
 
 <style>
-.panel { max-width:900px; margin:20px auto; padding:16px; background:#151515; border-radius:8px; }
-.convo-list { list-style:none; padding:0; margin:0; }
-.convo-item { border-bottom:1px solid #222; }
-.convo-link { display:flex; justify-content:space-between; padding:12px; color:#eee; text-decoration:none; }
-.convo-link:hover { background:#1b1b1b; }
-.badge { background:#007bff; color:#fff; padding:4px 8px; border-radius:999px; font-size:0.9rem; }
+  .conversation-item {
+    border-left: 3px solid transparent;
+  }
+
+  .conversation-item.active {
+    background: #f0f0f0;
+    border-left-color: #27ae60;
+  }
+
+  .conversation-item:hover {
+    background: #f9f9f9;
+  }
+
+  /* Scrollbar styling */
+  #conversations-list::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  #conversations-list::-webkit-scrollbar-track {
+    background: #f1f1f1;
+  }
+
+  #conversations-list::-webkit-scrollbar-thumb {
+    background: #ddd;
+    border-radius: 3px;
+  }
+
+  #conversations-list::-webkit-scrollbar-thumb:hover {
+    background: #bbb;
+  }
 </style>
+
+<script>
+  // Search functionality
+  document.getElementById('search-input').addEventListener('keyup', function(e) {
+    const searchTerm = e.target.value.toLowerCase();
+    const items = document.querySelectorAll('.conversation-item');
+    
+    items.forEach(item => {
+      const username = item.getAttribute('data-username');
+      if (username.includes(searchTerm)) {
+        item.style.display = 'block';
+      } else {
+        item.style.display = 'none';
+      }
+    });
+  });
+
+  // Mark active conversation
+  function markActiveConversation() {
+    const items = document.querySelectorAll('.conversation-item');
+    items.forEach(item => {
+      item.classList.remove('active');
+    });
+    
+    const currentPath = window.location.pathname;
+    items.forEach(item => {
+      if (item.href.includes(currentPath)) {
+        item.classList.add('active');
+      }
+    });
+  }
+
+  markActiveConversation();
+</script>
+
 {% endblock %}

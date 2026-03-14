@@ -1,4 +1,13 @@
 {% extends "base.html" %}
+{% block styles %}
+<style>
+@media (max-width: 768px) {
+  .max-w-xl { width: 100% !important; padding: 0.5rem; }
+  .bg-gray-800 { padding: 1.5rem !important; }
+  h1 { font-size: 1.5rem !important; }
+}
+</style>
+{% endblock %}
 {% block content %}
 <div class="min-h-screen bg-gray-900 text-gray-100 py-10">
   <div class="max-w-xl mx-auto bg-gray-800 p-8 rounded-2xl shadow-lg">
@@ -8,7 +17,8 @@
       <div class="mb-4">
         <label class="block text-gray-300 mb-2">Username</label>
         <input type="text" name="username" value="{{ current_user.username }}"
-               class="w-full p-2 rounded bg-gray-700 border border-gray-600 text-white focus:ring-2 focus:ring-indigo-500">
+               class="w-full p-2 rounded bg-gray-700 border border-gray-600 text-white focus:ring-2 focus:ring-indigo-500"
+               style="min-height: 44px;">
       </div>
 
       <div class="mb-4">
@@ -21,14 +31,16 @@
         <label class="block text-gray-300 mb-2">Avatar Image</label>
         {% if current_user.avatar %}
           <img src="{{ url_for('static', filename='uploads/avatars/' + current_user.avatar) }}"
-               class="w-24 h-24 rounded-full object-cover mb-3 border border-gray-600">
+               class="w-24 h-24 rounded-full object-cover mb-3 border border-gray-600" style="max-width: 100%;">
         {% endif %}
         <input type="file" name="avatar" accept="image/*"
-               class="w-full text-gray-300 bg-gray-700 border border-gray-600 rounded p-2 cursor-pointer">
+               class="w-full text-gray-300 bg-gray-700 border border-gray-600 rounded p-2 cursor-pointer"
+               style="min-height: 44px;">
       </div>
 
       <button type="submit"
-              class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 rounded transition">
+              class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 rounded transition"
+              style="min-height: 44px;">
         Save Changes
       </button>
     </form>

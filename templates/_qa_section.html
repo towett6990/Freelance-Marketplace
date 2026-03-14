@@ -1,0 +1,252 @@
+{# ═══════════════════════════════════════════════════
+   _qa_section.html
+   Include in any service detail template:
+     {% include '_qa_section.html' %}
+   Requires: service, questions, avg_response_hours
+═══════════════════════════════════════════════════ #}
+
+<style>
+/* ── Q&A SECTION ── */
+.qa-section{margin-bottom:2rem}
+.qa-section-title{font-size:1.1rem;font-weight:700;color:#fff;
+  display:flex;align-items:center;gap:.6rem;flex-wrap:wrap;margin-bottom:1.2rem}
+.qa-section-title i{color:#a855f7}
+.qa-count-badge{background:rgba(168,85,247,.12);color:#a855f7;
+  font-size:.75rem;padding:.2rem .55rem;border-radius:20px;font-weight:700}
+.qa-response-time{color:#64748b;font-size:.78rem;font-weight:400;
+  display:flex;align-items:center;gap:.3rem;margin-left:auto}
+
+/* Ask box */
+.qa-ask-box{display:flex;gap:.75rem;align-items:flex-start;
+  background:rgba(168,85,247,.05);border:1px solid rgba(168,85,247,.15);
+  border-radius:12px;padding:1rem;margin-bottom:1.2rem}
+.qa-ask-avatar{width:36px;height:36px;border-radius:50%;flex-shrink:0;
+  overflow:hidden;background:rgba(255,255,255,.08);
+  display:flex;align-items:center;justify-content:center;color:#64748b}
+.qa-ask-avatar img{width:100%;height:100%;object-fit:cover}
+.qa-ask-form{flex:1;display:flex;flex-direction:column;gap:.6rem}
+.qa-input{
+  width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);
+  border-radius:10px;padding:.7rem 1rem;color:#fff;font-size:.88rem;
+  font-family:inherit;resize:none;outline:none;transition:border-color .25s;
+  color-scheme:dark}
+.qa-input:focus{border-color:#a855f7;box-shadow:0 0 0 3px rgba(168,85,247,.1)}
+.qa-input::placeholder{color:#475569}
+.qa-ask-footer{display:flex;align-items:center;justify-content:space-between;gap:.5rem}
+.qa-char-count{color:#475569;font-size:.75rem}
+.qa-ask-btn{
+  background:linear-gradient(135deg,#a855f7,#7c3aed);color:#fff;
+  border:none;border-radius:8px;padding:.55rem 1.1rem;
+  font-size:.83rem;font-weight:700;cursor:pointer;font-family:inherit;
+  display:flex;align-items:center;gap:.4rem;transition:all .3s}
+.qa-ask-btn:hover{box-shadow:0 0 14px rgba(168,85,247,.4);transform:translateY(-1px)}
+
+.qa-login-prompt{
+  background:rgba(255,255,255,.03);border:1px dashed rgba(255,255,255,.1);
+  border-radius:10px;padding:1rem;text-align:center;
+  color:#64748b;font-size:.85rem;margin-bottom:1.2rem}
+.qa-login-prompt a{color:#a855f7;text-decoration:none;font-weight:600}
+
+/* Q&A list */
+.qa-list{display:flex;flex-direction:column;gap:.8rem}
+.qa-item{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);
+  border-radius:12px;overflow:hidden}
+.qa-answered{border-color:rgba(0,255,200,.12)}
+
+.qa-q-row{display:flex;gap:.75rem;padding:1rem}
+.qa-q-avatar{width:32px;height:32px;border-radius:50%;flex-shrink:0;
+  overflow:hidden;background:rgba(255,255,255,.08);
+  display:flex;align-items:center;justify-content:center;color:#64748b;font-size:.75rem}
+.qa-q-avatar img{width:100%;height:100%;object-fit:cover}
+.qa-av-ph{width:100%;height:100%;display:flex;align-items:center;justify-content:center}
+.qa-av-ph.sm{font-size:.65rem}
+.qa-q-body{flex:1;min-width:0}
+.qa-meta{display:flex;align-items:center;gap:.6rem;flex-wrap:wrap;margin-bottom:.3rem}
+.qa-asker{color:#e2e8f0;font-size:.82rem;font-weight:600}
+.qa-date{color:#475569;font-size:.76rem}
+.qa-text{color:#94a3b8;font-size:.87rem;line-height:1.6;margin:0}
+
+.qa-del-form{margin-left:auto}
+.qa-del-btn{background:none;border:none;color:#334155;cursor:pointer;
+  font-size:.75rem;padding:.2rem;border-radius:4px;transition:color .2s}
+.qa-del-btn:hover{color:#ef4444}
+
+/* Answer row */
+.qa-a-row{display:flex;gap:.75rem;padding:.75rem 1rem 1rem;
+  background:rgba(0,255,200,.03);border-top:1px solid rgba(0,255,200,.08)}
+.qa-a-icon{width:32px;height:32px;border-radius:50%;flex-shrink:0;
+  background:rgba(0,255,200,.1);color:#00ffc8;
+  display:flex;align-items:center;justify-content:center;font-size:.75rem}
+.qa-a-body{flex:1;min-width:0}
+.qa-seller-tag{display:flex;align-items:center;gap:.4rem;color:#00ffc8;font-size:.82rem;font-weight:600}
+.qa-inline-av{width:18px;height:18px;border-radius:50%;object-fit:cover}
+.qa-seller-badge{background:rgba(0,255,200,.12);color:#00ffc8;
+  font-size:.68rem;padding:.1rem .4rem;border-radius:20px;font-weight:700}
+.qa-resp-chip{background:rgba(0,255,200,.08);color:#00ffc8;
+  font-size:.72rem;padding:.15rem .5rem;border-radius:20px}
+
+/* Seller answer form */
+.qa-answer-form-wrap{padding:.6rem 1rem .8rem;
+  border-top:1px solid rgba(255,255,255,.06)}
+.qa-answer-toggle{background:rgba(0,255,200,.08);border:1px solid rgba(0,255,200,.2);
+  color:#00ffc8;border-radius:8px;padding:.45rem .9rem;font-size:.82rem;
+  font-weight:600;cursor:pointer;font-family:inherit;
+  display:flex;align-items:center;gap:.4rem;transition:all .2s}
+.qa-answer-toggle:hover{background:rgba(0,255,200,.14)}
+.qa-answer-form{margin-top:.6rem;display:flex;flex-direction:column;gap:.5rem}
+.qa-cancel-btn{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);
+  color:#94a3b8;border-radius:8px;padding:.45rem .9rem;
+  cursor:pointer;font-family:inherit;font-size:.82rem}
+
+.qa-empty{text-align:center;padding:2rem 1rem;color:#475569;
+  background:rgba(255,255,255,.02);border-radius:10px;border:1px dashed rgba(255,255,255,.07)}
+.qa-empty i{font-size:1.8rem;display:block;margin-bottom:.6rem;color:rgba(168,85,247,.2)}
+</style>
+
+<!-- ── Q&A SECTION ── -->
+<div class="qa-section" id="qa">
+
+  <div class="qa-section-title">
+    <i class="fas fa-comments"></i>
+    Questions &amp; Answers
+    <span class="qa-count-badge">{{ questions|length }}</span>
+    {% if avg_response_hours is not none %}
+    <span class="qa-response-time">
+      <i class="fas fa-clock"></i> Avg. response {{ avg_response_hours }}h
+    </span>
+    {% endif %}
+  </div>
+
+  {# ── ASK FORM ── #}
+  {% if current_user.is_authenticated and current_user.id != service.seller_id %}
+  <div class="qa-ask-box">
+    <div class="qa-ask-avatar">
+      {% if current_user.avatar %}
+        <img src="{{ url_for('static', filename='uploads/avatars/' ~ current_user.avatar) }}"
+             alt="{{ current_user.display_name() }}">
+      {% else %}
+        <div class="qa-av-ph"><i class="fas fa-user"></i></div>
+      {% endif %}
+    </div>
+    <form class="qa-ask-form" id="qaAskForm"
+          action="{{ url_for('ask_question', service_id=service.id) }}" method="POST">
+      <textarea name="body" class="qa-input" id="qaInput" maxlength="500"
+        placeholder="Ask the seller a question about this service…" rows="2"></textarea>
+      <div class="qa-ask-footer">
+        <span class="qa-char-count"><span id="qaCount">0</span>/500</span>
+        <button type="submit" class="qa-ask-btn">
+          <i class="fas fa-paper-plane"></i> Post Question
+        </button>
+      </div>
+    </form>
+  </div>
+  {% elif not current_user.is_authenticated %}
+  <div class="qa-login-prompt">
+    <i class="fas fa-lock"></i>
+    <a href="{{ url_for('login') }}?next={{ request.path }}#qa">Sign in to ask a question</a>
+  </div>
+  {% endif %}
+
+  {# ── Q&A LIST ── #}
+  <div class="qa-list" id="qaList">
+    {% if questions %}
+      {% for q in questions %}
+      <div class="qa-item {% if q.answer %}qa-answered{% endif %}" id="q-{{ q.id }}">
+
+        {# Question #}
+        <div class="qa-q-row">
+          <div class="qa-q-avatar">
+            {% if q.asker and q.asker.avatar %}
+              <img src="{{ url_for('static', filename='uploads/avatars/' ~ q.asker.avatar) }}" alt="">
+            {% else %}
+              <div class="qa-av-ph sm"><i class="fas fa-user"></i></div>
+            {% endif %}
+          </div>
+          <div class="qa-q-body">
+            <div class="qa-meta">
+              <span class="qa-asker">{{ q.asker.display_name() if q.asker else 'Anonymous' }}</span>
+              <span class="qa-date">{{ q.created_at.strftime('%b %d, %Y') }}</span>
+              {% if current_user.is_authenticated and
+                    current_user.id in [q.asker_id, service.seller_id] %}
+              <form action="{{ url_for('delete_question', question_id=q.id) }}"
+                    method="POST" class="qa-del-form"
+                    onsubmit="return confirm('Delete this question?')">
+                <button type="submit" class="qa-del-btn" title="Delete">
+                  <i class="fas fa-trash"></i>
+                </button>
+              </form>
+              {% endif %}
+            </div>
+            <p class="qa-text">{{ q.body }}</p>
+          </div>
+        </div>
+
+        {# Answer #}
+        {% if q.answer %}
+        <div class="qa-a-row">
+          <div class="qa-a-icon"><i class="fas fa-reply"></i></div>
+          <div class="qa-a-body">
+            <div class="qa-meta">
+              <span class="qa-seller-tag">
+                {% if service.seller and service.seller.avatar %}
+                  <img src="{{ url_for('static', filename='uploads/avatars/' ~ service.seller.avatar) }}"
+                       class="qa-inline-av" alt="">
+                {% endif %}
+                {{ service.seller.display_name() if service.seller else 'Seller' }}
+                <span class="qa-seller-badge"><i class="fas fa-check-circle"></i> Seller</span>
+              </span>
+              <span class="qa-date">{{ q.answered_at.strftime('%b %d, %Y') }}</span>
+              {% if q.response_time_hours %}
+              <span class="qa-resp-chip"><i class="fas fa-clock"></i> {{ q.response_time_hours }}h</span>
+              {% endif %}
+            </div>
+            <p class="qa-text">{{ q.answer }}</p>
+          </div>
+        </div>
+        {% elif current_user.is_authenticated and current_user.id == service.seller_id %}
+        <div class="qa-answer-form-wrap" id="answerWrap-{{ q.id }}">
+          <button class="qa-answer-toggle" onclick="toggleAnswerForm({{ q.id }})">
+            <i class="fas fa-reply"></i> Write Answer
+          </button>
+          <form class="qa-answer-form" id="answerForm-{{ q.id }}" style="display:none"
+                action="{{ url_for('answer_question', question_id=q.id) }}" method="POST">
+            <textarea name="answer" class="qa-input sm" maxlength="1000"
+              placeholder="Write your answer…" rows="2"></textarea>
+            <div class="qa-ask-footer">
+              <button type="button" class="qa-cancel-btn"
+                      onclick="toggleAnswerForm({{ q.id }})">Cancel</button>
+              <button type="submit" class="qa-ask-btn">
+                <i class="fas fa-check"></i> Post Answer
+              </button>
+            </div>
+          </form>
+        </div>
+        {% endif %}
+
+      </div>
+      {% endfor %}
+    {% else %}
+    <div class="qa-empty">
+      <i class="fas fa-question-circle"></i>
+      <p>No questions yet — be the first to ask!</p>
+    </div>
+    {% endif %}
+  </div>
+
+</div>
+
+<script>
+// Character counter
+const qaInput = document.getElementById('qaInput');
+if (qaInput) {
+  qaInput.addEventListener('input', function() {
+    document.getElementById('qaCount').textContent = this.value.length;
+  });
+}
+
+// Toggle answer form for seller
+function toggleAnswerForm(qid) {
+  const form = document.getElementById('answerForm-' + qid);
+  if (form) form.style.display = form.style.display === 'none' ? 'flex' : 'none';
+}
+</script>

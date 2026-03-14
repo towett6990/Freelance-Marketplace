@@ -1,0 +1,255 @@
+{% extends 'base.html' %}
+{% block title %}{{ service.title }} — Property{% endblock %}
+{% block content %}
+{% set reviews_list = service.reviews.all() %}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+{% set cd = service.custom_data or {} %}
+{% set cur = service.currency or 'KES' %}
+{% set sym = 'KSh' if cur == 'KES' else ('$' if cur == 'USD' else '€') %}
+{% set avg_rating = service.get_average_rating() %}
+{% set lt = cd.get('listing_type','For Sale') %}
+
+<div class="re-page">
+
+  <!-- HERO IMAGE -->
+  <div class="re-hero-img" id="heroImgWrap">
+    {% if service.images %}
+      <img src="{{ url_for('static', filename='uploads/services/' ~ service.images[0].filename) }}" class="re-main-img" alt="{{ service.title }}">
+    {% else %}
+      <div class="re-img-ph"><i class="fas fa-building"></i></div>
+    {% endif %}
+    <div class="re-hero-overlay">
+      <a href="{{ url_for('list_real_estate') }}" class="bc-back"><i class="fas fa-arrow-left"></i> Back to Properties</a>
+      <div class="re-badges">
+        {% if cd.get('property_type') %}<span class="re-badge">{{ cd.get('property_type') }}</span>{% endif %}
+        <span class="re-badge {{ 'sale-badge' if lt == 'For Sale' else 'rent-badge' }}">{{ lt }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- THUMBNAIL STRIP -->
+  {% if service.images and service.images|length > 1 %}
+  <div class="thumb-strip">
+    {% for img in service.images %}
+    <img src="{{ url_for('static', filename='uploads/services/' ~ img.filename) }}"
+         class="ts-thumb {% if loop.first %}ts-active{% endif %}"
+         onclick="document.querySelector('.re-main-img').src=this.src;document.querySelectorAll('.ts-thumb').forEach(t=>t.classList.remove('ts-active'));this.classList.add('ts-active')"
+         alt="">
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <div class="re-layout">
+
+    <!-- MAIN CONTENT -->
+    <main class="re-main">
+      <h1 class="re-title">{{ service.title }}</h1>
+
+      {% if cd.get('location_city') or cd.get('neighborhood') %}
+      <div class="re-location"><i class="fas fa-map-marker-alt"></i>{{ cd.get('neighborhood','') }}{% if cd.get('neighborhood') and cd.get('location_city') %}, {% endif %}{{ cd.get('location_city','') }}</div>
+      {% endif %}
+
+      <!-- Key stats row -->
+      <div class="re-stats-row">
+        {% if cd.get('bedrooms') %}<div class="re-stat"><i class="fas fa-bed"></i><span>{{ cd.get('bedrooms') }}</span><label>Bedrooms</label></div>{% endif %}
+        {% if cd.get('bathrooms') %}<div class="re-stat"><i class="fas fa-bath"></i><span>{{ cd.get('bathrooms') }}</span><label>Bathrooms</label></div>{% endif %}
+        {% if cd.get('area_sqm') %}<div class="re-stat"><i class="fas fa-vector-square"></i><span>{{ cd.get('area_sqm') }} m²</span><label>Area</label></div>{% endif %}
+        {% if cd.get('furnished') %}<div class="re-stat"><i class="fas fa-couch"></i><span>{{ cd.get('furnished') }}</span><label>Furnished</label></div>{% endif %}
+        {% if cd.get('building_status') %}<div class="re-stat"><i class="fas fa-hard-hat"></i><span>{{ cd.get('building_status') }}</span><label>Status</label></div>{% endif %}
+        {% if cd.get('lease_duration') %}<div class="re-stat"><i class="fas fa-calendar-alt"></i><span>{{ cd.get('lease_duration') }}</span><label>Lease</label></div>{% endif %}
+      </div>
+
+      <!-- Description -->
+      <div class="re-section">
+        <h3 class="re-sec-hd"><i class="fas fa-info-circle"></i> About This Property</h3>
+        <p class="re-desc">{{ service.description or 'No description provided.' }}</p>
+      </div>
+
+      <!-- Amenities -->
+      {% if cd.get('amenities') %}
+      <div class="re-section">
+        <h3 class="re-sec-hd"><i class="fas fa-star"></i> Amenities</h3>
+        <div class="amenities-grid">
+          {% for a in cd.get('amenities') %}
+          <div class="amenity-item"><i class="fas fa-check-circle"></i> {{ a }}</div>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+
+      <!-- Reviews -->
+      <div class="re-section">
+        <h3 class="re-sec-hd"><i class="fas fa-star"></i> Reviews <span class="rev-badge">{{ service.get_review_count() }}</span></h3>
+        {% set all_reviews = service.reviews|list %}
+        {% if all_reviews %}
+        <div class="reviews-list">
+          {% for rv in all_reviews[:5] %}
+          <div class="rv-card">
+            <div class="rv-top">
+              <div class="rv-av">{{ (rv.buyer.username[0] if rv.buyer else 'A')|upper }}</div>
+              <div class="rv-meta"><span class="rv-name">{{ rv.buyer.username if rv.buyer else 'Anonymous' }}</span><span class="rv-date">{{ rv.created_at.strftime('%b %d, %Y') if rv.created_at else '' }}</span></div>
+              <div class="rv-stars">{% for i in range(5) %}<i class="{{ 'fas' if i < rv.overall_rating else 'far' }} fa-star {% if i < rv.overall_rating %}s-on{% else %}s-off{% endif %}"></i>{% endfor %}</div>
+            </div>
+            {% if rv.comment %}<p class="rv-body">{{ rv.comment }}</p>{% endif %}
+          </div>
+          {% endfor %}
+        </div>
+        {% else %}
+        <div class="no-rev"><i class="fas fa-comment-alt"></i><p>No reviews yet.</p></div>
+        {% endif %}
+      </div>
+    {% include '_reviews_section.html' %}
+{% include '_qa_section.html' %}
+</main>
+
+    <!-- SIDEBAR -->
+    <aside class="re-sidebar">
+
+      <!-- Price card -->
+      <div class="price-card">
+        <div class="price-row">
+          <span class="re-price">{{ sym }} {{ "{:,.0f}".format(service.price|float) }}</span>
+          <span class="lt-badge {{ 'sale-badge' if lt == 'For Sale' else 'rent-badge' }}">{{ lt }}</span>
+        </div>
+        {% if cd.get('lease_duration') and lt == 'For Rent' %}
+        <div class="price-sub">{{ cd.get('lease_duration') }}</div>
+        {% endif %}
+        <div class="re-actions">
+          {% include '_service_actions.html' %}
+        </div>
+      </div>
+
+      <!-- Agent card -->
+      <div class="agent-card">
+        <div class="ac-av">{{ (service.seller.username[0] if service.seller else 'A')|upper }}</div>
+        <div class="ac-info">
+          <span class="ac-name">{{ service.seller.username if service.seller else 'Agent' }}</span>
+          <span class="ac-role">Property Agent</span>
+          {% if service.seller and service.seller.is_verified %}<span class="ac-verified"><i class="fas fa-shield-alt"></i> ID Verified</span>{% endif %}
+        </div>
+      </div>
+
+      <!-- Property details table -->
+      <div class="re-details-card">
+        <h4 class="rdc-title">Property Details</h4>
+        <div class="rdc-list">
+          {% if cd.get('property_type') %}<div class="rdc-row"><span>Type</span><span>{{ cd.get('property_type') }}</span></div>{% endif %}
+          {% if cd.get('bedrooms') %}<div class="rdc-row"><span>Bedrooms</span><span>{{ cd.get('bedrooms') }}</span></div>{% endif %}
+          {% if cd.get('bathrooms') %}<div class="rdc-row"><span>Bathrooms</span><span>{{ cd.get('bathrooms') }}</span></div>{% endif %}
+          {% if cd.get('area_sqm') %}<div class="rdc-row"><span>Area</span><span>{{ cd.get('area_sqm') }} m²</span></div>{% endif %}
+          {% if cd.get('furnished') %}<div class="rdc-row"><span>Furnished</span><span>{{ cd.get('furnished') }}</span></div>{% endif %}
+          {% if cd.get('building_status') %}<div class="rdc-row"><span>Status</span><span>{{ cd.get('building_status') }}</span></div>{% endif %}
+          {% if cd.get('neighborhood') %}<div class="rdc-row"><span>Area</span><span>{{ cd.get('neighborhood') }}</span></div>{% endif %}
+          {% if cd.get('location_city') %}<div class="rdc-row"><span>City</span><span>{{ cd.get('location_city') }}</span></div>{% endif %}
+        </div>
+      </div>
+
+    </aside>
+  </div>
+
+  <!-- SIMILAR PROPERTIES -->
+  {% if related %}
+  <div class="similar-section">
+    <h3 class="re-sec-hd" style="max-width:1300px;margin:0 auto 1rem"><i class="fas fa-building"></i> Similar Properties</h3>
+    <div class="similar-grid">
+      {% for rel in related %}
+      {% set rsym = 'KSh' if (rel.currency or 'KES') == 'KES' else '$' %}
+      <a href="{{ url_for('service_detail', service_id=rel.id) }}" class="sim-card">
+        {% if rel.images %}<img src="{{ url_for('static', filename='uploads/services/' ~ rel.images[0].filename) }}" alt="">{% else %}<div class="sim-ph"><i class="fas fa-building"></i></div>{% endif %}
+        <div class="sim-info">
+          <span class="sim-title">{{ rel.title[:50] }}{% if rel.title|length > 50 %}…{% endif %}</span>
+          <span class="sim-price">{{ rsym }} {{ "{:,.0f}".format(rel.price|float) }}</span>
+        </div>
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+</div>
+
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+.re-page{font-family:'DM Sans',sans-serif;background:#0b0d14;min-height:100vh;color:#e2e8f0}
+.re-hero-img{position:relative;height:420px;overflow:hidden;background:#022c22}
+.re-main-img{width:100%;height:100%;object-fit:cover;transition:opacity .3s}
+.re-img-ph{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:5rem;color:rgba(255,255,255,.08)}
+.re-hero-overlay{position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.6) 0%,rgba(0,0,0,.1) 60%,transparent 100%);display:flex;flex-direction:column;justify-content:space-between;padding:1.25rem 1.5rem}
+.bc-back{color:rgba(255,255,255,.85);text-decoration:none;font-size:.85rem;font-weight:500;display:inline-flex;align-items:center;gap:.35rem;background:rgba(0,0,0,.4);padding:.4rem .9rem;border-radius:20px;backdrop-filter:blur(6px);width:fit-content;transition:all .2s}
+.bc-back:hover{color:#fff;background:rgba(0,0,0,.6);text-decoration:none}
+.re-badges{display:flex;gap:.5rem}
+.re-badge{padding:.3rem .8rem;border-radius:20px;font-size:.72rem;font-weight:700;background:rgba(0,0,0,.5);color:#fff;backdrop-filter:blur(4px)}
+.sale-badge{background:rgba(99,102,241,.7)!important}
+.rent-badge{background:rgba(251,191,36,.6)!important;color:#1c1917!important}
+.thumb-strip{display:flex;gap:.5rem;padding:.75rem 1.5rem;background:#0f1220;overflow-x:auto}
+.ts-thumb{width:90px;height:65px;object-fit:cover;border-radius:8px;cursor:pointer;opacity:.55;border:2px solid transparent;transition:all .2s;flex-shrink:0}
+.ts-active,.ts-thumb:hover{opacity:1;border-color:#34d399}
+.re-layout{display:grid;grid-template-columns:1fr 360px;gap:2rem;max-width:1300px;margin:0 auto;padding:2rem;align-items:start}
+.re-title{font-family:'Syne',sans-serif;font-size:1.8rem;font-weight:800;color:#f1f5f9;margin-bottom:.5rem;line-height:1.15}
+.re-location{font-size:.88rem;color:#64748b;display:flex;align-items:center;gap:.35rem;margin-bottom:1.25rem}
+.re-location i{color:#34d399}
+.re-stats-row{display:flex;flex-wrap:wrap;gap:.6rem;margin-bottom:1.5rem}
+.re-stat{background:#131625;border:1px solid rgba(255,255,255,.07);border-radius:10px;padding:.65rem 1rem;display:flex;flex-direction:column;align-items:center;gap:.15rem;min-width:90px}
+.re-stat i{font-size:.9rem;color:#34d399}
+.re-stat span{font-family:'Syne',sans-serif;font-size:.9rem;font-weight:700;color:#f1f5f9}
+.re-stat label{font-size:.65rem;color:#475569;text-transform:uppercase;letter-spacing:.05em}
+.re-section{background:#131625;border:1px solid rgba(255,255,255,.07);border-radius:14px;padding:1.25rem;margin-bottom:1rem}
+.re-sec-hd{font-family:'Syne',sans-serif;font-size:.85rem;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.06em;margin-bottom:.85rem;display:flex;align-items:center;gap:.4rem}
+.re-sec-hd i{color:#34d399}
+.re-desc{color:#94a3b8;line-height:1.75;font-size:.9rem}
+.amenities-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:.5rem}
+.amenity-item{display:flex;align-items:center;gap:.5rem;font-size:.82rem;color:#94a3b8;padding:.4rem .6rem;background:rgba(0,0,0,.2);border-radius:7px}
+.amenity-item i{color:#34d399;font-size:.75rem}
+.rev-badge{background:rgba(52,211,153,.1);color:#34d399;border-radius:20px;padding:.1rem .45rem;font-size:.72rem;font-family:'DM Sans',sans-serif;text-transform:none;letter-spacing:0;margin-left:.25rem}
+.reviews-list{display:flex;flex-direction:column;gap:.6rem}
+.rv-card{background:rgba(0,0,0,.2);border:1px solid rgba(255,255,255,.05);border-radius:10px;padding:.9rem}
+.rv-top{display:flex;align-items:center;gap:.6rem;margin-bottom:.5rem}
+.rv-av{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#059669,#10b981);display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:700;color:#fff;flex-shrink:0}
+.rv-meta{flex:1;display:flex;flex-direction:column}.rv-name{font-size:.82rem;font-weight:600;color:#e2e8f0}.rv-date{font-size:.7rem;color:#475569}
+.rv-stars i{font-size:.7rem}.s-on{color:#fbbf24}.s-off{color:#334155}
+.rv-body{color:#94a3b8;font-size:.83rem;line-height:1.55}
+.no-rev{text-align:center;padding:1.5rem;color:#334155}.no-rev i{font-size:1.8rem;margin-bottom:.5rem}
+
+/* Sidebar */
+.re-sidebar{display:flex;flex-direction:column;gap:1rem;position:sticky;top:1.5rem}
+.price-card{background:#131625;border:1px solid rgba(52,211,153,.2);border-radius:16px;padding:1.25rem}
+.price-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:.3rem}
+.re-price{font-family:'Syne',sans-serif;font-size:1.8rem;font-weight:800;color:#34d399}
+.lt-badge{padding:.3rem .75rem;border-radius:20px;font-size:.72rem;font-weight:700}
+.price-sub{font-size:.78rem;color:#64748b;margin-bottom:.9rem}
+.re-actions{display:flex;flex-direction:column;gap:.6rem;margin-top:1rem}
+.btn-contact-re{padding:.75rem;background:linear-gradient(135deg,#059669,#10b981);color:#fff;border-radius:9px;font-weight:700;font-size:.88rem;text-decoration:none;display:flex;align-items:center;justify-content:center;gap:.4rem;transition:all .2s}
+.btn-contact-re:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(16,185,129,.4);color:#fff;text-decoration:none}
+.btn-chat-re{padding:.7rem;background:rgba(52,211,153,.08);border:1px solid rgba(52,211,153,.2);color:#34d399;border-radius:9px;font-weight:600;font-size:.85rem;text-decoration:none;display:flex;align-items:center;justify-content:center;gap:.4rem;transition:all .2s}
+.btn-chat-re:hover{background:rgba(52,211,153,.14);color:#6ee7b7;text-decoration:none}
+.agent-card{background:#131625;border:1px solid rgba(255,255,255,.07);border-radius:14px;padding:1.1rem;display:flex;align-items:center;gap:.75rem}
+.ac-av{width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,#059669,#10b981);display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-size:1.1rem;font-weight:700;color:#fff;flex-shrink:0}
+.ac-info{flex:1;display:flex;flex-direction:column}
+.ac-name{font-size:.9rem;font-weight:600;color:#e2e8f0}.ac-role{font-size:.72rem;color:#64748b}
+.ac-verified{font-size:.7rem;color:#34d399;display:flex;align-items:center;gap:.2rem;margin-top:.15rem}
+.re-details-card{background:#131625;border:1px solid rgba(255,255,255,.07);border-radius:14px;padding:1.1rem}
+.rdc-title{font-family:'Syne',sans-serif;font-size:.82rem;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.06em;margin-bottom:.75rem}
+.rdc-list{display:flex;flex-direction:column}
+.rdc-row{display:flex;justify-content:space-between;align-items:center;padding:.45rem 0;border-bottom:1px solid rgba(255,255,255,.04)}
+.rdc-row:last-child{border-bottom:none}
+.rdc-row span:first-child{font-size:.78rem;color:#64748b}
+.rdc-row span:last-child{font-size:.82rem;color:#e2e8f0;font-weight:500}
+
+/* Similar */
+.similar-section{max-width:1300px;margin:0 auto;padding:0 2rem 2rem}
+.similar-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:.75rem}
+.sim-card{background:#131625;border:1px solid rgba(255,255,255,.07);border-radius:12px;overflow:hidden;text-decoration:none;display:flex;flex-direction:column;transition:all .2s}
+.sim-card:hover{border-color:rgba(52,211,153,.3);transform:translateY(-3px);text-decoration:none}
+.sim-card img{width:100%;height:140px;object-fit:cover}
+.sim-ph{height:140px;background:#0f1220;display:flex;align-items:center;justify-content:center;font-size:2.5rem;color:#1e293b}
+.sim-info{padding:.75rem;display:flex;flex-direction:column;gap:.2rem}
+.sim-title{font-size:.82rem;color:#e2e8f0;font-weight:500}
+.sim-price{font-family:'Syne',sans-serif;font-size:.9rem;font-weight:700;color:#34d399}
+
+@media(max-width:900px){.re-layout{grid-template-columns:1fr}.re-sidebar{position:static}}
+@media(max-width:600px){.re-hero-img{height:260px}.re-layout{padding:1rem}}
+</style>
+{% endblock %}

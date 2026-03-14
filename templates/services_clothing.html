@@ -1,0 +1,163 @@
+{% extends 'base.html' %}
+{% block title %}Clothing — Fashion & Apparel Kenya{% endblock %}
+{% block content %}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<div class="mp-page">
+
+  <header class="mp-hero cloth-hero">
+    <div class="hero-mesh"></div>
+    <div class="hero-inner">
+      <div class="hero-icon-wrap"><i class="fas fa-tshirt"></i></div>
+      <h1 class="hero-title">Cloth<span class="cl-accent">ing</span></h1>
+      <p class="hero-sub">{{ services|length }} fashion items — new and pre-loved</p>
+    </div>
+  </header>
+
+  <div class="mp-layout">
+
+    <aside class="mp-sidebar">
+      <form method="GET" action="{{ url_for('list_clothing') }}">
+        <div class="sb-block">
+          <div class="sb-head"><i class="fas fa-sliders-h"></i><span>Filters</span><a href="{{ url_for('list_clothing') }}" class="clear-link">Clear</a></div>
+
+          <div class="ff"><label class="fl">Search</label>
+            <div class="si-wrap"><i class="fas fa-search si"></i><input type="text" name="q" class="fi" placeholder="Nike, dress, sneakers..." value="{{ q or '' }}"></div>
+          </div>
+
+          <div class="ff"><label class="fl">Price (KES)</label>
+            <div class="rr"><input type="number" name="min_price" class="fi rh" placeholder="Min" value="{{ min_price or '' }}"><span class="rd">—</span><input type="number" name="max_price" class="fi rh" placeholder="Max" value="{{ max_price or '' }}"></div>
+          </div>
+
+          <div class="ff"><label class="fl">Gender</label>
+            <div class="chip-row">
+              <label class="chip {% if not gender %}ca{% endif %}"><input type="radio" name="gender" value="" {% if not gender %}checked{% endif %}>All</label>
+              {% for g in ['Men','Women','Unisex','Boys','Girls'] %}
+              <label class="chip {% if gender == g %}ca{% endif %}"><input type="radio" name="gender" value="{{ g }}" {% if gender == g %}checked{% endif %}>{{ g }}</label>
+              {% endfor %}
+            </div>
+          </div>
+
+          <div class="ff"><label class="fl">Category</label>
+            <select name="cloth_cat" class="fs">
+              <option value="">All Categories</option>
+              {% for c in ['T-Shirts','Shirts','Pants/Jeans','Dresses','Skirts','Jackets/Coats','Shoes','Sneakers','Boots','Sandals','Bags','Accessories','Sportswear','Suits','Kids Clothing'] %}
+              <option {% if cloth_cat == c %}selected{% endif %}>{{ c }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="ff"><label class="fl">Size</label>
+            <div class="chip-row">
+              {% for s in ['XS','S','M','L','XL','XXL','XXXL'] %}
+              <label class="chip {% if size == s %}ca{% endif %}"><input type="radio" name="size" value="{{ s }}" {% if size == s %}checked{% endif %}>{{ s }}</label>
+              {% endfor %}
+            </div>
+          </div>
+
+          <div class="ff"><label class="fl">Condition</label>
+            <div class="chip-row">
+              {% for c in ['Brand New','Like New','Good','Fair'] %}
+              <label class="chip {% if condition == c %}ca{% endif %}"><input type="radio" name="condition" value="{{ c }}" {% if condition == c %}checked{% endif %}>{{ c }}</label>
+              {% endfor %}
+            </div>
+          </div>
+
+          <div class="ff"><label class="fl">Material</label>
+            <select name="material" class="fs">
+              <option value="">Any</option>
+              {% for m in ['Cotton','Polyester','Silk','Wool','Linen','Denim','Leather','Synthetic','Mixed'] %}
+              <option {% if material == m %}selected{% endif %}>{{ m }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="ff"><label class="fl">Sort By</label>
+            <select name="sort" class="fs">
+              <option value="newest" {% if sort_by == 'newest' or not sort_by %}selected{% endif %}>Newest First</option>
+              <option value="price_low" {% if sort_by == 'price_low' %}selected{% endif %}>Price: Low → High</option>
+              <option value="price_high" {% if sort_by == 'price_high' %}selected{% endif %}>Price: High → Low</option>
+            </select>
+          </div>
+        </div>
+        <button type="submit" class="btn-apply"><i class="fas fa-bolt"></i> Apply Filters</button>
+      </form>
+
+      <div class="sb-cta">
+        <i class="fas fa-shopping-bag"></i>
+        <p>Selling clothes?</p>
+        <a href="{{ url_for('create_service') }}?category=clothing" class="btn-post">List Item</a>
+      </div>
+    </aside>
+
+    <main class="mp-main">
+      <div class="res-bar">
+        <span class="rc"><strong>{{ services|length }}</strong> items found
+          {% if gender %}<span class="rtag">{{ gender }}</span>{% endif %}
+          {% if cloth_cat %}<span class="rtag">{{ cloth_cat }}</span>{% endif %}
+          {% if size %}<span class="rtag">Size {{ size }}</span>{% endif %}
+        </span>
+        <div class="vtog">
+          <button class="vb va" id="gv"><i class="fas fa-th-large"></i></button>
+          <button class="vb" id="lv"><i class="fas fa-list"></i></button>
+        </div>
+      </div>
+
+      {% if services %}
+      <div class="prod-grid" id="pg">
+        {% for svc in services %}
+        {% set cd = svc.custom_data or {} %}
+        {% set sym = 'KSh' if (svc.currency or 'KES') == 'KES' else '$' %}
+        {% set cond_cls = cd.get('condition','').lower().replace(' ','-') %}
+        <article class="prod-card">
+          <a href="{{ url_for('service_detail', service_id=svc.id) }}" class="card-img-link">
+            {% if svc.images %}
+              <img src="{{ url_for('static', filename='uploads/services/' ~ svc.images[0].filename) }}" class="card-img" alt="{{ svc.title }}" loading="lazy">
+            {% else %}
+              <div class="card-img-ph" style="background:linear-gradient(135deg,#3b0764,#6b21a8)"><i class="fas fa-tshirt"></i></div>
+            {% endif %}
+            {% if cd.get('condition') %}<span class="cond-badge cond-{{ cond_cls }}">{{ cd.get('condition') }}</span>{% endif %}
+            {% if cd.get('size') %}<span class="img-count">{{ cd.get('size') }}</span>{% endif %}
+          </a>
+          <div class="card-body">
+            <h3 class="card-title"><a href="{{ url_for('service_detail', service_id=svc.id) }}">{{ svc.title }}</a></h3>
+            <div class="card-meta-row">
+              {% if cd.get('brand') %}<span class="cm"><i class="fas fa-tag"></i> {{ cd.get('brand') }}</span>{% endif %}
+              {% if cd.get('category') %}<span class="cm"><i class="fas fa-tshirt"></i> {{ cd.get('category') }}</span>{% endif %}
+              {% if cd.get('gender') %}<span class="cm"><i class="fas fa-user"></i> {{ cd.get('gender') }}</span>{% endif %}
+              {% if cd.get('color') %}<span class="cm"><i class="fas fa-circle" style="font-size:.5rem"></i> {{ cd.get('color') }}</span>{% endif %}
+            </div>
+            <div class="card-price">{{ sym }} {{ "{:,.0f}".format(svc.price|float) }}</div>
+            <div class="card-footer-row">
+              <div class="seller-info">
+                <div class="s-av">{{ (svc.seller.username[0] if svc.seller else 'S')|upper }}</div>
+                <span class="s-name">{{ svc.seller.username if svc.seller else 'Seller' }}</span>
+                {% set r = svc.get_average_rating() %}{% if r > 0 %}<span class="s-rat">⭐ {{ "%.1f"|format(r) }}</span>{% endif %}
+              </div>
+              <a href="{{ url_for('service_detail', service_id=svc.id) }}" class="btn-view" style="background:linear-gradient(135deg,#be185d,#9d174d)">View →</a>
+            </div>
+          </div>
+        </article>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div class="empty"><div class="empty-ico"><i class="fas fa-tshirt"></i></div><h3>No items found</h3><p>Try adjusting your filters.</p><a href="{{ url_for('list_clothing') }}" class="btn-apply" style="display:inline-flex;width:auto;padding:.6rem 1.5rem;margin-top:1rem">Clear Filters</a></div>
+      {% endif %}
+    </main>
+  </div>
+</div>
+
+{% include '_mp_css.html' %}
+<style>
+.cloth-hero{background:linear-gradient(135deg,#3b0764 0%,#6b21a8 50%,#7e22ce 100%)}
+.cloth-hero .hero-icon-wrap{background:rgba(168,85,247,.15);border-color:rgba(168,85,247,.35);color:#c084fc}
+.cl-accent{background:linear-gradient(135deg,#c084fc,#a855f7);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+</style>
+<script>
+var pg=document.getElementById('pg'),gv=document.getElementById('gv'),lv=document.getElementById('lv');
+gv.onclick=function(){pg.className='prod-grid';gv.classList.add('va');lv.classList.remove('va')};
+lv.onclick=function(){pg.className='prod-list';lv.classList.add('va');gv.classList.remove('va')};
+</script>
+{% endblock %}

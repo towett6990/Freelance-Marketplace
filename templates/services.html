@@ -1,776 +1,518 @@
 {% extends 'base.html' %}
-{% block title %}All Services{% endblock %}
+{% block title %}
+  {% if q %}Search: "{{ q }}"{% elif active_category %}{{ active_category.name }}{% else %}Browse Services{% endif %} — FreelancingHub
+{% endblock %}
 {% block content %}
-<div class="max-w-7xl mx-auto py-8">
-  <!-- Header Section -->
-  <div class="text-center mb-12">
-    <h1 class="text-5xl font-bold text-white mb-4">
-      Browse Services
-    </h1>
-    <p class="text-xl text-gray-300">Discover amazing services from talented freelancers</p>
-  </div>
 
-  <!-- Search and Filter Section -->
-  <div class="search-section">
-    <form method="GET" action="{{ url_for('list_services') }}" class="search-form">
-      <div class="search-input-group">
-        <input
-          type="text"
-          class="search-input"
-          name="q"
-          placeholder="Search services by title, description, or category..."
-          value="{{ q or '' }}"
-        >
-        <button type="submit" class="search-btn">
-          <i class="fas fa-search"></i>
-          Search
-        </button>
-      </div>
-    </form>
-
-    <!-- Category Filter -->
-    <div class="category-filter">
-      <h3 class="filter-title">Filter by Category</h3>
-      <div class="category-buttons">
-        <a href="{{ url_for('list_services') }}" class="category-btn {% if not category %}active{% endif %}">
-          <i class="fas fa-th-large"></i>
-          All Categories
-        </a>
-        <a href="{{ url_for('list_services', category='Web Development') }}" class="category-btn {% if category == 'Web Development' %}active{% endif %}">
-          <i class="fas fa-code"></i>
-          Web Development
-        </a>
-        <a href="{{ url_for('list_services', category='Mobile Development') }}" class="category-btn {% if category == 'Mobile Development' %}active{% endif %}">
-          <i class="fas fa-mobile-alt"></i>
-          Mobile Development
-        </a>
-        <a href="{{ url_for('list_services', category='Graphic Design') }}" class="category-btn {% if category == 'Graphic Design' %}active{% endif %}">
-          <i class="fas fa-palette"></i>
-          Graphic Design
-        </a>
-        <a href="{{ url_for('list_services', category='UI/UX Design') }}" class="category-btn {% if category == 'UI/UX Design' %}active{% endif %}">
-          <i class="fas fa-pencil-ruler"></i>
-          UI/UX Design
-        </a>
-        <a href="{{ url_for('list_services', category='Writing & Content') }}" class="category-btn {% if category == 'Writing & Content' %}active{% endif %}">
-          <i class="fas fa-pen-fancy"></i>
-          Writing & Content
-        </a>
-        <a href="{{ url_for('list_services', category='Digital Marketing') }}" class="category-btn {% if category == 'Digital Marketing' %}active{% endif %}">
-          <i class="fas fa-bullhorn"></i>
-          Digital Marketing
-        </a>
-        <a href="{{ url_for('list_services', category='Video & Animation') }}" class="category-btn {% if category == 'Video & Animation' %}active{% endif %}">
-          <i class="fas fa-video"></i>
-          Video & Animation
-        </a>
-        <a href="{{ url_for('list_services', category='Photography') }}" class="category-btn {% if category == 'Photography' %}active{% endif %}">
-          <i class="fas fa-camera"></i>
-          Photography
-        </a>
-        <a href="{{ url_for('list_services', category='Music & Audio') }}" class="category-btn {% if category == 'Music & Audio' %}active{% endif %}">
-          <i class="fas fa-music"></i>
-          Music & Audio
-        </a>
-        <a href="{{ url_for('list_services', category='Data Entry') }}" class="category-btn {% if category == 'Data Entry' %}active{% endif %}">
-          <i class="fas fa-database"></i>
-          Data Entry
-        </a>
-        <a href="{{ url_for('list_services', category='Translation') }}" class="category-btn {% if category == 'Translation' %}active{% endif %}">
-          <i class="fas fa-language"></i>
-          Translation
-        </a>
-        <a href="{{ url_for('list_services', category='Consulting') }}" class="category-btn {% if category == 'Consulting' %}active{% endif %}">
-          <i class="fas fa-user-tie"></i>
-          Consulting
-        </a>
-        <a href="{{ url_for('list_services', category='Other') }}" class="category-btn {% if category == 'Other' %}active{% endif %}">
-          <i class="fas fa-ellipsis-h"></i>
-          Other
-        </a>
-      </div>
-    </div>
-  </div>
-
-  <!-- Services Grid -->
-  {% if services %}
-  <div class="services-main-grid">
-    {% for svc in services %}
-    <div class="service-showcase-card">
-      <!-- Service Header -->
-      <div class="service-header">
-        <h2 class="service-title">{{ svc.title }}</h2>
-        <p class="service-description">{{ svc.description[:150] }}{% if svc.description|length > 150 %}...{% endif %}</p>
-        <div class="service-meta">
-          <span class="service-seller">
-            <i class="fas fa-user"></i>
-            {{ svc.seller.username if svc.seller else 'Anonymous' }}
-          </span>
-          {% if svc.contact %}
-          <span class="service-contact">
-            <i class="fas fa-phone"></i>
-            {{ svc.contact }}
-          </span>
-          {% endif %}
-          {% if svc.category %}
-          <span class="service-category">
-            <i class="fas fa-tag"></i>
-            {{ svc.category }}
-          </span>
-          {% endif %}
-        </div>
-      </div>
-
-      <!-- Media Gallery -->
-      <div class="media-gallery">
-        <div class="media-grid">
-          {% set media_items = [] %}
-          
-          {% if svc.image_list %}
-            {% for img in svc.image_list %}
-              {% set media_items = media_items + [{'type': 'image', 'file': img, 'price': 0}] %}
-            {% endfor %}
-          {% endif %}
-
-          {% if svc.video_list %}
-            {% for video in svc.video_list %}
-              {% set media_items = media_items + [{'type': 'video', 'file': video, 'price': 0}] %}
-            {% endfor %}
-          {% endif %}
-          
-          {% if media_items %}
-            {% for media in media_items %}
-            <div class="media-item">
-              {% if media.type == 'video' %}
-                <video
-                  src="{{ url_for('static', filename='uploads/services/' ~ media.file) }}"
-                  class="media-preview"
-                  controls
-                  preload="metadata"
-                ></video>
-              {% else %}
-                <img
-                  src="{{ url_for('static', filename='uploads/services/' ~ media.file) }}"
-                  class="media-preview"
-                  alt="{{ svc.title }}"
-                  loading="lazy"
-                >
-              {% endif %}
-              
-              <div class="media-overlay">
-                <div class="media-info">
-                  <div class="media-price">
-                    <i class="fas fa-dollar-sign"></i>
-                    {% if media.price > 0 %}
-                      {{ "%.2f"|format(media.price) }} {{ svc.currency or 'KES' }}
-                    {% else %}
-                      {{ "%.2f"|format(svc.price) }} {{ svc.currency or 'KES' }}
-                    {% endif %}
-                  </div>
-                </div>
-              </div>
-            </div>
-            {% endfor %}
-          {% else %}
-            <!-- Fallback for services without media -->
-            <div class="no-media-placeholder">
-              <i class="fas fa-image"></i>
-              <p>No media available</p>
-            </div>
-          {% endif %}
-        </div>
-      </div>
-
-      <!-- Service Actions -->
-      <div class="service-actions">
-        <div class="action-buttons-left">
-          <a href="{{ url_for('service_detail', service_id=svc.id) }}" class="view-details-btn">
-            <i class="fas fa-eye"></i>
-            View Details
-          </a>
-          {% if current_user.is_authenticated and current_user.id != svc.user_id %}
-          <a href="{{ url_for('message_user', user_id=svc.seller.id) }}" class="contact-seller-btn">
-            <i class="fas fa-envelope"></i>
-            Message Seller
-          </a>
-          {% if svc.contact_methods %}
-            <div class="contact-methods">
-              {% if svc.contact_methods.phone %}
-              <a href="tel:{{ svc.contact_methods.phone }}" class="contact-method" onclick="makeCall('{{ svc.contact_methods.phone }}')">
-                <i class="fas fa-phone"></i>
-                <span>{{ svc.contact_methods.phone }}</span>
-              </a>
-              {% endif %}
-              {% if svc.contact_methods.email %}
-              <a href="mailto:{{ svc.contact_methods.email }}" class="contact-method" onclick="sendEmail('{{ svc.contact_methods.email }}')">
-                <i class="fas fa-envelope"></i>
-                <span>{{ svc.contact_methods.email }}</span>
-              </a>
-              {% endif %}
-              {% if svc.contact_methods.whatsapp %}
-              <a href="https://wa.me/{{ svc.contact_methods.whatsapp|replace('+', '') }}" class="contact-method" target="_blank">
-                <i class="fab fa-whatsapp"></i>
-                <span>WhatsApp</span>
-              </a>
-              {% endif %}
-              {% if svc.contact_methods.instagram %}
-              <a href="{% if 'http' in svc.contact_methods.instagram %}{{ svc.contact_methods.instagram }}{% else %}https://instagram.com/{{ svc.contact_methods.instagram|replace('@', '') }}{% endif %}" class="contact-method" target="_blank">
-                <i class="fab fa-instagram"></i>
-                <span>Instagram</span>
-              </a>
-              {% endif %}
-              {% if svc.contact_methods.facebook %}
-              <a href="{% if 'http' in svc.contact_methods.facebook %}{{ svc.contact_methods.facebook }}{% else %}https://facebook.com/{{ svc.contact_methods.facebook }}{% endif %}" class="contact-method" target="_blank">
-                <i class="fab fa-facebook"></i>
-                <span>Facebook</span>
-              </a>
-              {% endif %}
-            </div>
-          {% endif %}
-          {% elif not current_user.is_authenticated %}
-          <a href="{{ url_for('login') }}" class="contact-seller-btn">
-            <i class="fas fa-sign-in-alt"></i>
-            Login to Message
-          </a>
-          {% endif %}
-          {% if current_user.is_authenticated and current_user.id == svc.user_id %}
-          <form method="POST" action="{{ url_for('delete_service', id=svc.id) }}" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this service?')">
-            <button type="submit" class="delete-service-btn">
-              <i class="fas fa-trash"></i>
-              Delete
-            </button>
-          </form>
-          {% endif %}
-        </div>
-        <div class="service-price">
-          <i class="fas fa-tag"></i>
-          Starting from {{ "%.2f"|format(svc.price) }} {{ svc.currency or 'KES' }}
-        </div>
-      </div>
-    </div>
-    {% endfor %}
-  </div>
-  {% else %}
-  <!-- No Services State -->
-  <div class="no-services-state">
-    <div class="no-services-icon">
-      <i class="fas fa-search"></i>
-    </div>
-    <h3>No Services Found</h3>
-    <p>Try adjusting your search terms or browse all services</p>
-    <a href="{{ url_for('list_services') }}" class="btn-browse-all">Browse All Services</a>
-  </div>
-  {% endif %}
-</div>
-
-<!-- Font Awesome -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,300&display=swap" rel="stylesheet">
 
 <style>
-/* Main Container */
-.max-w-7xl {
-  max-width: 80rem;
+:root{
+  --bg:#0a0e1a;--bg2:#0f1429;--bg3:#151c35;--surface:rgba(255,255,255,.04);
+  --cyan:#00ffc8;--blue:#00d4ff;--purple:#a855f7;--yellow:#eab308;
+  --txt:#e2e8f0;--muted:#64748b;--bdr:rgba(255,255,255,.08);
+  --radius:14px;--card-hover:rgba(0,255,200,.06)
 }
 
-/* Search Section */
-.search-section {
-  margin-bottom: 3rem;
+/* ── LAYOUT ── */
+.srp{display:grid;grid-template-columns:280px 1fr;gap:2rem;
+  font-family:'DM Sans',sans-serif;padding:0 0 4rem}
+
+/* ── SEARCH BAR ── */
+.srp-search-bar{
+  grid-column:1/-1;
+  background:rgba(255,255,255,.04);
+  border:1px solid var(--bdr);border-radius:var(--radius);
+  padding:1.2rem 1.5rem;display:flex;gap:1rem;align-items:center;
+  margin-bottom:.5rem}
+.srp-search-input{
+  flex:1;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);
+  border-radius:10px;padding:.75rem 1rem;color:#fff;font-size:1rem;
+  font-family:inherit;outline:none;transition:border-color .25s;color-scheme:dark}
+.srp-search-input:focus{border-color:var(--cyan);box-shadow:0 0 0 3px rgba(0,255,200,.1)}
+.srp-search-input::placeholder{color:#475569}
+.srp-search-btn{
+  background:linear-gradient(135deg,var(--cyan),var(--blue));
+  color:#0a0e1a;border:none;border-radius:10px;
+  padding:.75rem 1.6rem;font-size:.95rem;font-weight:700;
+  cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:.5rem;
+  white-space:nowrap;transition:all .3s}
+.srp-search-btn:hover{box-shadow:0 0 20px rgba(0,255,200,.4);transform:translateY(-1px)}
+
+/* ── RESULTS HEADER ── */
+.srp-results-header{
+  grid-column:2;display:flex;align-items:center;
+  justify-content:space-between;flex-wrap:wrap;gap:.8rem;
+  margin-bottom:1rem}
+.srp-count{color:var(--muted);font-size:.88rem}
+.srp-count strong{color:#fff}
+.srp-sort{
+  background:rgba(255,255,255,.06);border:1px solid var(--bdr);
+  border-radius:8px;padding:.5rem .9rem;color:var(--txt);
+  font-size:.85rem;font-family:inherit;outline:none;cursor:pointer;
+  color-scheme:dark}
+
+/* ── FILTER SIDEBAR ── */
+.srp-filters{
+  background:rgba(255,255,255,.03);border:1px solid var(--bdr);
+  border-radius:var(--radius);padding:1.5rem;
+  position:sticky;top:1.5rem;align-self:start;max-height:calc(100vh - 3rem);
+  overflow-y:auto}
+.srp-filters::-webkit-scrollbar{width:4px}
+.srp-filters::-webkit-scrollbar-thumb{background:rgba(0,255,200,.2);border-radius:2px}
+
+.filter-title{font-family:'Syne',sans-serif;font-size:1rem;font-weight:700;
+  color:#fff;margin-bottom:1.2rem;display:flex;align-items:center;
+  justify-content:space-between}
+.filter-clear{color:var(--cyan);font-size:.78rem;font-weight:600;
+  text-decoration:none;font-family:'DM Sans',sans-serif}
+.filter-clear:hover{text-decoration:underline}
+
+.filter-group{margin-bottom:1.5rem}
+.filter-group-label{color:var(--muted);font-size:.75rem;font-weight:600;
+  text-transform:uppercase;letter-spacing:.06em;margin-bottom:.7rem;
+  display:block}
+
+/* Category pills */
+.cat-pills{display:flex;flex-direction:column;gap:.3rem}
+.cat-pill{display:flex;align-items:center;gap:.5rem;
+  padding:.5rem .75rem;border-radius:8px;
+  color:var(--muted);font-size:.85rem;text-decoration:none;
+  transition:all .2s;border:1px solid transparent}
+.cat-pill:hover{background:rgba(255,255,255,.06);color:var(--txt)}
+.cat-pill.active{background:rgba(0,255,200,.1);border-color:rgba(0,255,200,.3);
+  color:var(--cyan)}
+.cat-pill i{font-size:.8rem;width:14px;text-align:center}
+.cat-count{margin-left:auto;background:rgba(255,255,255,.06);
+  color:var(--muted);font-size:.72rem;padding:.1rem .45rem;border-radius:20px}
+
+/* Price inputs */
+.price-inputs{display:grid;grid-template-columns:1fr 1fr;gap:.6rem}
+.price-input{
+  background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);
+  border-radius:8px;padding:.6rem .75rem;color:#fff;font-size:.85rem;
+  font-family:inherit;outline:none;width:100%;color-scheme:dark}
+.price-input:focus{border-color:var(--cyan)}
+.price-input::placeholder{color:#475569}
+
+/* Rating filter */
+.rating-options{display:flex;flex-direction:column;gap:.4rem}
+.rating-opt{display:flex;align-items:center;gap:.6rem;
+  padding:.45rem .6rem;border-radius:8px;cursor:pointer;
+  transition:background .2s;color:var(--muted);font-size:.85rem}
+.rating-opt:hover{background:rgba(255,255,255,.05)}
+.rating-opt input{accent-color:var(--cyan);cursor:pointer}
+.rating-opt.selected{color:#fff}
+.rating-stars{color:var(--yellow);font-size:.8rem}
+
+/* Apply button */
+.filter-apply{
+  width:100%;background:linear-gradient(135deg,var(--cyan),var(--blue));
+  color:#0a0e1a;border:none;border-radius:10px;padding:.75rem;
+  font-weight:700;font-size:.9rem;cursor:pointer;font-family:inherit;
+  margin-top:.5rem;transition:all .3s}
+.filter-apply:hover{box-shadow:0 0 16px rgba(0,255,200,.4)}
+
+/* ── SERVICE CARDS GRID ── */
+.srp-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));
+  gap:1.2rem;align-content:start}
+
+.svc-card{
+  background:rgba(255,255,255,.04);border:1px solid var(--bdr);
+  border-radius:var(--radius);overflow:hidden;
+  transition:all .3s;text-decoration:none;display:flex;flex-direction:column}
+.svc-card:hover{border-color:rgba(0,255,200,.25);
+  background:var(--card-hover);transform:translateY(-3px);
+  box-shadow:0 12px 40px rgba(0,0,0,.3)}
+
+.svc-card-img{width:100%;height:160px;object-fit:cover;
+  background:rgba(255,255,255,.05);display:flex;align-items:center;
+  justify-content:center;color:#334155;font-size:2rem;flex-shrink:0}
+.svc-card-img img{width:100%;height:100%;object-fit:cover}
+
+.svc-card-body{padding:1rem;flex:1;display:flex;flex-direction:column;gap:.5rem}
+
+.svc-card-cat{font-size:.72rem;font-weight:700;text-transform:uppercase;
+  letter-spacing:.05em;color:var(--cyan);opacity:.8}
+
+.svc-card-title{color:#fff;font-size:.92rem;font-weight:600;line-height:1.4;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+
+.svc-card-seller{display:flex;align-items:center;gap:.5rem;margin-top:auto;
+  padding-top:.5rem;border-top:1px solid rgba(255,255,255,.06)}
+.svc-av{width:24px;height:24px;border-radius:50%;object-fit:cover;
+  background:rgba(255,255,255,.1);display:flex;align-items:center;
+  justify-content:center;font-size:.65rem;color:#64748b;flex-shrink:0}
+.svc-seller-name{color:var(--muted);font-size:.8rem;flex:1;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+.svc-card-footer{display:flex;align-items:center;justify-content:space-between;
+  padding:.75rem 1rem;border-top:1px solid rgba(255,255,255,.06)}
+.svc-price{color:var(--cyan);font-weight:700;font-size:.95rem;
+  font-family:'Syne',sans-serif}
+.svc-rating{display:flex;align-items:center;gap:.3rem;color:var(--yellow);font-size:.8rem}
+.svc-rating span{color:var(--muted);font-size:.75rem}
+
+/* ── EMPTY STATE ── */
+.srp-empty{grid-column:1/-1;text-align:center;padding:4rem 2rem;color:var(--muted)}
+.srp-empty i{font-size:3rem;color:rgba(0,255,200,.15);margin-bottom:1rem;display:block}
+.srp-empty h3{color:#fff;font-size:1.2rem;margin-bottom:.5rem}
+.srp-empty p{font-size:.9rem;margin-bottom:1.5rem}
+.srp-empty a{color:var(--cyan);text-decoration:none;font-weight:600}
+
+/* ── ACTIVE FILTERS CHIPS ── */
+.active-filters{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:.5rem;
+  margin-bottom:.5rem}
+.af-chip{display:inline-flex;align-items:center;gap:.4rem;
+  background:rgba(0,255,200,.1);border:1px solid rgba(0,255,200,.25);
+  color:var(--cyan);border-radius:20px;font-size:.78rem;font-weight:600;
+  padding:.3rem .75rem}
+.af-chip a{color:inherit;text-decoration:none;margin-left:.2rem;opacity:.7}
+.af-chip a:hover{opacity:1}
+
+/* ── PAGINATION ── */
+.srp-pagination{grid-column:2;display:flex;align-items:center;
+  justify-content:center;gap:.4rem;padding-top:1.5rem}
+.pg-btn{background:rgba(255,255,255,.06);border:1px solid var(--bdr);
+  color:var(--txt);border-radius:8px;padding:.5rem .9rem;
+  font-size:.85rem;text-decoration:none;transition:all .2s;font-family:inherit}
+.pg-btn:hover{border-color:rgba(0,255,200,.3);color:var(--cyan)}
+.pg-btn.active{background:rgba(0,255,200,.12);border-color:rgba(0,255,200,.35);
+  color:var(--cyan);font-weight:700}
+.pg-btn.disabled{opacity:.35;pointer-events:none}
+
+/* ── MOBILE FILTER TOGGLE ── */
+.filter-toggle-btn{
+  display:none;background:rgba(255,255,255,.06);
+  border:1px solid var(--bdr);border-radius:10px;
+  padding:.65rem 1.2rem;color:var(--txt);font-size:.88rem;
+  cursor:pointer;font-family:inherit;align-items:center;gap:.5rem}
+
+/* ── RESPONSIVE ── */
+@media(max-width:900px){
+  .srp{grid-template-columns:1fr;gap:1rem}
+  .srp-filters{
+    display:none;position:fixed;top:0;left:0;right:0;bottom:0;
+    z-index:200;border-radius:0;max-height:100vh;overflow-y:auto}
+  .srp-filters.open{display:block}
+  .srp-results-header{grid-column:1}
+  .srp-pagination{grid-column:1}
+  .filter-toggle-btn{display:inline-flex}
+  .filter-close-btn{
+    display:block;width:100%;background:rgba(255,50,50,.1);
+    border:1px solid rgba(255,50,50,.25);color:#ff6b6b;
+    border-radius:10px;padding:.7rem;font-size:.88rem;
+    cursor:pointer;font-family:inherit;margin-bottom:1rem}
+  .srp-search-bar{flex-direction:column;padding:1rem}
+  .srp-search-btn{width:100%;justify-content:center}
 }
-
-.search-form {
-  display: flex;
-  justify-content: center;
-  margin-bottom: 2rem;
+@media(min-width:901px){
+  .filter-close-btn{display:none!important}
 }
-
-.search-form .search-input-group {
-  width: 100%;
-  max-width: 600px;
-}
-
-/* Category Filter */
-.category-filter {
-  text-align: center;
-}
-
-.filter-title {
-  color: #ffffff;
-  font-size: 1.2rem;
-  font-weight: 600;
-  margin-bottom: 1.5rem;
-}
-
-.category-buttons {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 0.75rem;
-  max-width: 1200px;
-  margin: 0 auto;
-}
-
-.category-btn {
-  background: rgba(255, 255, 255, 0.1);
-  color: #ffffff;
-  text-decoration: none;
-  padding: 0.75rem 1.25rem;
-  border-radius: 25px;
-  font-weight: 500;
-  font-size: 0.9rem;
-  transition: all 0.3s ease;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  backdrop-filter: blur(10px);
-}
-
-.category-btn:hover {
-  background: rgba(255, 255, 255, 0.15);
-  transform: translateY(-2px);
-  color: #ffffff;
-  text-decoration: none;
-}
-
-.category-btn.active {
-  background: linear-gradient(135deg, #00d4ff, #0099cc);
-  color: white;
-  border-color: #00d4ff;
-}
-
-.category-btn i {
-  font-size: 0.8rem;
-}
-
-.search-input-group {
-  display: flex;
-  gap: 0;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 12px;
-  overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  backdrop-filter: blur(10px);
-}
-
-.search-input {
-  flex: 1;
-  padding: 1rem 1.5rem;
-  background: transparent;
-  border: none;
-  color: #ffffff;
-  font-size: 1rem;
-  outline: none;
-}
-
-.search-input::placeholder {
-  color: rgba(255, 255, 255, 0.6);
-}
-
-.search-btn {
-  background: linear-gradient(135deg, #00d4ff, #0099cc);
-  color: white;
-  border: none;
-  padding: 1rem 2rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.search-btn:hover {
-  background: linear-gradient(135deg, #00b8e6, #0088bb);
-  transform: translateY(-1px);
-}
-
-/* Services Grid */
-.services-main-grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 2rem;
-}
-
-.service-showcase-card {
-  background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 20px;
-  overflow: hidden;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-  transition: all 0.3s ease;
-}
-
-.service-showcase-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
-}
-
-/* Service Header */
-.service-header {
-  padding: 2rem 2rem 1rem 2rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.service-title {
-  color: #ffffff;
-  font-size: 1.75rem;
-  font-weight: 700;
-  margin-bottom: 0.5rem;
-}
-
-.service-description {
-  color: #e0e0e0;
-  font-size: 1rem;
-  line-height: 1.6;
-  margin-bottom: 1rem;
-}
-
-.service-meta {
-  display: flex;
-  gap: 1.5rem;
-  flex-wrap: wrap;
-}
-
-.service-seller,
-.service-category,
-.service-contact {
-  color: #00d4ff;
-  font-size: 0.9rem;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-weight: 500;
-}
-
-.service-seller i,
-.service-category i {
-  font-size: 0.8rem;
-}
-
-/* Media Gallery */
-.media-gallery {
-  padding: 1.5rem;
-}
-
-.media-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 1rem;
-}
-
-.media-item {
-  position: relative;
-  border-radius: 12px;
-  overflow: hidden;
-  background: #2a2a2a;
-  aspect-ratio: 4/3;
-}
-
-.media-preview {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-}
-
-.media-overlay {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  background: linear-gradient(transparent, rgba(0, 0, 0, 0.8));
-  padding: 1rem;
-  transform: translateY(100%);
-  transition: all 0.3s ease;
-}
-
-.media-item:hover .media-overlay {
-  transform: translateY(0);
-}
-
-.media-price {
-  color: #00d4ff;
-  font-weight: 600;
-  font-size: 0.9rem;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.media-price i {
-  font-size: 0.8rem;
-}
-
-/* No Media Placeholder */
-.no-media-placeholder {
-  grid-column: 1 / -1;
-  text-align: center;
-  padding: 3rem;
-  color: #666666;
-  background: #2a2a2a;
-  border-radius: 12px;
-  border: 2px dashed #404040;
-}
-
-.no-media-placeholder i {
-  font-size: 3rem;
-  margin-bottom: 1rem;
-  color: #555555;
-}
-
-/* Service Actions */
-.service-actions {
-  padding: 1.5rem 2rem;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background: rgba(255, 255, 255, 0.02);
-}
-
-.action-buttons-left {
-  display: flex;
-  gap: 1rem;
-  flex-wrap: wrap;
-}
-
-.view-details-btn {
-  background: linear-gradient(135deg, #00d4ff, #0099cc);
-  color: white;
-  text-decoration: none;
-  padding: 0.75rem 1.5rem;
-  border-radius: 8px;
-  font-weight: 600;
-  transition: all 0.3s ease;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.view-details-btn:hover {
-  background: linear-gradient(135deg, #00b8e6, #0088bb);
-  transform: translateY(-1px);
-  text-decoration: none;
-  color: white;
-}
-
-.contact-seller-btn {
-  background: linear-gradient(135deg, #28a745, #20c997);
-  color: white;
-  text-decoration: none;
-  padding: 0.75rem 1.5rem;
-  border-radius: 8px;
-  font-weight: 600;
-  transition: all 0.3s ease;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.contact-seller-btn:hover {
-  background: linear-gradient(135deg, #218838, #1e7e34);
-  transform: translateY(-1px);
-  text-decoration: none;
-  color: white;
-}
-
-.delete-service-btn {
-  background: linear-gradient(135deg, #dc3545, #c82333);
-  color: white;
-  text-decoration: none;
-  padding: 0.75rem 1.5rem;
-  border-radius: 8px;
-  font-weight: 600;
-  transition: all 0.3s ease;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  border: none;
-  cursor: pointer;
-}
-
-.delete-service-btn:hover {
-  background: linear-gradient(135deg, #c82333, #a02622);
-  transform: translateY(-1px);
-  text-decoration: none;
-  color: white;
-}
-
-.service-price {
-  color: #ffffff;
-  font-weight: 600;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-size: 1.1rem;
-}
-
-.service-price i {
-  color: #00d4ff;
-}
-
-/* Contact Methods */
-.contact-methods {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  margin-top: 0.5rem;
-}
-
-.contact-method {
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-  background: rgba(0, 212, 255, 0.1);
-  color: #00d4ff;
-  padding: 0.4rem 0.8rem;
-  border-radius: 6px;
-  font-size: 0.8rem;
-  font-weight: 500;
-  text-decoration: none;
-  transition: all 0.3s ease;
-  cursor: pointer;
-  border: 1px solid rgba(0, 212, 255, 0.2);
-}
-
-.contact-method:hover {
-  background: rgba(0, 212, 255, 0.2);
-  color: #ffffff;
-  text-decoration: none;
-  transform: translateY(-1px);
-  box-shadow: 0 2px 8px rgba(0, 212, 255, 0.3);
-}
-
-.contact-method i {
-  font-size: 0.75rem;
-}
-
-/* No Services State */
-.no-services-state {
-  text-align: center;
-  padding: 4rem 2rem;
-  color: #888888;
-}
-
-.no-services-icon i {
-  font-size: 4rem;
-  color: #555555;
-  margin-bottom: 1.5rem;
-}
-
-.no-services-state h3 {
-  color: #ffffff;
-  font-size: 1.5rem;
-  margin-bottom: 0.5rem;
-}
-
-.no-services-state p {
-  margin-bottom: 2rem;
-  font-size: 1rem;
-}
-
-.btn-browse-all {
-  background: linear-gradient(135deg, #00d4ff, #0099cc);
-  color: white;
-  text-decoration: none;
-  padding: 0.75rem 2rem;
-  border-radius: 8px;
-  font-weight: 600;
-  transition: all 0.3s ease;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.btn-browse-all:hover {
-  background: linear-gradient(135deg, #00b8e6, #0088bb);
-  transform: translateY(-1px);
-  text-decoration: none;
-  color: white;
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-  .service-header {
-    padding: 1.5rem 1.5rem 1rem 1.5rem;
-  }
-
-  .media-gallery {
-    padding: 1rem;
-  }
-
-  .media-grid {
-    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-    gap: 0.75rem;
-  }
-
-  .service-actions {
-    flex-direction: column;
-    gap: 1rem;
-    align-items: stretch;
-  }
-
-  .action-buttons-left {
-    flex-direction: column;
-    width: 100%;
-  }
-
-  .view-details-btn,
-  .contact-seller-btn,
-  .delete-service-btn {
-    justify-content: center;
-    width: 100%;
-  }
-
-  .service-meta {
-    flex-direction: column;
-    gap: 0.5rem;
-  }
-
-  .category-buttons {
-    gap: 0.5rem;
-  }
-
-  .category-btn {
-    padding: 0.6rem 1rem;
-    font-size: 0.8rem;
-  }
-}
-
-@media (max-width: 480px) {
-  .search-input-group {
-    flex-direction: column;
-  }
-
-  .search-btn {
-    justify-content: center;
-  }
+@media(max-width:600px){
+  .srp-grid{grid-template-columns:1fr}
+  .srp-results-header{flex-direction:column;align-items:stretch}
+  .srp-sort{width:100%}
 }
 </style>
 
-<script>
-function makeCall(phoneNumber) {
-  // Try to open phone app
-  window.location.href = 'tel:' + phoneNumber;
+<form method="GET" action="{{ url_for('list_services') }}" id="searchForm">
 
-  // Fallback for desktop - show alert
-  setTimeout(function() {
-    if (confirm('Would you like to call ' + phoneNumber + '?')) {
-      window.location.href = 'tel:' + phoneNumber;
-    }
-  }, 100);
+  <div class="srp">
+
+    <!-- ═══ SEARCH BAR (full width) ═══ -->
+    <div class="srp-search-bar">
+      <input type="text" name="q" class="srp-search-input"
+             placeholder="Search services, skills, keywords…"
+             value="{{ q }}" autocomplete="off" id="searchInput">
+      <!-- preserve other filters -->
+      {% if category_slug %}<input type="hidden" name="category" value="{{ category_slug }}">{% endif %}
+      {% if min_price is not none %}<input type="hidden" name="min_price" value="{{ min_price }}">{% endif %}
+      {% if max_price is not none %}<input type="hidden" name="max_price" value="{{ max_price }}">{% endif %}
+      {% if min_rating is not none %}<input type="hidden" name="min_rating" value="{{ min_rating }}">{% endif %}
+      {% if sort_by and sort_by != 'newest' %}<input type="hidden" name="sort" value="{{ sort_by }}">{% endif %}
+      <button type="submit" class="srp-search-btn">
+        <i class="fas fa-search"></i> Search
+      </button>
+    </div>
+
+    <!-- ═══ ACTIVE FILTER CHIPS ═══ -->
+    {% set has_filters = q or category_slug or min_price is not none or max_price is not none or min_rating is not none %}
+    {% if has_filters %}
+    <div class="active-filters">
+      {% if q %}
+      <span class="af-chip">
+        <i class="fas fa-search"></i> "{{ q }}"
+        <a href="{{ url_for('list_services', category=category_slug, min_price=min_price, max_price=max_price, min_rating=min_rating, sort=sort_by) }}">×</a>
+      </span>
+      {% endif %}
+      {% if active_category %}
+      <span class="af-chip">
+        <i class="fas fa-tag"></i> {{ active_category.name }}
+        <a href="{{ url_for('list_services', q=q, min_price=min_price, max_price=max_price, min_rating=min_rating, sort=sort_by) }}">×</a>
+      </span>
+      {% endif %}
+      {% if min_price is not none or max_price is not none %}
+      <span class="af-chip">
+        <i class="fas fa-tag"></i>
+        KSh {{ min_price|int if min_price is not none else 0 }} –
+        {{ max_price|int if max_price is not none else '∞' }}
+        <a href="{{ url_for('list_services', q=q, category=category_slug, min_rating=min_rating, sort=sort_by) }}">×</a>
+      </span>
+      {% endif %}
+      {% if min_rating is not none %}
+      <span class="af-chip">
+        <i class="fas fa-star"></i> {{ min_rating }}★ &amp; up
+        <a href="{{ url_for('list_services', q=q, category=category_slug, min_price=min_price, max_price=max_price, sort=sort_by) }}">×</a>
+      </span>
+      {% endif %}
+      <a href="{{ url_for('list_services') }}" class="af-chip" style="background:rgba(255,50,50,.1);border-color:rgba(255,50,50,.25);color:#ff6b6b">
+        <i class="fas fa-times"></i> Clear all
+      </a>
+    </div>
+    {% endif %}
+
+    <!-- ═══ FILTER SIDEBAR ═══ -->
+    <aside class="srp-filters" id="filterSidebar">
+
+      <button type="button" class="filter-close-btn" onclick="closeFilters()">
+        <i class="fas fa-times"></i> Close Filters
+      </button>
+
+      <div class="filter-title">
+        Filters
+        {% if has_filters %}
+        <a href="{{ url_for('list_services') }}" class="filter-clear">Clear all</a>
+        {% endif %}
+      </div>
+
+      <!-- Categories -->
+      <div class="filter-group">
+        <span class="filter-group-label"><i class="fas fa-th"></i> Category</span>
+        <div class="cat-pills">
+          <a href="{{ url_for('list_services', q=q, min_price=min_price, max_price=max_price, min_rating=min_rating, sort=sort_by) }}"
+             class="cat-pill {% if not category_slug %}active{% endif %}">
+            <i class="fas fa-globe"></i> All Categories
+          </a>
+          {% for cat in all_categories %}
+          <a href="{{ url_for('list_services', q=q, category=cat.slug, min_price=min_price, max_price=max_price, min_rating=min_rating, sort=sort_by) }}"
+             class="cat-pill {% if category_slug == cat.slug %}active{% endif %}">
+            <i class="fas fa-tag"></i> {{ cat.name }}
+          </a>
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- Price Range -->
+      <div class="filter-group">
+        <span class="filter-group-label"><i class="fas fa-tag"></i> Price Range (KSh)</span>
+        <div class="price-inputs">
+          <input type="number" name="min_price" class="price-input"
+                 placeholder="Min" min="0"
+                 value="{{ min_price|int if min_price is not none else '' }}">
+          <input type="number" name="max_price" class="price-input"
+                 placeholder="Max" min="0"
+                 value="{{ max_price|int if max_price is not none else '' }}">
+        </div>
+        <div style="color:#475569;font-size:.73rem;margin-top:.4rem">
+          Range on platform: KSh {{ price_min_global|int }} – {{ price_max_global|int }}
+        </div>
+      </div>
+
+      <!-- Rating -->
+      <div class="filter-group">
+        <span class="filter-group-label"><i class="fas fa-star"></i> Minimum Rating</span>
+        <div class="rating-options">
+          {% for stars in [4, 3, 2, 1] %}
+          <label class="rating-opt {% if min_rating == stars %}selected{% endif %}">
+            <input type="radio" name="min_rating" value="{{ stars }}"
+                   {% if min_rating == stars %}checked{% endif %}>
+            <span class="rating-stars">
+              {% for i in range(stars) %}<i class="fas fa-star"></i>{% endfor %}
+              {% for i in range(5 - stars) %}<i class="far fa-star" style="color:#334155"></i>{% endfor %}
+            </span>
+            {{ stars }}★ &amp; up
+          </label>
+          {% endfor %}
+          {% if min_rating is not none %}
+          <label class="rating-opt">
+            <input type="radio" name="min_rating" value="">
+            <span style="color:#64748b">Any rating</span>
+          </label>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Hidden fields to preserve q and category when submitting sidebar form -->
+      <input type="hidden" name="q" value="{{ q }}">
+      <input type="hidden" name="category" value="{{ category_slug }}">
+      <input type="hidden" name="sort" value="{{ sort_by }}">
+
+      <button type="submit" class="filter-apply">
+        <i class="fas fa-sliders-h"></i> Apply Filters
+      </button>
+
+    </aside>
+
+    <!-- ═══ RESULTS AREA ═══ -->
+    <div>
+
+      <!-- Results header -->
+      <div class="srp-results-header">
+        <div style="display:flex;align-items:center;gap:.8rem">
+          <button type="button" class="filter-toggle-btn" onclick="openFilters()">
+            <i class="fas fa-sliders-h"></i> Filters
+            {% if has_filters %}<span style="background:var(--cyan);color:#0a0e1a;border-radius:20px;font-size:.68rem;padding:.1rem .45rem;font-weight:900">!</span>{% endif %}
+          </button>
+          <span class="srp-count">
+            {% if total == 0 %}No results
+            {% elif q %}
+              <strong>{{ total }}</strong> result{{ 's' if total != 1 }} for "<strong>{{ q }}</strong>"
+            {% else %}
+              Showing <strong>{{ services|length }}</strong> of <strong>{{ total }}</strong> service{{ 's' if total != 1 }}
+            {% endif %}
+          </span>
+        </div>
+        <select class="srp-sort" name="sort" onchange="this.form.submit()">
+          <option value="newest"    {% if sort_by == 'newest' %}selected{% endif %}>Newest First</option>
+          <option value="rating"    {% if sort_by == 'rating' %}selected{% endif %}>Top Rated</option>
+          <option value="price_low" {% if sort_by == 'price_low' %}selected{% endif %}>Price: Low → High</option>
+          <option value="price_high"{% if sort_by == 'price_high' %}selected{% endif %}>Price: High → Low</option>
+          <option value="oldest"    {% if sort_by == 'oldest' %}selected{% endif %}>Oldest First</option>
+        </select>
+      </div>
+
+      <!-- Cards grid -->
+      <div class="srp-grid">
+        {% if services %}
+          {% for svc in services %}
+          <a href="{{ url_for('service_detail', service_id=svc.id) }}" class="svc-card">
+
+            <!-- Image -->
+            <div class="svc-card-img">
+              {% if svc.images and svc.images[0] %}
+                <img src="{{ url_for('static', filename='uploads/services/' ~ svc.images[0].filename) }}"
+                     alt="{{ svc.title }}" loading="lazy">
+              {% else %}
+                <i class="fas fa-briefcase"></i>
+              {% endif %}
+            </div>
+
+            <!-- Body -->
+            <div class="svc-card-body">
+              {% if svc.category %}
+              <div class="svc-card-cat">{{ svc.category.name }}</div>
+              {% endif %}
+              <div class="svc-card-title">{{ svc.title }}</div>
+              <div class="svc-card-seller">
+                {% if svc.seller and svc.seller.avatar %}
+                  <img src="{{ url_for('static', filename='uploads/avatars/' ~ svc.seller.avatar) }}"
+                       class="svc-av" alt="">
+                {% else %}
+                  <div class="svc-av"><i class="fas fa-user"></i></div>
+                {% endif %}
+                <span class="svc-seller-name">
+                  {{ svc.seller.display_name() if svc.seller else 'Anonymous' }}
+                </span>
+                {% if svc.seller and svc.seller.is_verified %}
+                <span style="color:#00ffc8;font-size:.7rem" title="Verified">
+                  <i class="fas fa-check-circle"></i>
+                </span>
+                {% endif %}
+              </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="svc-card-footer">
+              <span class="svc-price">KSh {{ "{:,.0f}".format(svc.price|float) }}</span>
+              {% set rating = svc.get_average_rating() %}
+              {% set rcount = svc.get_review_count() %}
+              {% if rcount > 0 %}
+              <span class="svc-rating">
+                <i class="fas fa-star"></i>
+                {{ "%.1f"|format(rating) }}
+                <span>({{ rcount }})</span>
+              </span>
+              {% else %}
+              <span style="color:#334155;font-size:.78rem">No reviews</span>
+              {% endif %}
+            </div>
+
+          </a>
+          {% endfor %}
+
+        {% else %}
+        <div class="srp-empty">
+          <i class="fas fa-search"></i>
+          <h3>No services found</h3>
+          <p>Try adjusting your filters or search with different keywords.</p>
+          <a href="{{ url_for('list_services') }}">Clear all filters →</a>
+        </div>
+        {% endif %}
+      </div>
+
+      <!-- Pagination -->
+      {% if total_pages > 1 %}
+      <div class="srp-pagination">
+        <a href="{{ url_for('list_services', q=q, category=category_slug, min_price=min_price, max_price=max_price, min_rating=min_rating, sort=sort_by, page=page-1) }}"
+           class="pg-btn {% if page == 1 %}disabled{% endif %}">
+          <i class="fas fa-chevron-left"></i>
+        </a>
+
+        {% for p in range(1, total_pages + 1) %}
+          {% if p == 1 or p == total_pages or (p >= page - 2 and p <= page + 2) %}
+            <a href="{{ url_for('list_services', q=q, category=category_slug, min_price=min_price, max_price=max_price, min_rating=min_rating, sort=sort_by, page=p) }}"
+               class="pg-btn {% if p == page %}active{% endif %}">{{ p }}</a>
+          {% elif p == page - 3 or p == page + 3 %}
+            <span class="pg-btn disabled">…</span>
+          {% endif %}
+        {% endfor %}
+
+        <a href="{{ url_for('list_services', q=q, category=category_slug, min_price=min_price, max_price=max_price, min_rating=min_rating, sort=sort_by, page=page+1) }}"
+           class="pg-btn {% if page == total_pages %}disabled{% endif %}">
+          <i class="fas fa-chevron-right"></i>
+        </a>
+      </div>
+      {% endif %}
+
+    </div><!-- end results -->
+
+  </div><!-- end .srp -->
+</form>
+
+<script>
+// Mobile filter panel
+function openFilters() {
+  document.getElementById('filterSidebar').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeFilters() {
+  document.getElementById('filterSidebar').classList.remove('open');
+  document.body.style.overflow = '';
 }
 
-function sendEmail(emailAddress) {
-  // Try to open email client
-  window.location.href = 'mailto:' + emailAddress;
+// Fix duplicate hidden fields — remove the standalone hidden inputs
+// when the sidebar form submits (sidebar already has q, category, sort)
+document.getElementById('searchForm').addEventListener('submit', function() {
+  // Let native form submit handle it — all inputs included
+});
 
-  // Fallback - show alert
-  setTimeout(function() {
-    if (confirm('Would you like to send an email to ' + emailAddress + '?')) {
-      window.location.href = 'mailto:' + emailAddress;
+// Live search hint — debounce
+let searchTimer;
+const inp = document.getElementById('searchInput');
+if (inp) {
+  inp.addEventListener('input', function() {
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(() => {}, 400);
+  });
+  // Submit on Enter
+  inp.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      document.getElementById('searchForm').submit();
     }
-  }, 100);
+  });
 }
 </script>
+
 {% endblock %}

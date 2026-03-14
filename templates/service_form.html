@@ -2,321 +2,7 @@
 
 {% block title %}{{ "Create New Service" if action == "create" else "Edit Service" }}{% endblock %}
 
-{% block content %}
-<div class="max-w-6xl mx-auto py-8">
-  <!-- Hero Section -->
-  <div class="text-center mb-12">
-    <div class="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full mb-6">
-      <i class="fas fa-{{ 'plus-circle' if action == 'create' else 'edit' }} text-3xl text-white"></i>
-    </div>
-    <h1 class="text-5xl font-bold text-white mb-4">
-      {{ "Create Your Service" if action == "create" else "Edit Your Service" }}
-    </h1>
-    <p class="text-xl text-gray-300">
-      {{ "Showcase your skills with photos and videos" if action == "create" else "Update your service details and media" }}
-    </p>
-  </div>
-
-  <!-- Main Form -->
-  <div class="modern-form-container">
-    <form 
-      method="POST" 
-      enctype="multipart/form-data" 
-      id="serviceForm"
-      action="{% if action == 'edit' and service %}{{ url_for('edit_service', id=service.id) }}{% else %}{{ url_for('create_service') }}{% endif %}"
-    >
-      <!-- CSRF protection handled automatically by Flask -->
-
-      <!-- Service Details -->
-      <div class="form-card">
-        <h2 class="card-title">
-          <i class="fas fa-info-circle"></i>
-          Service Details
-        </h2>
-        
-        <div class="form-row">
-          <div class="form-field">
-            <label class="field-label">Service Title</label>
-            <input 
-              class="field-input" 
-              name="title" 
-              value="{{ service.title if service else '' }}" 
-              placeholder="What service are you offering?"
-              required
-            >
-          </div>
-        </div>
-
-        <div class="form-row">
-          <div class="form-field">
-            <label class="field-label">Description</label>
-            <textarea
-              name="description"
-              class="field-textarea"
-              rows="5"
-              placeholder="Describe your service in detail..."
-              required
-            >{{ service.description if service else '' }}</textarea>
-          </div>
-        </div>
-
-        <!-- Contact Information Section -->
-        <div class="form-card">
-          <h2 class="card-title">
-            <i class="fas fa-address-book"></i>
-            Contact Information
-          </h2>
-          <p class="text-gray-400 text-sm mb-4">Provide multiple ways for clients to reach you</p>
-
-          <div class="contact-methods-grid">
-            <div class="contact-method">
-              <label class="field-label">
-                <i class="fas fa-phone text-blue-400"></i>
-                Phone Number
-              </label>
-              <input
-                class="field-input"
-                name="phone"
-                type="tel"
-                placeholder="+254 XXX XXX XXX"
-                value="{{ service.contact_info.phone if service and service.contact_info else '' }}"
-              >
-            </div>
-
-            <div class="contact-method">
-              <label class="field-label">
-                <i class="fas fa-envelope text-green-400"></i>
-                Email Address
-              </label>
-              <input
-                class="field-input"
-                name="email"
-                type="email"
-                placeholder="your.email@example.com"
-                value="{{ service.contact_info.email if service and service.contact_info else '' }}"
-              >
-            </div>
-
-            <div class="contact-method">
-              <label class="field-label">
-                <i class="fab fa-instagram text-pink-400"></i>
-                Instagram
-              </label>
-              <input
-                class="field-input"
-                name="instagram"
-                placeholder="@yourusername or full URL"
-                value="{{ service.contact_info.instagram if service and service.contact_info else '' }}"
-              >
-            </div>
-
-            <div class="contact-method">
-              <label class="field-label">
-                <i class="fab fa-facebook text-blue-500"></i>
-                Facebook
-              </label>
-              <input
-                class="field-input"
-                name="facebook"
-                placeholder="facebook.com/yourpage or full URL"
-                value="{{ service.contact_info.facebook if service and service.contact_info else '' }}"
-              >
-            </div>
-
-            <div class="contact-method">
-              <label class="field-label">
-                <i class="fab fa-whatsapp text-green-500"></i>
-                WhatsApp
-              </label>
-              <input
-                class="field-input"
-                name="whatsapp"
-                type="tel"
-                placeholder="+254 XXX XXX XXX"
-                value="{{ service.contact_info.whatsapp if service and service.contact_info else '' }}"
-              >
-            </div>
-          </div>
-        </div>
-
-        <div class="form-row">
-          <div class="form-field">
-            <label class="field-label">Contact Information</label>
-            <input
-              class="field-input"
-              name="contact"
-              value="{{ service.contact if service else '' }}"
-              placeholder="Phone number, email, or other contact details..."
-            >
-            <small class="text-gray-500 mt-1 block">Optional: Provide additional contact information for clients to reach you</small>
-          </div>
-        </div>
-
-        <!-- Quick Info Grid -->
-        <div class="form-row">
-          <div class="quick-info-grid">
-            <div class="info-item">
-              <label class="info-label">Price</label>
-              <input 
-                class="info-input" 
-                name="price" 
-                type="number" 
-                step="0.01" 
-                value="{{ service.price if service else '' }}"
-                placeholder="0.00"
-              >
-            </div>
-            <div class="info-item">
-              <label class="info-label">Currency</label>
-              <select name="currency" class="info-select">
-                <option value="KES" {% if service and service.currency == 'KES' %}selected{% endif %}>KES</option>
-                <option value="USD" {% if service and service.currency == 'USD' %}selected{% endif %}>USD</option>
-                <option value="EUR" {% if service and service.currency == 'EUR' %}selected{% endif %}>EUR</option>
-              </select>
-            </div>
-            <div class="info-item">
-              <label class="info-label">Quality</label>
-              <select name="quality" class="info-select">
-                <option value="">Select Quality</option>
-                <option value="New" {% if service and service.quality == 'New' %}selected{% endif %}>New</option>
-                <option value="Used-Good" {% if service and service.quality == 'Used-Good' %}selected{% endif %}>Used - Good</option>
-                <option value="Used-Fair" {% if service and service.quality == 'Used-Fair' %}selected{% endif %}>Used - Fair</option>
-                <option value="Premium" {% if service and service.quality == 'Premium' %}selected{% endif %}>Premium</option>
-              </select>
-            </div>
-            <div class="info-item">
-              <label class="info-label">Category</label>
-              <select name="category" class="info-select">
-                <option value="">Select Category</option>
-                <option value="Web Development" {% if service and service.category == 'Web Development' %}selected{% endif %}>Web Development</option>
-                <option value="Mobile Development" {% if service and service.category == 'Mobile Development' %}selected{% endif %}>Mobile Development</option>
-                <option value="Graphic Design" {% if service and service.category == 'Graphic Design' %}selected{% endif %}>Graphic Design</option>
-                <option value="UI/UX Design" {% if service and service.category == 'UI/UX Design' %}selected{% endif %}>UI/UX Design</option>
-                <option value="Writing & Content" {% if service and service.category == 'Writing & Content' %}selected{% endif %}>Writing & Content</option>
-                <option value="Digital Marketing" {% if service and service.category == 'Digital Marketing' %}selected{% endif %}>Digital Marketing</option>
-                <option value="Video & Animation" {% if service and service.category == 'Video & Animation' %}selected{% endif %}>Video & Animation</option>
-                <option value="Photography" {% if service and service.category == 'Photography' %}selected{% endif %}>Photography</option>
-                <option value="Music & Audio" {% if service and service.category == 'Music & Audio' %}selected{% endif %}>Music & Audio</option>
-                <option value="Data Entry" {% if service and service.category == 'Data Entry' %}selected{% endif %}>Data Entry</option>
-                <option value="Translation" {% if service and service.category == 'Translation' %}selected{% endif %}>Translation</option>
-                <option value="Consulting" {% if service and service.category == 'Consulting' %}selected{% endif %}>Consulting</option>
-                <option value="Other" {% if service and service.category == 'Other' %}selected{% endif %}>Other</option>
-              </select>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Media Upload Section -->
-      <div class="form-card">
-        <h2 class="card-title">
-          <i class="fas fa-photo-video"></i>
-          {{ "Upload Media" if action == "create" else "Update Media" }}
-        </h2>
-        
-        <!-- Media Type Selector -->
-        <div class="media-type-selector">
-          <div class="selector-option active" data-type="image">
-            <i class="fas fa-image"></i>
-            <span>Photos</span>
-          </div>
-          <div class="selector-option" data-type="video">
-            <i class="fas fa-video"></i>
-            <span>Videos</span>
-          </div>
-        </div>
-
-        <!-- Upload Area -->
-        <div class="upload-zone" id="uploadZone">
-          <input type="file" id="mediaInput" name="media" multiple accept="image/*,video/*" style="display: none;">
-          <div class="upload-content">
-            <div class="upload-icon">
-              <i class="fas fa-cloud-upload-alt"></i>
-            </div>
-            <h3>Drop files here or click to browse</h3>
-            <p>Support: JPG, PNG, MP4, MOV (Max 50MB each)</p>
-            <div class="upload-limits">
-              <span class="limit-item">📸 Max 50 images</span>
-              <span class="limit-item">🎬 Max 20 videos</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Existing Media (for edit mode) -->
-        {% if images or videos %}
-        <div class="existing-media-section">
-          <h3 class="section-title">
-            <i class="fas fa-folder-open"></i>
-            Current Media
-          </h3>
-          <div class="existing-media-grid">
-            {% for img in images %}
-            <div class="media-item existing">
-              <img src="{{ url_for('static', filename='uploads/services/' ~ img) }}" class="media-preview">
-              <div class="media-overlay">
-                <button type="button" class="remove-btn" onclick="removeMedia('{{ img }}', 'image')">
-                  <i class="fas fa-trash"></i>
-                </button>
-                <input type="hidden" name="remove_images" value="{{ img }}" id="remove-{{ img }}" style="display: none;">
-              </div>
-            </div>
-            {% endfor %}
-            {% for video in videos %}
-            <div class="media-item existing video">
-              <video src="{{ url_for('static', filename='uploads/services/' ~ video) }}" class="media-preview" controls></video>
-              <div class="media-overlay">
-                <button type="button" class="remove-btn" onclick="removeMedia('{{ video }}', 'video')">
-                  <i class="fas fa-trash"></i>
-                </button>
-                <input type="hidden" name="remove_videos" value="{{ video }}" id="remove-{{ video }}" style="display: none;">
-              </div>
-            </div>
-            {% endfor %}
-          </div>
-        </div>
-        {% endif %}
-
-        <!-- Media Preview Grid -->
-        <div class="media-grid" id="mediaGrid">
-          <div class="grid-placeholder" id="gridPlaceholder">
-            <div class="placeholder-icon">
-              <i class="fas fa-images"></i>
-            </div>
-            <h3>Your uploaded media will appear here</h3>
-            <p>Add photos and videos to showcase your service</p>
-          </div>
-        </div>
-      </div>
-
-      <!-- Submit Section -->
-      <div class="submit-section">
-        <button type="submit" class="submit-btn">
-          <i class="fas fa-{{ 'rocket' if action == 'create' else 'save' }}"></i>
-          {{ "Create Service" if action == "create" else "Save Changes" }}
-        </button>
-        {% if service %}
-        <a href="{{ url_for('service_view', id=service.id) }}" class="cancel-btn">
-          <i class="fas fa-times"></i>
-          Cancel
-        </a>
-        {% endif %}
-      </div>
-    </form>
-
-    <!-- Delete Section -->
-    {% if action == "edit" and service %}
-    <form method="POST" action="{{ url_for('delete_service', id=service.id) }}" onsubmit="return confirm('Are you sure you want to delete this service?')">
-      <div class="delete-section">
-        <button type="submit" class="delete-btn">
-          <i class="fas fa-trash"></i>
-          Delete Service
-        </button>
-      </div>
-    </form>
-    {% endif %}
-  </div>
-</div>
-
+{% block head %}
 <!-- Font Awesome -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
@@ -639,13 +325,6 @@
   box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
 }
 
-.media-preview {
-  width: 100%;
-  height: 200px;
-  object-fit: cover;
-  display: block;
-}
-
 .media-info {
   padding: 1rem;
 }
@@ -828,21 +507,28 @@
 </style>
 
 <script>
-let mediaItems = [];
-let currentMediaType = 'image';
-
-// Initialize
+// Auto-load category fields on page load if a category is already selected
 document.addEventListener('DOMContentLoaded', function() {
-  // Set up upload zone
+  const sel = document.getElementById('categorySelect');
+  if (sel && sel.value) {
+    loadCategoryFields();
+  }
+});
+
+// Media handling
+let mediaItems = [];
+
+document.addEventListener('DOMContentLoaded', function() {
   const uploadZone = document.getElementById('uploadZone');
   const mediaInput = document.getElementById('mediaInput');
   
-  uploadZone.addEventListener('click', () => mediaInput.click());
-  uploadZone.addEventListener('dragover', handleDragOver);
-  uploadZone.addEventListener('dragleave', handleDragLeave);
-  uploadZone.addEventListener('drop', handleDrop);
-  
-  mediaInput.addEventListener('change', handleFileSelect);
+  if (uploadZone && mediaInput) {
+    uploadZone.addEventListener('click', () => mediaInput.click());
+    uploadZone.addEventListener('dragover', handleDragOver);
+    uploadZone.addEventListener('dragleave', handleDragLeave);
+    uploadZone.addEventListener('drop', handleDrop);
+    mediaInput.addEventListener('change', handleFileSelect);
+  }
 });
 
 function handleDragOver(e) {
@@ -887,7 +573,7 @@ function processFiles(files) {
 }
 
 function validateFile(file) {
-  const maxSize = file.type.startsWith('image/') ? 10 * 1024 * 1024 : 100 * 1024 * 1024; // 10MB for images, 100MB for videos
+  const maxSize = file.type.startsWith('image/') ? 10 * 1024 * 1024 : 100 * 1024 * 1024;
   const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'video/mp4', 'video/mov', 'video/avi', 'video/quicktime'];
   
   if (file.size > maxSize) {
@@ -915,7 +601,6 @@ function updateMediaGrid() {
   
   placeholder.style.display = 'none';
   
-  // Remove existing media items
   const existingItems = grid.querySelectorAll('.media-item.new');
   existingItems.forEach(item => item.remove());
   
@@ -942,20 +627,13 @@ function updateMediaGrid() {
 
 function removeMedia(filename, type) {
   if (confirm('Are you sure you want to remove this media?')) {
-    // Hide the media item
     const mediaItems = document.querySelectorAll('.media-item');
     mediaItems.forEach(item => {
-      const img = item.querySelector('img, video');
-      if (img && img.src.includes(filename)) {
+      const media = item.querySelector('img, video');
+      if (media && media.src.includes(filename)) {
         item.style.display = 'none';
       }
     });
-    
-    // Show the hidden input to mark for removal
-    const removeInput = document.getElementById('remove-' + filename);
-    if (removeInput) {
-      removeInput.style.display = 'block';
-    }
   }
 }
 
@@ -970,20 +648,411 @@ function formatFileSize(bytes) {
   const i = Math.floor(Math.log(bytes) / Math.log(k));
   return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
 }
-
-// Auto-save functionality
-let autoSaveTimeout;
-const form = document.getElementById('serviceForm');
-const inputs = form.querySelectorAll('input, textarea, select');
-
-inputs.forEach(input => {
-  input.addEventListener('input', function() {
-    clearTimeout(autoSaveTimeout);
-    autoSaveTimeout = setTimeout(() => {
-      // Auto-save draft (you can implement this)
-      console.log('Auto-saving draft...');
-    }, 2000);
-  });
-});
 </script>
+
+<!-- LOAD SCRIPT IMMEDIATELY IN HEAD -->
+<script>
+console.log('Script loaded immediately!');
+
+function loadCategoryFields() {
+  console.log('loadCategoryFields called');
+  const categoryId = document.getElementById('categorySelect').value;
+  console.log('Category ID:', categoryId);
+  
+  if (!categoryId) {
+    document.getElementById('customFieldsSection').style.display = 'none';
+    return;
+  }
+  
+  fetch(`/api/category/${categoryId}`)
+    .then(r => r.json())
+    .then(data => {
+      console.log('API Response:', data);
+      const category = data.category || data;
+
+      // Keep the hidden slug field in sync so the POST route gets the right category
+      if (category && category.slug) {
+        const slugField = document.getElementById('categorySlug');
+        if (slugField) slugField.value = category.slug;
+      }
+      
+      if (category && category.custom_fields) {
+        const container = document.getElementById('customFieldsContainer');
+        const section = document.getElementById('customFieldsSection');
+        
+        let html = '';
+        category.custom_fields.forEach(field => {
+          const fieldName = field.name || '';
+          const fieldLabel = field.label || fieldName;
+          const isRequired = field.required ? ' *' : '';
+          const requiredAttr = field.required ? 'required' : '';
+          
+          html += `<div style="margin-bottom: 20px;">
+            <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #e0e0e0; font-size: 0.95rem;">${fieldLabel}${isRequired}</label>`;
+          
+          if (field.type === 'text') {
+            html += `<input type="text" name="${fieldName}" class="field-input" placeholder="Enter ${fieldLabel.toLowerCase()}" style="width: 100%; padding: 10px; border: 2px solid #404040; border-radius: 8px; background: #2a2a2a; color: white; font-size: 1rem;" ${requiredAttr}>`;
+          } 
+          else if (field.type === 'number') {
+            const min = field.min || 0;
+            const max = field.max || 100000;
+            html += `<input type="number" name="${fieldName}" class="field-input" placeholder="Enter ${fieldLabel.toLowerCase()}" min="${min}" max="${max}" style="width: 100%; padding: 10px; border: 2px solid #404040; border-radius: 8px; background: #2a2a2a; color: white; font-size: 1rem;" ${requiredAttr}>`;
+          } 
+          else if (field.type === 'textarea') {
+            html += `<textarea name="${fieldName}" class="field-textarea" rows="4" placeholder="Enter ${fieldLabel.toLowerCase()}" style="width: 100%; padding: 10px; border: 2px solid #404040; border-radius: 8px; background: #2a2a2a; color: white; font-size: 1rem; resize: vertical;" ${requiredAttr}></textarea>`;
+          } 
+          else if (field.type === 'select') {
+            html += `<select name="${fieldName}" style="width: 100%; padding: 10px; border: 2px solid #404040; border-radius: 8px; background: #2a2a2a; color: white; font-size: 1rem;" ${requiredAttr}>
+              <option value="">Select ${fieldLabel}...</option>`;
+            (field.options || []).forEach(opt => {
+              html += `<option value="${opt}">${opt}</option>`;
+            });
+            html += `</select>`;
+          } 
+          else if (field.type === 'multi-select') {
+            html += `<div style="display: flex; flex-direction: column; gap: 10px;">`;
+            (field.options || []).forEach(opt => {
+              html += `<label style="display: flex; align-items: center; gap: 10px; cursor: pointer; color: #e0e0e0;">
+                <input type="checkbox" name="${fieldName}" value="${opt}" style="cursor: pointer; width: 18px; height: 18px;">
+                <span>${opt}</span>
+              </label>`;
+            });
+            html += `</div>`;
+          }
+          
+          html += `</div>`;
+        });
+        
+        container.innerHTML = html;
+        section.style.display = 'block';
+        console.log('✅ Custom fields loaded successfully');
+      } else {
+        console.log('❌ No custom fields in response');
+        document.getElementById('customFieldsSection').style.display = 'none';
+      }
+    })
+    .catch(err => {
+      console.error('❌ Error loading category fields:', err);
+      document.getElementById('customFieldsContainer').innerHTML = `<p style="color: red;">Error loading fields: ${err.message}</p>`;
+    });
+}
+</script>
+{% endblock %}
+
+{% block content %}
+
+<div class="max-w-6xl mx-auto py-8">
+  <!-- Hero Section -->
+  <div class="text-center mb-12">
+    <div class="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full mb-6">
+      <i class="fas fa-{{ 'plus-circle' if action == 'create' else 'edit' }} text-3xl text-white"></i>
+    </div>
+    <h1 class="text-5xl font-bold text-white mb-4">
+      {{ "Create Your Service" if action == "create" else "Edit Your Service" }}
+    </h1>
+    <p class="text-xl text-gray-300">
+      {{ "Showcase your skills with photos and videos" if action == "create" else "Update your service details and media" }}
+    </p>
+  </div>
+
+  <!-- Main Form -->
+  <div class="modern-form-container">
+    <form 
+      method="POST" 
+      enctype="multipart/form-data" 
+      id="serviceForm"
+      action="{% if action == 'edit' and service %}{{ url_for('edit_service', id=service.id) }}{% else %}{{ url_for('create_service') }}{% endif %}"
+    >
+      <!-- CSRF protection handled automatically by Flask -->
+
+      <!-- Service Details -->
+      <div class="form-card">
+        <h2 class="card-title">
+          <i class="fas fa-info-circle"></i>
+          Service Details
+        </h2>
+        
+        <div class="form-row">
+          <div class="form-field">
+            <label class="field-label">Service Title</label>
+            <input 
+              class="field-input" 
+              name="title" 
+              value="{{ service.title if service else '' }}" 
+              placeholder="What service are you offering?"
+              required
+            >
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-field">
+            <label class="field-label">Description</label>
+            <textarea
+              name="description"
+              class="field-textarea"
+              rows="5"
+              placeholder="Describe your service in detail..."
+              required
+            >{{ service.description if service else '' }}</textarea>
+          </div>
+        </div>
+
+        <!-- Contact Information Section -->
+        <div class="form-card">
+          <h2 class="card-title">
+            <i class="fas fa-address-book"></i>
+            Contact Information
+          </h2>
+          <p class="text-gray-400 text-sm mb-4">Provide multiple ways for clients to reach you</p>
+
+          <div class="contact-methods-grid">
+            <div class="contact-method">
+              <label class="field-label">
+                <i class="fas fa-phone text-blue-400"></i>
+                Phone Number
+              </label>
+              <input
+                class="field-input"
+                name="phone"
+                type="tel"
+                placeholder="+254 XXX XXX XXX"
+              >
+            </div>
+
+            <div class="contact-method">
+              <label class="field-label">
+                <i class="fas fa-envelope text-green-400"></i>
+                Email Address
+              </label>
+              <input
+                class="field-input"
+                name="email"
+                type="email"
+                placeholder="your.email@example.com"
+              >
+            </div>
+
+            <div class="contact-method">
+              <label class="field-label">
+                <i class="fab fa-instagram text-pink-400"></i>
+                Instagram
+              </label>
+              <input
+                class="field-input"
+                name="instagram"
+                placeholder="@yourusername or full URL"
+              >
+            </div>
+
+            <div class="contact-method">
+              <label class="field-label">
+                <i class="fab fa-facebook text-blue-500"></i>
+                Facebook
+              </label>
+              <input
+                class="field-input"
+                name="facebook"
+                placeholder="facebook.com/yourpage or full URL"
+              >
+            </div>
+
+            <div class="contact-method">
+              <label class="field-label">
+                <i class="fab fa-whatsapp text-green-500"></i>
+                WhatsApp
+              </label>
+              <input
+                class="field-input"
+                name="whatsapp"
+                type="tel"
+                placeholder="+254 XXX XXX XXX"
+              >
+            </div>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-field">
+            <label class="field-label">Contact Information</label>
+            <input
+              class="field-input"
+              name="contact"
+              value="{{ service.contact if service else '' }}"
+              placeholder="Phone number, email, or other contact details..."
+            >
+            <small class="text-gray-500 mt-1 block">Optional: Provide additional contact information for clients to reach you</small>
+          </div>
+        </div>
+
+        <!-- Quick Info Grid -->
+        <div class="form-row">
+          <div class="quick-info-grid">
+            <div class="info-item">
+              <label class="info-label">Price</label>
+              <input 
+                class="info-input" 
+                name="price" 
+                type="number" 
+                step="0.01" 
+                value="{{ service.price if service else '' }}"
+                placeholder="0.00"
+              >
+            </div>
+            <div class="info-item">
+              <label class="info-label">Currency</label>
+              <select name="currency" class="info-select">
+                <option value="KES" {% if service and service.currency == 'KES' %}selected{% endif %}>KES</option>
+                <option value="USD" {% if service and service.currency == 'USD' %}selected{% endif %}>USD</option>
+                <option value="EUR" {% if service and service.currency == 'EUR' %}selected{% endif %}>EUR</option>
+              </select>
+            </div>
+            <div class="info-item">
+              <label class="info-label">Quality</label>
+              <select name="quality" class="info-select">
+                <option value="">Select Quality</option>
+                <option value="New" {% if service and service.quality == 'New' %}selected{% endif %}>New</option>
+                <option value="Used-Good" {% if service and service.quality == 'Used-Good' %}selected{% endif %}>Used - Good</option>
+                <option value="Used-Fair" {% if service and service.quality == 'Used-Fair' %}selected{% endif %}>Used - Fair</option>
+                <option value="Premium" {% if service and service.quality == 'Premium' %}selected{% endif %}>Premium</option>
+              </select>
+            </div>
+            <div class="info-item">
+              <label class="info-label">Category</label>
+              <select name="category_id" id="categorySelect" class="info-select" onchange="loadCategoryFields()" required>
+                <option value="">Select Category</option>
+                {% if categories %}
+                  {% for cat in categories %}
+                  <option value="{{ cat.id }}" {% if category and category.id == cat.id %}selected{% endif %}>{{ cat.name }}</option>
+                  {% endfor %}
+                {% else %}
+                  <option value="1">Web Development</option>
+                {% endif %}
+              </select>
+              <input type="hidden" name="category" id="categorySlug" value="{{ category.slug if category else '' }}">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Dynamic Custom Fields Section -->
+      <div class="form-card" id="customFieldsSection" style="display: none;">
+        <h2 class="card-title">
+          <i class="fas fa-sliders-h"></i>
+          Additional Details
+        </h2>
+        <p class="text-gray-400 text-sm mb-4">Provide additional details for this category</p>
+        <div id="customFieldsContainer">
+          <!-- Dynamic fields will be loaded here -->
+        </div>
+      </div>
+
+      <!-- Media Upload Section -->
+      <div class="form-card">
+        <h2 class="card-title">
+          <i class="fas fa-photo-video"></i>
+          {{ "Upload Media" if action == "create" else "Update Media" }}
+        </h2>
+        
+        <!-- Media Type Selector -->
+        <div class="media-type-selector">
+          <div class="selector-option active" data-type="image">
+            <i class="fas fa-image"></i>
+            <span>Photos</span>
+          </div>
+          <div class="selector-option" data-type="video">
+            <i class="fas fa-video"></i>
+            <span>Videos</span>
+          </div>
+        </div>
+
+        <!-- Upload Area -->
+        <div class="upload-zone" id="uploadZone">
+          <input type="file" id="mediaInput" name="media" multiple accept="image/*,video/*" style="display: none;">
+          <div class="upload-content">
+            <div class="upload-icon">
+              <i class="fas fa-cloud-upload-alt"></i>
+            </div>
+            <h3>Drop files here or click to browse</h3>
+            <p>Support: JPG, PNG, MP4, MOV (Max 50MB each)</p>
+            <div class="upload-limits">
+              <span class="limit-item">📸 Max 50 images</span>
+              <span class="limit-item">🎬 Max 20 videos</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Existing Media (for edit mode) -->
+        {% if images or videos %}
+        <div class="existing-media-section">
+          <h3 class="section-title">
+            <i class="fas fa-folder-open"></i>
+            Current Media
+          </h3>
+          <div class="existing-media-grid">
+            {% for img in images %}
+            <div class="media-item existing">
+              <img src="{{ url_for('static', filename='uploads/services/' ~ img) }}" class="media-preview">
+              <div class="media-overlay">
+                <button type="button" class="remove-btn" onclick="removeMedia('{{ img }}', 'image')">
+                  <i class="fas fa-trash"></i>
+                </button>
+              </div>
+            </div>
+            {% endfor %}
+            {% for video in videos %}
+            <div class="media-item existing video">
+              <video src="{{ url_for('static', filename='uploads/services/' ~ video) }}" class="media-preview" controls></video>
+              <div class="media-overlay">
+                <button type="button" class="remove-btn" onclick="removeMedia('{{ video }}', 'video')">
+                  <i class="fas fa-trash"></i>
+                </button>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+        {% endif %}
+
+        <!-- Media Preview Grid -->
+        <div class="media-grid" id="mediaGrid">
+          <div class="grid-placeholder" id="gridPlaceholder">
+            <div class="placeholder-icon">
+              <i class="fas fa-images"></i>
+            </div>
+            <h3>Your uploaded media will appear here</h3>
+            <p>Add photos and videos to showcase your service</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Submit Section -->
+      <div class="submit-section">
+        <button type="submit" class="submit-btn">
+          <i class="fas fa-{{ 'rocket' if action == 'create' else 'save' }}"></i>
+          {{ "Create Service" if action == "create" else "Save Changes" }}
+        </button>
+        {% if service %}
+        <a href="{{ url_for('service_view', id=service.id) }}" class="cancel-btn">
+          <i class="fas fa-times"></i>
+          Cancel
+        </a>
+        {% endif %}
+      </div>
+    </form>
+
+    <!-- Delete Section -->
+    {% if action == "edit" and service %}
+    <form method="POST" action="{{ url_for('delete_service', id=service.id) }}" onsubmit="return confirm('Are you sure you want to delete this service?')">
+      <div class="delete-section">
+        <button type="submit" class="delete-btn">
+          <i class="fas fa-trash"></i>
+          Delete Service
+        </button>
+      </div>
+    </form>
+    {% endif %}
+  </div>
+</div>
+
 {% endblock %}

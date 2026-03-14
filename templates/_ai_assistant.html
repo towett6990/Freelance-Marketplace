@@ -1,0 +1,338 @@
+<!-- ═══════════════════════════════════════════════════
+     SOKO AI — Floating Assistant Bubble
+     Included by base.html before </body>
+     Powered by OpenAI GPT-4o-mini
+     ═══════════════════════════════════════════════════ -->
+
+{% if current_user.is_authenticated %}
+
+<!-- ── Bubble trigger ───────────────────────────────────── -->
+<div id="sokoAiBubble" class="soko-bubble" onclick="toggleSokoAI()" title="Chat with Soko AI">
+  <div class="bubble-icon open-icon"><i class="fas fa-robot"></i></div>
+  <div class="bubble-icon close-icon" style="display:none"><i class="fas fa-times"></i></div>
+  <span class="bubble-ping"></span>
+</div>
+
+<!-- ── Chat panel ───────────────────────────────────────── -->
+<div id="sokoAiPanel" class="soko-panel">
+
+  <!-- Header -->
+  <div class="soko-header">
+    <div class="soko-header-left">
+      <div class="soko-avatar">
+        <i class="fas fa-robot"></i>
+        <span class="soko-online-dot"></span>
+      </div>
+      <div>
+        <div class="soko-name">Soko AI</div>
+        <div class="soko-status" id="sokoStatusText">Kenya Market Assistant • Online</div>
+      </div>
+    </div>
+    <div style="display:flex;gap:.4rem;align-items:center">
+      <button class="soko-icon-btn" onclick="clearSokoChat()" title="Clear chat">
+        <i class="fas fa-trash-alt"></i>
+      </button>
+      <button class="soko-icon-btn" onclick="toggleSokoAI()" title="Close">
+        <i class="fas fa-chevron-down"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- Messages area -->
+  <div class="soko-messages" id="sokoMessages"></div>
+
+  <!-- Quick suggestion chips — role-aware -->
+  <div class="soko-suggestions" id="sokoSuggestions">
+    {% if current_user.can_sell %}
+      <button onclick="sendQuick('How can I improve my service listings?')">📝 Improve listings</button>
+      <button onclick="sendQuick('What are the best prices for my services in Kenya?')">💰 Pricing tips</button>
+      <button onclick="sendQuick('How do I get more buyers to contact me?')">📈 Get more clients</button>
+      <button onclick="sendQuick('How do I receive my M-Pesa payment?')">📱 Get paid</button>
+    {% else %}
+      <button onclick="sendQuick('What services are available on this platform?')">🛒 Browse services</button>
+      <button onclick="sendQuick('How do I pay for a service using M-Pesa?')">📱 M-Pesa payment</button>
+      <button onclick="sendQuick('What are the going rates for web development in Kenya?')">💰 Market rates</button>
+      <button onclick="sendQuick('How do I contact a seller?')">💬 Contact seller</button>
+    {% endif %}
+  </div>
+
+  <!-- Input row -->
+  <div class="soko-input-row">
+    <textarea
+      id="sokoInput"
+      class="soko-input"
+      placeholder="Ask anything about the marketplace…"
+      rows="1"
+      onkeydown="handleSokoKey(event)"
+      oninput="autoResizeSoko(this)"
+    ></textarea>
+    <button class="soko-send-btn" id="sokoSendBtn" onclick="sendSokoMessage()" title="Send">
+      <i class="fas fa-paper-plane"></i>
+    </button>
+  </div>
+
+  <div class="soko-footer">
+    <span>Powered by <strong>GPT-4o mini</strong> • Soko AI may make mistakes</span>
+  </div>
+</div>
+
+<style>
+.soko-bubble {
+  position:fixed;bottom:24px;right:24px;z-index:9999;
+  width:60px;height:60px;border-radius:50%;
+  background:linear-gradient(135deg,#00ffc8,#00d4ff);
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;box-shadow:0 6px 28px rgba(0,255,200,.5);
+  transition:all .3s cubic-bezier(.34,1.56,.64,1);user-select:none;
+}
+.soko-bubble:hover{transform:scale(1.1);}
+.soko-bubble.panel-open{background:linear-gradient(135deg,#667eea,#764ba2);box-shadow:0 6px 28px rgba(102,126,234,.5);}
+.bubble-icon{font-size:1.45rem;color:#0a0e27;display:flex;}
+.bubble-ping{
+  position:absolute;top:1px;right:1px;
+  width:15px;height:15px;border-radius:50%;
+  background:#ef4444;border:2px solid #fff;
+  animation:sokoPing 1.8s ease-in-out infinite;
+}
+@keyframes sokoPing{0%,100%{transform:scale(1);opacity:1;}50%{transform:scale(1.35);opacity:.7;}}
+
+.soko-panel{
+  position:fixed;bottom:96px;right:24px;z-index:9998;
+  width:370px;max-height:580px;
+  background:#0d1225;border:1px solid rgba(0,255,200,.18);
+  border-radius:20px;display:flex;flex-direction:column;
+  box-shadow:0 24px 64px rgba(0,0,0,.7);
+  transform:scale(.88) translateY(24px);opacity:0;
+  pointer-events:none;
+  transition:all .32s cubic-bezier(.34,1.56,.64,1);
+  transform-origin:bottom right;
+}
+.soko-panel.open{transform:scale(1) translateY(0);opacity:1;pointer-events:all;}
+
+.soko-header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:.9rem 1.1rem;
+  border-bottom:1px solid rgba(255,255,255,.07);
+  background:linear-gradient(135deg,rgba(0,255,200,.07),rgba(0,212,255,.04));
+  border-radius:20px 20px 0 0;flex-shrink:0;
+}
+.soko-header-left{display:flex;align-items:center;gap:.7rem;}
+.soko-avatar{
+  width:42px;height:42px;border-radius:50%;
+  background:linear-gradient(135deg,#00ffc8,#00d4ff);
+  display:flex;align-items:center;justify-content:center;
+  font-size:1.15rem;color:#0a0e27;position:relative;flex-shrink:0;
+}
+.soko-online-dot{
+  position:absolute;bottom:1px;right:1px;
+  width:11px;height:11px;border-radius:50%;
+  background:#22c55e;border:2px solid #0d1225;
+}
+.soko-name{color:#fff;font-weight:700;font-size:.95rem;}
+.soko-status{color:#00ffc8;font-size:.7rem;margin-top:.1rem;}
+.soko-icon-btn{
+  background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);
+  color:#555;border-radius:8px;width:30px;height:30px;
+  cursor:pointer;font-size:.78rem;
+  display:flex;align-items:center;justify-content:center;transition:all .2s;
+}
+.soko-icon-btn:hover{color:#fff;background:rgba(255,255,255,.12);}
+
+.soko-messages{
+  flex:1;overflow-y:auto;padding:1rem;
+  display:flex;flex-direction:column;gap:.7rem;
+  scroll-behavior:smooth;min-height:0;
+}
+.soko-messages::-webkit-scrollbar{width:3px;}
+.soko-messages::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:3px;}
+
+.soko-msg{display:flex;flex-direction:column;max-width:88%;}
+.soko-msg.ai{align-self:flex-start;}
+.soko-msg.user{align-self:flex-end;}
+.soko-msg-bubble{padding:.6rem .9rem;border-radius:14px;font-size:.84rem;line-height:1.55;word-break:break-word;}
+.soko-msg.ai .soko-msg-bubble{background:rgba(255,255,255,.07);color:#ccc;border-bottom-left-radius:4px;}
+.soko-msg.user .soko-msg-bubble{background:linear-gradient(135deg,#00ffc8,#00d4ff);color:#0a0e27;font-weight:500;border-bottom-right-radius:4px;}
+.soko-msg-time{font-size:.66rem;color:#444;margin-top:.22rem;padding:0 .15rem;}
+.soko-msg.user .soko-msg-time{text-align:right;}
+.soko-msg.ai .soko-msg-bubble ul{margin:.3rem 0 0 1.1rem;padding:0;}
+.soko-msg.ai .soko-msg-bubble li{margin-bottom:.2rem;}
+.soko-msg.ai .soko-msg-bubble a{color:#00ffc8;text-decoration:underline;}
+.soko-msg.ai .soko-msg-bubble strong{color:#fff;}
+
+.soko-typing .soko-msg-bubble{display:flex;gap:5px;align-items:center;padding:.7rem 1rem;}
+.soko-dot{width:7px;height:7px;border-radius:50%;background:#444;animation:sokoBounce 1.2s infinite;}
+.soko-dot:nth-child(2){animation-delay:.2s;}
+.soko-dot:nth-child(3){animation-delay:.4s;}
+@keyframes sokoBounce{0%,60%,100%{transform:translateY(0);background:#444;}30%{transform:translateY(-7px);background:#00ffc8;}}
+
+.soko-suggestions{
+  display:flex;flex-wrap:wrap;gap:.35rem;
+  padding:.5rem 1rem;border-top:1px solid rgba(255,255,255,.05);flex-shrink:0;
+}
+.soko-suggestions button{
+  background:rgba(0,255,200,.07);border:1px solid rgba(0,255,200,.2);
+  color:#00ffc8;border-radius:20px;padding:.28rem .75rem;
+  font-size:.72rem;cursor:pointer;font-family:inherit;
+  transition:all .2s;white-space:nowrap;
+}
+.soko-suggestions button:hover{background:rgba(0,255,200,.18);transform:translateY(-1px);}
+
+.soko-input-row{
+  display:flex;align-items:flex-end;gap:.5rem;
+  padding:.7rem 1rem;border-top:1px solid rgba(255,255,255,.07);flex-shrink:0;
+}
+.soko-input{
+  flex:1;background:rgba(255,255,255,.06);
+  border:1px solid rgba(255,255,255,.1);
+  border-radius:12px;padding:.55rem .9rem;
+  color:#fff;font-size:.84rem;font-family:inherit;
+  resize:none;outline:none;max-height:100px;
+  transition:border-color .25s;color-scheme:dark;line-height:1.45;
+}
+.soko-input:focus{border-color:rgba(0,255,200,.4);}
+.soko-input::placeholder{color:#374151;}
+.soko-send-btn{
+  width:38px;height:38px;border-radius:10px;flex-shrink:0;
+  background:linear-gradient(135deg,#00ffc8,#00d4ff);
+  border:none;color:#0a0e27;font-size:.88rem;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;transition:all .25s;
+}
+.soko-send-btn:hover{box-shadow:0 0 16px rgba(0,255,200,.55);transform:scale(1.06);}
+.soko-send-btn:disabled{opacity:.35;cursor:not-allowed;transform:none;box-shadow:none;}
+.soko-footer{text-align:center;padding:.4rem 1rem .6rem;font-size:.64rem;color:#2d3748;flex-shrink:0;}
+
+@media(max-width:480px){
+  .soko-panel{width:calc(100vw - 28px);right:14px;bottom:84px;max-height:70vh;}
+  .soko-bubble{bottom:16px;right:16px;}
+}
+</style>
+
+<script>
+(function(){
+  const sokoHistory=[];
+  let sokoOpen=false;
+  const userCanSell={{ 'true' if current_user.can_sell else 'false' }};
+  const userName="{{ current_user.username }}";
+
+  function getWelcomeMsg(){
+    if(userCanSell){
+      return `👋 Karibu, <strong>${userName}</strong>!<br><br>I'm <strong>Soko AI</strong> — I can help you:<ul><li>Improve your listings &amp; pricing</li><li>Attract more buyers</li><li>Understand Kenya market rates</li><li>Navigate your seller dashboard</li></ul>What would you like help with?`;
+    }
+    return `👋 Habari, <strong>${userName}</strong>!<br><br>I'm <strong>Soko AI</strong> — your Kenya market guide.<br><br>I can help you:<ul><li>Find the right service or seller</li><li>Understand M-Pesa payments</li><li>Learn market rates in Kenya</li><li>Navigate the platform</li></ul>What can I help you with today?`;
+  }
+
+  window.toggleSokoAI=function(){
+    sokoOpen=!sokoOpen;
+    const panel=document.getElementById('sokoAiPanel');
+    const bubble=document.getElementById('sokoAiBubble');
+    const ping=bubble.querySelector('.bubble-ping');
+    panel.classList.toggle('open',sokoOpen);
+    bubble.classList.toggle('panel-open',sokoOpen);
+    bubble.querySelector('.open-icon').style.display=sokoOpen?'none':'flex';
+    bubble.querySelector('.close-icon').style.display=sokoOpen?'flex':'none';
+    if(ping) ping.style.display='none';
+    if(sokoOpen){setTimeout(()=>document.getElementById('sokoInput').focus(),320);scrollBottom();}
+  };
+
+  window.clearSokoChat=function(){
+    sokoHistory.length=0;
+    document.getElementById('sokoMessages').innerHTML='';
+    document.getElementById('sokoSuggestions').style.display='flex';
+    addMsg('ai',getWelcomeMsg());
+  };
+
+  function scrollBottom(){const m=document.getElementById('sokoMessages');m.scrollTop=m.scrollHeight;}
+
+  window.autoResizeSoko=function(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,100)+'px';};
+
+  window.handleSokoKey=function(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendSokoMessage();}};
+
+  window.sendQuick=function(msg){
+    document.getElementById('sokoInput').value=msg;
+    document.getElementById('sokoSuggestions').style.display='none';
+    sendSokoMessage();
+  };
+
+  function addMsg(role,content){
+    const msgs=document.getElementById('sokoMessages');
+    const div=document.createElement('div');
+    div.className=`soko-msg ${role}`;
+    const time=new Date().toLocaleTimeString('en-KE',{hour:'2-digit',minute:'2-digit'});
+    let html=content;
+    if(role==='ai'){
+      html=html
+        .replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>')
+        .replace(/\*(.*?)\*/g,'<em>$1</em>')
+        .replace(/`(.*?)`/g,'<code style="background:rgba(0,255,200,.1);padding:.1rem .3rem;border-radius:4px;font-family:monospace;font-size:.8rem;color:#00ffc8">$1</code>')
+        .replace(/\[([^\]]+)\]\((\/[^)]+)\)/g,'<a href="$2" onclick="closeSokoOnNav()">$1</a>')
+        .replace(/\n/g,'<br>');
+    }
+    div.innerHTML=`<div class="soko-msg-bubble">${html}</div><div class="soko-msg-time">${time}</div>`;
+    msgs.appendChild(div);
+    scrollBottom();
+    return div;
+  }
+
+  function showTyping(){
+    const msgs=document.getElementById('sokoMessages');
+    const div=document.createElement('div');
+    div.className='soko-msg ai soko-typing';div.id='sokoTyping';
+    div.innerHTML='<div class="soko-msg-bubble"><div class="soko-dot"></div><div class="soko-dot"></div><div class="soko-dot"></div></div>';
+    msgs.appendChild(div);scrollBottom();
+  }
+  function removeTyping(){const t=document.getElementById('sokoTyping');if(t)t.remove();}
+
+  window.closeSokoOnNav=function(){
+    setTimeout(()=>{
+      sokoOpen=false;
+      document.getElementById('sokoAiPanel').classList.remove('open');
+      const b=document.getElementById('sokoAiBubble');
+      b.classList.remove('panel-open');
+      b.querySelector('.open-icon').style.display='flex';
+      b.querySelector('.close-icon').style.display='none';
+    },200);
+  };
+
+  window.sendSokoMessage=async function(){
+    const input=document.getElementById('sokoInput');
+    const btn=document.getElementById('sokoSendBtn');
+    const msg=input.value.trim();
+    if(!msg||btn.disabled) return;
+
+    document.getElementById('sokoSuggestions').style.display='none';
+    addMsg('user',msg);
+    sokoHistory.push({role:'user',content:msg});
+    input.value='';input.style.height='auto';
+    btn.disabled=true;
+    document.getElementById('sokoStatusText').textContent='Soko AI is thinking…';
+    showTyping();
+
+    try{
+      const res=await fetch('/api/ai-assistant',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({message:msg,history:sokoHistory})
+      });
+      const data=await res.json();
+      removeTyping();
+      if(data.success&&data.reply){
+        addMsg('ai',data.reply);
+        sokoHistory.push({role:'assistant',content:data.reply});
+      } else {
+        addMsg('ai',`⚠️ ${data.error||'Something went wrong. Please try again.'}`);
+      }
+    } catch(err){
+      removeTyping();
+      addMsg('ai','⚠️ Connection error — please check your internet and try again.');
+    } finally{
+      btn.disabled=false;
+      document.getElementById('sokoStatusText').textContent='Kenya Market Assistant • Online';
+      input.focus();
+    }
+  };
+
+  document.addEventListener('DOMContentLoaded',function(){addMsg('ai',getWelcomeMsg());});
+})();
+</script>
+
+{% endif %}

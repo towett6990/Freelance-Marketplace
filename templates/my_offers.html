@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% block title %}My Offers{% endblock %}
+
+{% block styles %}
+<style>
+.offers-card {
+  background: rgba(255,255,255,.03);
+  border: 1px solid rgba(255,255,255,.07);
+  border-radius: 12px; padding: 1.2rem; margin-bottom: .75rem;
+  display: flex; align-items: center; justify-content: space-between;
+  flex-wrap: wrap; gap: .75rem; transition: border-color .2s;
+}
+.offers-card:hover { border-color: rgba(0,255,200,.2); }
+.offer-title { color: #e2e8f0; font-weight: 600; }
+.offer-sub   { color: #64748b; font-size: .8rem; }
+.offer-price { color: #00ffc8; font-weight: 700; }
+.offer-view  {
+  color: #00ffc8; font-size: .82rem; text-decoration: none;
+  border: 1px solid rgba(0,255,200,.2);
+  padding: .25rem .7rem; border-radius: 7px; transition: background .2s;
+}
+.offer-view:hover { background: rgba(0,255,200,.1); }
+.otab { padding: .6rem 1.5rem; border-radius: 9999px; cursor: pointer; font-weight: 600; transition: all .2s; }
+.otab.active { border: 1px solid rgba(0,255,200,.3); background: rgba(0,255,200,.1); color: #00ffc8; }
+.otab:not(.active) { border: 1px solid rgba(255,255,255,.1); background: transparent; color: #64748b; }
+
+html.light .offers-card { background: rgba(0,0,0,.03); border-color: rgba(0,0,0,.08); }
+html.light .offer-title { color: #1a2e3a; }
+html.light .offer-sub   { color: #5a7a8a; }
+html.light .otab:not(.active) { color: #5a7a8a; border-color: rgba(0,0,0,.15); }
+</style>
+{% endblock %}
+
+{% block content %}
+{% set SC = {"pending":"#f59e0b","accepted":"#22c55e","declined":"#ef4444","expired":"#64748b"} %}
+
+<h1 style="color:var(--heading-color);margin-bottom:2rem">💼 Custom Offers</h1>
+
+<div style="display:flex;gap:.5rem;margin-bottom:2rem">
+  <button onclick="showTab('received')" id="tab-received" class="otab active">📥 Received ({{ received|length }})</button>
+  <button onclick="showTab('sent')"     id="tab-sent"     class="otab">📤 Sent ({{ sent|length }})</button>
+</div>
+
+<div id="pane-received">
+  {% for o in received %}{% set sc=SC.get(o.status,"#64748b") %}
+  <div class="offers-card">
+    <div>
+      <div class="offer-title">{{ o.title }}</div>
+      <div class="offer-sub">From {{ o.seller.username }}</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:.75rem;flex-wrap:wrap">
+      <span class="offer-price">KES {{ "{:,.0f}".format(o.price) }}</span>
+      <span style="background:{{ sc }}22;color:{{ sc }};border:1px solid {{ sc }};padding:.2rem .65rem;border-radius:9999px;font-size:.75rem;font-weight:700">{{ o.status.title() }}</span>
+      <a href="{{ url_for('features.offer_detail', oid=o.id) }}" class="offer-view">View →</a>
+    </div>
+  </div>
+  {% else %}<p style="color:#64748b;padding:2rem 0">No offers received yet.</p>{% endfor %}
+</div>
+
+<div id="pane-sent" style="display:none">
+  {% for o in sent %}{% set sc=SC.get(o.status,"#64748b") %}
+  <div class="offers-card">
+    <div>
+      <div class="offer-title">{{ o.title }}</div>
+      <div class="offer-sub">To {{ o.buyer.username }}</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:.75rem;flex-wrap:wrap">
+      <span class="offer-price">KES {{ "{:,.0f}".format(o.price) }}</span>
+      <span style="background:{{ sc }}22;color:{{ sc }};border:1px solid {{ sc }};padding:.2rem .65rem;border-radius:9999px;font-size:.75rem;font-weight:700">{{ o.status.title() }}</span>
+      <a href="{{ url_for('features.offer_detail', oid=o.id) }}" class="offer-view">View →</a>
+    </div>
+  </div>
+  {% else %}<p style="color:#64748b;padding:2rem 0">No offers sent yet.</p>{% endfor %}
+</div>
+
+<script>
+function showTab(t) {
+  document.querySelectorAll('.otab').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + t).classList.add('active');
+  document.getElementById('pane-received').style.display = t === 'received' ? 'block' : 'none';
+  document.getElementById('pane-sent').style.display     = t === 'sent'     ? 'block' : 'none';
+}
+</script>
+{% endblock %}

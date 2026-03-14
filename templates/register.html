@@ -1,37 +1,142 @@
-{% extends "base.html" %}
-{% block title %}Register - Freelance Marketplace{% endblock %}
-
+{% extends 'base.html' %}
+{% block title %}Create Account — FreelancingHub{% endblock %}
 {% block content %}
-<div class="max-w-md mx-auto bg-gray-800 p-8 rounded-lg shadow-lg">
-  <h2 class="text-2xl font-bold text-center mb-6 text-green-400">Create Your Account</h2>
 
-  <form method="POST" action="{{ url_for('register') }}">
-    <div class="mb-4">
-      <label for="username" class="block text-gray-300 mb-2">Username</label>
-      <input type="text" name="username" id="username" required
-             class="w-full p-3 rounded bg-gray-700 border border-gray-600 text-white focus:border-green-400">
+<style>
+  :root{--bg:#0a0e27;--bg2:#0f1429;--bg3:#1a1f3a;--cyan:#00ffc8;--blue:#00d4ff;
+    --txt:#e0e0e0;--muted:#a0a0a0;--bdr:rgba(0,255,200,.15)}
+
+  .reg-page{min-height:100vh;display:flex;align-items:center;justify-content:center;
+    background:var(--bg);padding:2rem 1rem;font-family:'Inter',sans-serif}
+  .reg-card{background:rgba(255,255,255,.04);border:1px solid var(--bdr);
+    border-radius:20px;padding:2.5rem 2.5rem;width:100%;max-width:440px;
+    box-shadow:0 20px 60px rgba(0,0,0,.4)}
+
+  .reg-logo{text-align:center;margin-bottom:1.8rem}
+  .reg-logo-text{font-family:'Poppins',sans-serif;font-size:1.6rem;font-weight:900;
+    background:linear-gradient(135deg,var(--cyan),var(--blue));
+    -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+  .reg-logo-sub{color:var(--muted);font-size:.85rem;margin-top:.2rem}
+
+  .reg-title{font-family:'Poppins',sans-serif;font-size:1.4rem;font-weight:700;
+    color:#fff;margin-bottom:.3rem}
+  .reg-subtitle{color:var(--muted);font-size:.88rem;margin-bottom:1.8rem}
+
+  .reg-fg{margin-bottom:1.2rem}
+  .reg-label{display:block;color:var(--txt);font-size:.83rem;font-weight:600;
+    margin-bottom:.45rem}
+  .reg-input{width:100%;background:rgba(255,255,255,.06);
+    border:1px solid rgba(255,255,255,.12);border-radius:10px;
+    padding:.75rem 1rem;color:#fff;font-size:.92rem;font-family:inherit;
+    outline:none;transition:border-color .25s;box-sizing:border-box;color-scheme:dark}
+  .reg-input:focus{border-color:var(--cyan);box-shadow:0 0 0 3px rgba(0,255,200,.1)}
+  .reg-input::placeholder{color:#555}
+
+  .reg-submit{width:100%;background:linear-gradient(135deg,var(--cyan),var(--blue));
+    color:#0a0e27;border:none;border-radius:10px;padding:.85rem;
+    font-size:1rem;font-weight:700;cursor:pointer;margin-top:.5rem;
+    font-family:inherit;transition:all .3s;display:flex;align-items:center;
+    justify-content:center;gap:.5rem}
+  .reg-submit:hover{box-shadow:0 0 24px rgba(0,255,200,.5);transform:translateY(-2px)}
+
+  .reg-info{background:rgba(0,255,200,.06);border:1px solid rgba(0,255,200,.15);
+    border-radius:10px;padding:.9rem 1rem;margin-bottom:1.4rem;
+    color:var(--muted);font-size:.82rem;display:flex;gap:.7rem;align-items:flex-start}
+  .reg-info i{color:var(--cyan);margin-top:.1rem;flex-shrink:0}
+
+  .reg-divider{text-align:center;color:#444;font-size:.82rem;margin:1.4rem 0;
+    position:relative}
+  .reg-divider::before{content:'';position:absolute;top:50%;left:0;right:0;
+    height:1px;background:rgba(255,255,255,.08)}
+  .reg-divider span{background:rgba(15,20,41,1);padding:0 .8rem;position:relative}
+
+  .reg-login{text-align:center;color:var(--muted);font-size:.87rem}
+  .reg-login a{color:var(--cyan);text-decoration:none;font-weight:600}
+  .reg-login a:hover{text-decoration:underline}
+
+  .reg-alert{border-radius:8px;padding:.75rem 1rem;margin-bottom:1rem;
+    font-size:.85rem;display:flex;align-items:center;gap:.5rem}
+  .reg-alert.danger{background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.25);color:#fca5a5}
+  .reg-alert.warning{background:rgba(234,179,8,.12);border:1px solid rgba(234,179,8,.25);color:#fde68a}
+  .reg-alert.success{background:rgba(34,197,94,.12);border:1px solid rgba(34,197,94,.25);color:#86efac}
+  
+  /* Mobile Responsive */
+  @media (max-width: 480px) {
+    .reg-card { padding: 1.5rem; }
+    .reg-logo-text { font-size: 1.3rem; }
+    .reg-title { font-size: 1.2rem; }
+    .reg-input { min-height: 44px; font-size: 16px !important; }
+    .reg-submit { min-height: 44px; }
+  }
+</style>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@700;900&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+<div class="reg-page">
+  <div class="reg-card">
+
+    <div class="reg-logo">
+      <div class="reg-logo-text"><i class="fas fa-bolt"></i> FreelancingHub</div>
+      <div class="reg-logo-sub">Kenya's Premier Freelance Platform</div>
     </div>
 
-    <div class="mb-4">
-      <label for="email" class="block text-gray-300 mb-2">Email</label>
-      <input type="email" name="email" id="email" required
-             class="w-full p-3 rounded bg-gray-700 border border-gray-600 text-white focus:border-green-400">
+    <div class="reg-title">Create your account</div>
+    <div class="reg-subtitle">Free forever · No credit card needed</div>
+
+    <!-- Flash messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% for cat, msg in messages %}
+      <div class="reg-alert {{ cat }}"><i class="fas fa-info-circle"></i> {{ msg }}</div>
+      {% endfor %}
+    {% endwith %}
+
+    <!-- Info banner -->
+    <div class="reg-info">
+      <i class="fas fa-info-circle"></i>
+      <span>You'll start as a <strong style="color:var(--cyan)">buyer</strong>.
+      You can upgrade to a seller any time from your profile to start posting listings.</span>
     </div>
 
-    <div class="mb-4">
-      <label for="password" class="block text-gray-300 mb-2">Password</label>
-      <input type="password" name="password" id="password" required
-             class="w-full p-3 rounded bg-gray-700 border border-gray-600 text-white focus:border-green-400">
+    <form method="POST" action="{{ url_for('register') }}">
+      {{ form.hidden_tag() if form.hidden_tag is defined }}
+
+      <div class="reg-fg">
+        <label class="reg-label">Display Name <span style="color:var(--muted);font-weight:400">(optional)</span></label>
+        <input type="text" name="username" class="reg-input"
+               placeholder="e.g. John Kamau"
+               value="{{ form.username.data or '' if form else '' }}">
+      </div>
+
+      <div class="reg-fg">
+        <label class="reg-label">Email Address</label>
+        <input type="email" name="email" class="reg-input"
+               placeholder="you@example.com" required
+               value="{{ form.email.data or '' if form else '' }}">
+      </div>
+
+      <div class="reg-fg">
+        <label class="reg-label">Password</label>
+        <input type="password" name="password" class="reg-input"
+               placeholder="At least 6 characters" required minlength="6">
+      </div>
+
+      <div class="reg-fg">
+        <label class="reg-label">Confirm Password</label>
+        <input type="password" name="confirm_password" class="reg-input"
+               placeholder="Repeat your password" required>
+      </div>
+
+      <button type="submit" class="reg-submit">
+        <i class="fas fa-user-plus"></i> Create Free Account
+      </button>
+    </form>
+
+    <div class="reg-divider"><span>already have an account?</span></div>
+    <div class="reg-login">
+      <a href="{{ url_for('login') }}">Sign in to FreelancingHub →</a>
     </div>
 
-    <button type="submit"
-            class="w-full bg-green-500 hover:bg-green-600 text-white font-semibold py-2 rounded">
-      Register
-    </button>
-  </form>
-
-  <p class="mt-4 text-center text-gray-400">
-    Already have an account? <a href="{{ url_for('login') }}" class="text-green-400 hover:underline">Login</a>
-  </p>
+  </div>
 </div>
+
 {% endblock %}

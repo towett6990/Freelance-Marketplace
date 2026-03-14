@@ -1,0 +1,755 @@
+{% extends "base.html" %}
+
+{% block title %}Share Location - Freelance Marketplace{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<style>
+    .location-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+    
+    .location-header {
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+    
+    .location-header h1 {
+        color: #1f2937;
+        margin-bottom: 0.5rem;
+    }
+    
+    .location-header p {
+        color: #6b7280;
+    }
+    
+    .map-container {
+        height: 400px;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        margin-bottom: 2rem;
+    }
+    
+    #map {
+        height: 100%;
+        width: 100%;
+    }
+    
+    .location-controls {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+    
+    .control-card {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    
+    .control-card h3 {
+        color: #1f2937;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .btn {
+        padding: 0.75rem 1.5rem;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+        border: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .btn-primary {
+        background: #3b82f6;
+        color: white;
+    }
+    
+    .btn-primary:hover:not(:disabled) {
+        background: #2563eb;
+        transform: translateY(-2px);
+    }
+    
+    .btn-secondary {
+        background: #6b7280;
+        color: white;
+    }
+    
+    .btn-secondary:hover:not(:disabled) {
+        background: #4b5563;
+        transform: translateY(-2px);
+    }
+    
+    /* IMPORTANT: Style for enabled share button */
+    #shareLocationBtn:not(:disabled) {
+        background: #10b981 !important;
+        cursor: pointer !important;
+    }
+    
+    #shareLocationBtn:not(:disabled):hover {
+        background: #059669 !important;
+        transform: translateY(-2px) !important;
+    }
+    
+    .btn-danger {
+        background: #ef4444;
+        color: white;
+        padding: 0.5rem 1rem;
+        font-size: 0.875rem;
+    }
+    
+    .btn-danger:hover:not(:disabled) {
+        background: #dc2626;
+    }
+    
+    .btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+    
+    .form-group {
+        margin-bottom: 1rem;
+    }
+    
+    .form-group label {
+        display: block;
+        margin-bottom: 0.5rem;
+        color: #374151;
+        font-weight: 500;
+    }
+    
+    .form-group select,
+    .form-group input {
+        width: 100%;
+        padding: 0.75rem;
+        border: 1px solid #d1d5db;
+        border-radius: 8px;
+        font-size: 1rem;
+    }
+    
+    .location-info {
+        background: #f3f4f6;
+        border-radius: 8px;
+        padding: 1rem;
+        margin-top: 1rem;
+        border-left: 4px solid #3b82f6;
+    }
+    
+    .location-info p {
+        margin: 0.25rem 0;
+        color: #4b5563;
+    }
+    
+    .location-info strong {
+        color: #1f2937;
+    }
+    
+    .status-message {
+        padding: 1rem;
+        border-radius: 8px;
+        margin-bottom: 1rem;
+        display: none;
+    }
+    
+    .status-message.info {
+        background: #dbeafe;
+        color: #1e40af;
+        border-left: 4px solid #3b82f6;
+    }
+    
+    .status-message.success {
+        background: #d1fae5;
+        color: #065f46;
+        border-left: 4px solid #10b981;
+    }
+    
+    .status-message.error {
+        background: #fee2e2;
+        color: #991b1b;
+        border-left: 4px solid #ef4444;
+    }
+    
+    .active-locations {
+        margin-top: 2rem;
+    }
+    
+    .location-item {
+        background: white;
+        border-radius: 8px;
+        padding: 1rem;
+        margin-bottom: 0.5rem;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .location-details {
+        flex: 1;
+    }
+    
+    .location-city {
+        font-weight: 600;
+        color: #1f2937;
+    }
+    
+    .location-address {
+        color: #6b7280;
+        font-size: 0.875rem;
+    }
+    
+    .location-time {
+        color: #9ca3af;
+        font-size: 0.75rem;
+    }
+    
+    .nearby-item {
+        background: white;
+        border-radius: 8px;
+        padding: 1rem;
+        margin-bottom: 0.5rem;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .nearby-details {
+        flex: 1;
+    }
+    
+    .nearby-username {
+        font-weight: 600;
+        color: #1f2937;
+    }
+    
+    .nearby-city {
+        color: #6b7280;
+        font-size: 0.875rem;
+    }
+    
+    .nearby-badges {
+        margin-top: 0.25rem;
+    }
+    
+    .badge {
+        background: #dbeafe;
+        color: #1e40af;
+        padding: 0.25rem 0.5rem;
+        border-radius: 4px;
+        font-size: 0.75rem;
+        display: inline-block;
+        margin-right: 0.25rem;
+    }
+    
+    .empty-state {
+        text-align: center;
+        padding: 2rem;
+        color: #9ca3af;
+    }
+    
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+    
+    .stat-card {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        text-align: center;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    
+    .stat-value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #3b82f6;
+    }
+    
+    .stat-label {
+        color: #6b7280;
+        font-size: 0.875rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="location-container">
+    <div class="location-header">
+        <h1>📍 Share Your Location</h1>
+        <p>Share your location with others or find nearby sellers</p>
+    </div>
+    
+    <div id="statusMessage" class="status-message"></div>
+    
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-value" id="activeCount">0</div>
+            <div class="stat-label">Active Sharings</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value" id="nearbyCount">0</div>
+            <div class="stat-label">Nearby Sellers</div>
+        </div>
+    </div>
+    
+    <div class="map-container">
+        <div id="map"></div>
+    </div>
+    
+    <div class="location-controls">
+        <!-- Get Location Card -->
+        <div class="control-card">
+            <h3>📍 Get Your Location</h3>
+            <button id="getLocationBtn" class="btn btn-primary" style="width: 100%; margin-bottom: 1rem;">
+                <i class="fas fa-crosshairs"></i> Get My Location
+            </button>
+            
+            <div id="locationInfo" class="location-info" style="display: none;">
+                <p><strong>Latitude:</strong> <span id="currentLat">--</span></p>
+                <p><strong>Longitude:</strong> <span id="currentLon">--</span></p>
+                <p><strong>Accuracy:</strong> <span id="currentAccuracy">--</span></p>
+                <p><strong>Address:</strong> <span id="currentAddress">--</span></p>
+            </div>
+        </div>
+        
+        <!-- Share Location Card -->
+        <div class="control-card">
+            <h3>🔗 Share Location</h3>
+            <div class="form-group">
+                <label for="shareDuration">Share for:</label>
+                <select id="shareDuration">
+                    <option value="30">30 minutes</option>
+                    <option value="60" selected>1 hour</option>
+                    <option value="120">2 hours</option>
+                    <option value="240">4 hours</option>
+                    <option value="1440">24 hours</option>
+                </select>
+            </div>
+            <button id="shareLocationBtn" class="btn btn-secondary" disabled style="width: 100%;">
+                <i class="fas fa-share"></i> Share Location
+            </button>
+        </div>
+        
+        <!-- Find Nearby Card -->
+        <div class="control-card">
+            <h3>🔍 Find Nearby Sellers</h3>
+            <div class="form-group">
+                <label for="searchRadius">Search radius:</label>
+                <select id="searchRadius">
+                    <option value="1">1 km</option>
+                    <option value="5" selected>5 km</option>
+                    <option value="10">10 km</option>
+                    <option value="25">25 km</option>
+                    <option value="50">50 km</option>
+                </select>
+            </div>
+            <button id="findNearbyBtn" class="btn btn-primary" style="width: 100%;">
+                <i class="fas fa-search"></i> Find Nearby
+            </button>
+        </div>
+    </div>
+    
+    <!-- Active Locations Section -->
+    <div class="active-locations">
+        <h2 style="margin-bottom: 1rem; color: #1f2937;">📍 Your Active Location Sharings</h2>
+        <div id="activeLocationsList">
+            <div class="empty-state">No active location sharings</div>
+        </div>
+    </div>
+    
+    <!-- Nearby Sellers Section -->
+    <div class="active-locations" style="margin-top: 2rem;">
+        <h2 style="margin-bottom: 1rem; color: #1f2937;">👥 Nearby Sellers</h2>
+        <div id="nearbySellers">
+            <div class="empty-state">No nearby sellers found. Click "Find Nearby" to search.</div>
+        </div>
+    </div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+console.log("📍 Location page script loaded");
+
+let map;
+let userMarker;
+let locationData = null;
+
+function initializeMap() {
+    console.log("🗺️ Initializing map");
+    map = L.map('map').setView([1.2921, 36.8219], 12);
+    
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors',
+        maxZoom: 19
+    }).addTo(map);
+    console.log("✅ Map initialized");
+}
+
+function showStatus(message, type = 'info') {
+    console.log(`📢 Status [${type}]: ${message}`);
+    const statusDiv = document.getElementById('statusMessage');
+    if (!statusDiv) {
+        console.error("❌ statusMessage div not found!");
+        return;
+    }
+    
+    statusDiv.textContent = message;
+    statusDiv.className = `status-message ${type}`;
+    statusDiv.style.display = 'block';
+    
+    if (type === 'success') {
+        setTimeout(() => {
+            statusDiv.style.display = 'none';
+        }, 5000);
+    }
+}
+
+// CRITICAL: Wait for DOM to load
+document.addEventListener('DOMContentLoaded', function() {
+    console.log("✅ DOM Content Loaded - Setting up location page");
+    
+    // Initialize map
+    initializeMap();
+    loadActiveLocations();
+    
+    // Get buttons ONCE
+    const getLocationBtn = document.getElementById('getLocationBtn');
+    const shareLocationBtn = document.getElementById('shareLocationBtn');
+    const findNearbyBtn = document.getElementById('findNearbyBtn');
+    
+    console.log("🔘 Button elements found:");
+    console.log("   - getLocationBtn:", getLocationBtn);
+    console.log("   - shareLocationBtn:", shareLocationBtn);
+    console.log("   - findNearbyBtn:", findNearbyBtn);
+    
+    if (!getLocationBtn || !shareLocationBtn || !findNearbyBtn) {
+        console.error("❌ CRITICAL: One or more buttons not found!");
+        showStatus('ERROR: Location buttons not found. Refresh the page.', 'error');
+        return;
+    }
+    
+    // ============================================================
+    // GET LOCATION BUTTON HANDLER
+    // ============================================================
+    getLocationBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        console.log("🖱️ Get Location button clicked");
+        
+        if (!navigator.geolocation) {
+            console.error("❌ Geolocation not supported");
+            showStatus('Geolocation not supported in your browser', 'error');
+            return;
+        }
+        
+        this.disabled = true;
+        this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Getting location...';
+        
+        navigator.geolocation.getCurrentPosition(
+            function(position) {
+                console.log("✅ Location obtained successfully");
+                
+                const lat = position.coords.latitude;
+                const lon = position.coords.longitude;
+                const accuracy = position.coords.accuracy;
+                
+                locationData = {
+                    latitude: lat,
+                    longitude: lon,
+                    accuracy: accuracy
+                };
+                
+                console.log("💾 Location data stored:", locationData);
+                
+                // Update UI
+                document.getElementById('currentLat').textContent = lat.toFixed(6);
+                document.getElementById('currentLon').textContent = lon.toFixed(6);
+                document.getElementById('currentAccuracy').textContent = Math.round(accuracy) + 'm';
+                document.getElementById('locationInfo').style.display = 'block';
+                
+                // Update map
+                if (userMarker) {
+                    map.removeLayer(userMarker);
+                }
+                
+                userMarker = L.marker([lat, lon], {
+                    icon: L.icon({
+                        iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png',
+                        shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+                        iconSize: [25, 41],
+                        iconAnchor: [12, 41],
+                        popupAnchor: [1, -34],
+                        shadowSize: [41, 41]
+                    })
+                }).addTo(map).bindPopup('Your Location');
+                
+                map.setView([lat, lon], 14);
+                console.log("🗺️ Map centered on location");
+                
+                // Get address from Nominatim
+                fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`)
+                    .then(r => r.json())
+                    .then(data => {
+                        if (data.address) {
+                            const city = data.address.city || data.address.town || 'Unknown';
+                            const country = data.address.country || 'Unknown';
+                            locationData.address = city;
+                            locationData.city = city;
+                            locationData.country = country;
+                            document.getElementById('currentAddress').textContent = `${city}, ${country}`;
+                            console.log("📍 Address found:", city, country);
+                        }
+                    })
+                    .catch(err => console.error('❌ Geocoding error:', err));
+                
+                // ENABLE SHARE BUTTON - THIS IS CRITICAL
+                console.log("🔘 Enabling share button...");
+                shareLocationBtn.disabled = false;
+                console.log("✅ Share button is now ENABLED");
+                console.log("Share button disabled attribute:", shareLocationBtn.disabled);
+                
+                showStatus('Location obtained! Now click Share Location button', 'success');
+                
+                // Reset get location button
+                getLocationBtn.disabled = false;
+                getLocationBtn.innerHTML = '<i class="fas fa-crosshairs"></i> Get My Location';
+                console.log("🔄 Get Location button reset");
+            },
+            function(error) {
+                console.error("❌ Geolocation error:", error.code, error.message);
+                let msg = 'Unable to get location. ';
+                if (error.code === 1) msg += 'Permission denied.';
+                else if (error.code === 2) msg += 'Location unavailable.';
+                else if (error.code === 3) msg += 'Request timeout.';
+                
+                showStatus(msg, 'error');
+                getLocationBtn.disabled = false;
+                getLocationBtn.innerHTML = '<i class="fas fa-crosshairs"></i> Get My Location';
+            },
+            {
+                enableHighAccuracy: true,
+                timeout: 10000,
+                maximumAge: 0
+            }
+        );
+    });
+    
+    // ============================================================
+    // SHARE LOCATION BUTTON HANDLER
+    // ============================================================
+    shareLocationBtn.addEventListener('click', async function(e) {
+        e.preventDefault();
+        console.log("🖱️ Share Location button clicked");
+        console.log("Location data available:", locationData);
+        
+        if (!locationData) {
+            console.error("❌ No location data available");
+            showStatus('Get your location first!', 'error');
+            return;
+        }
+        
+        this.disabled = true;
+        this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sharing...';
+        
+        try {
+            const duration = parseInt(document.getElementById('shareDuration').value);
+            console.log("⏱️ Share duration:", duration, "minutes");
+            
+            const payload = {
+                ...locationData,
+                expires_in_minutes: duration
+            };
+            
+            console.log("📤 Sending to /api/location/share:", payload);
+            
+            const response = await fetch('/api/location/share', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            
+            console.log("📡 Response status:", response.status);
+            const responseData = await response.json();
+            console.log("📥 Response data:", responseData);
+            
+            if (!response.ok) {
+                throw new Error(responseData.error || 'Failed to share location');
+            }
+            
+            showStatus('✅ Location shared successfully!', 'success');
+            console.log("✅ Location shared!");
+            
+            // Reload active locations
+            loadActiveLocations();
+            
+            this.innerHTML = '<i class="fas fa-share"></i> Share Location';
+            this.disabled = false;
+            
+        } catch (error) {
+            console.error("❌ Error sharing location:", error.message);
+            showStatus('Error: ' + error.message, 'error');
+            this.innerHTML = '<i class="fas fa-share"></i> Share Location';
+            this.disabled = false;
+        }
+    });
+    
+    // ============================================================
+    // FIND NEARBY BUTTON HANDLER
+    // ============================================================
+    findNearbyBtn.addEventListener('click', async function(e) {
+        e.preventDefault();
+        console.log("🖱️ Find Nearby button clicked");
+        
+        if (!navigator.geolocation) {
+            console.error("❌ Geolocation not supported");
+            showStatus('Geolocation not supported', 'error');
+            return;
+        }
+        
+        this.disabled = true;
+        this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Searching...';
+        
+        navigator.geolocation.getCurrentPosition(
+            async function(position) {
+                const radius = parseInt(document.getElementById('searchRadius').value);
+                console.log("🔍 Searching nearby with radius:", radius, "km");
+                
+                try {
+                    const response = await fetch('/api/location/nearby', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            latitude: position.coords.latitude,
+                            longitude: position.coords.longitude,
+                            radius_km: radius
+                        })
+                    });
+                    
+                    const data = await response.json();
+                    console.log("📍 Nearby results:", data);
+                    
+                    if (data.success) {
+                        const list = document.getElementById('nearbySellers');
+                        document.getElementById('nearbyCount').textContent = data.nearby_sellers.length;
+                        
+                        if (data.nearby_sellers.length === 0) {
+                            list.innerHTML = '<div class="empty-state">No sellers found within ' + radius + 'km</div>';
+                            showStatus(`No sellers found within ${radius}km`, 'info');
+                            return;
+                        }
+                        
+                        list.innerHTML = data.nearby_sellers.map(seller => `
+                            <div class="nearby-item">
+                                <div class="nearby-details">
+                                    <div class="nearby-username">${seller.seller.username}</div>
+                                    <div class="nearby-city">${seller.location.city}</div>
+                                    <div class="nearby-badges">
+                                        <span class="badge"><i class="fas fa-map-marker-alt"></i> ${seller.distance_km} km</span>
+                                    </div>
+                                </div>
+                                <a href="/profile/${seller.seller.username}" class="btn btn-primary" style="margin-left: 1rem;">View Profile</a>
+                            </div>
+                        `).join('');
+                        
+                        showStatus(`Found ${data.nearby_sellers.length} sellers!`, 'success');
+                    }
+                } catch (error) {
+                    console.error('❌ Error finding nearby:', error.message);
+                    showStatus('Error searching: ' + error.message, 'error');
+                }
+                
+                findNearbyBtn.disabled = false;
+                findNearbyBtn.innerHTML = '<i class="fas fa-search"></i> Find Nearby';
+            },
+            function() {
+                console.error("❌ Location permission denied");
+                showStatus('Location permission denied', 'error');
+                findNearbyBtn.disabled = false;
+                findNearbyBtn.innerHTML = '<i class="fas fa-search"></i> Find Nearby';
+            }
+        );
+    });
+    
+    // Refresh active locations every 30 seconds
+    setInterval(loadActiveLocations, 30000);
+    console.log("🔄 Auto-refresh timer set");
+    
+    console.log("✅ All event listeners attached successfully!");
+});
+
+async function loadActiveLocations() {
+    try {
+        const response = await fetch('/api/location/active');
+        const data = await response.json();
+        
+        if (data.success) {
+            const list = document.getElementById('activeLocationsList');
+            document.getElementById('activeCount').textContent = data.count;
+            
+            if (data.locations.length === 0) {
+                list.innerHTML = '<div class="empty-state">No active locations</div>';
+                return;
+            }
+            
+            list.innerHTML = data.locations.map(loc => {
+                const expires = new Date(loc.expires_at);
+                const now = new Date();
+                const minutesLeft = Math.floor((expires - now) / 60000);
+                
+                return `
+                    <div class="location-item">
+                        <div class="location-details">
+                            <div class="location-city">${loc.city}, ${loc.country}</div>
+                            <div class="location-address">${loc.address}</div>
+                            <div class="location-time">Expires in ${minutesLeft}m</div>
+                        </div>
+                        <button class="btn btn-danger" onclick="stopSharing(${loc.id}); return false;">
+                            <i class="fas fa-stop"></i> Stop
+                        </button>
+                    </div>
+                `;
+            }).join('');
+        }
+    } catch (error) {
+        console.error('❌ Error loading active locations:', error);
+    }
+}
+
+async function stopSharing(locationId) {
+    console.log("🛑 Stopping location sharing:", locationId);
+    try {
+        const response = await fetch('/api/location/stop', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ location_id: locationId })
+        });
+        
+        if (response.ok) {
+            showStatus('✅ Stopped sharing', 'success');
+            loadActiveLocations();
+            console.log("✅ Location sharing stopped");
+        }
+    } catch (error) {
+        console.error("❌ Error stopping location:", error);
+        showStatus('Error stopping: ' + error.message, 'error');
+    }
+}
+
+console.log("📍 Location share page fully loaded!");
+</script>
+{% endblock %}

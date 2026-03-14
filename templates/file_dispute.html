@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}File Dispute — Order #{{ order.id }}{% endblock %}
+{% block content %}
+<style>
+.container { max-width: 600px; margin: 3rem auto; padding: 0 1rem; }
+.card { background: rgba(255,255,255,0.04); border: 1px solid rgba(239,68,68,0.3); border-radius: 20px; padding: 2rem; }
+.card h1 { color: #ef4444; font-size: 1.6rem; font-weight: 700; margin-bottom: 0.5rem; }
+.card p { color: #aaa; margin-bottom: 2rem; }
+.warning-box { background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.2); border-radius: 10px; padding: 1rem; margin-bottom: 1.5rem; color: #fca5a5; font-size: 0.9rem; }
+label { display: block; color: #ccc; font-size: 0.9rem; margin-bottom: 0.5rem; }
+textarea { width: 100%; padding: 0.85rem 1rem; background: #1a1a1a; border: 1px solid #333; border-radius: 10px; color: #fff; font-size: 0.95rem; box-sizing: border-box; resize: vertical; font-family: inherit; margin-bottom: 1.5rem; }
+textarea:focus { outline: none; border-color: #ef4444; }
+.submit-btn { width: 100%; padding: 1rem; background: linear-gradient(135deg, #ef4444, #dc2626); border: none; border-radius: 12px; color: #fff; font-size: 1.1rem; font-weight: 700; cursor: pointer; }
+.submit-btn:hover { opacity: 0.85; }
+.back-link { display: block; text-align: center; margin-top: 1rem; color: #888; text-decoration: none; font-size: 0.9rem; }
+</style>
+<div class="container">
+  <div class="card">
+    <h1>⚠️ File a Dispute</h1>
+    <p>Order #{{ order.id }} — {{ order.title or 'Service Order' }}</p>
+    <div class="warning-box">
+      <i class="fas fa-exclamation-triangle"></i>
+      Filing a dispute will pause the order and notify our support team. Please provide as much detail as possible.
+    </div>
+    <form method="POST">
+      <label>Reason for Dispute</label>
+      <textarea name="reason" rows="6" placeholder="Explain why you are filing a dispute. What went wrong? What did you expect vs. what happened?" required></textarea>
+      <button type="submit" class="submit-btn"><i class="fas fa-exclamation-triangle"></i> Submit Dispute</button>
+    </form>
+    <a href="{{ url_for('order_detail', order_id=order.id) }}" class="back-link">← Back to Order</a>
+  </div>
+</div>
+{% endblock %}

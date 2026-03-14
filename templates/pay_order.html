@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+{% block title %}Pay for Order #{{ order.id }}{% endblock %}
+{% block content %}
+<style>
+.pay-container { max-width: 600px; margin: 3rem auto; padding: 0 1rem; }
+.pay-card { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 20px; padding: 2rem; }
+.pay-header { text-align: center; margin-bottom: 2rem; }
+.pay-header h1 { color: #fff; font-size: 1.8rem; font-weight: 700; margin-bottom: 0.5rem; }
+.pay-header p { color: #aaa; }
+.order-summary { background: rgba(0,212,255,0.05); border: 1px solid rgba(0,212,255,0.2); border-radius: 12px; padding: 1.5rem; margin-bottom: 2rem; }
+.summary-row { display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
+.summary-row:last-child { border-bottom: none; font-size: 1.2rem; font-weight: 700; }
+.summary-row span:first-child { color: #aaa; }
+.summary-row span:last-child { color: #fff; }
+.total-amount { color: #00d4ff !important; }
+.phone-group { margin-bottom: 1.5rem; }
+.phone-group label { display: block; color: #ccc; font-size: 0.9rem; margin-bottom: 0.5rem; }
+.phone-input { width: 100%; padding: 0.85rem 1rem; background: #1a1a1a; border: 1px solid #333; border-radius: 10px; color: #fff; font-size: 1rem; box-sizing: border-box; }
+.phone-input:focus { outline: none; border-color: #00d4ff; }
+.pay-btn { width: 100%; padding: 1rem; background: linear-gradient(135deg, #00d4ff, #0099cc); border: none; border-radius: 12px; color: #fff; font-size: 1.1rem; font-weight: 700; cursor: pointer; transition: opacity 0.2s; }
+.pay-btn:hover { opacity: 0.85; }
+.pay-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.status-msg { text-align: center; margin-top: 1rem; padding: 0.75rem; border-radius: 8px; display: none; }
+.status-msg.success { background: rgba(16,185,129,0.15); color: #10b981; border: 1px solid rgba(16,185,129,0.3); }
+.status-msg.error { background: rgba(239,68,68,0.15); color: #ef4444; border: 1px solid rgba(239,68,68,0.3); }
+.back-link { display: block; text-align: center; margin-top: 1rem; color: #888; text-decoration: none; font-size: 0.9rem; }
+.back-link:hover { color: #ccc; }
+.mpesa-logo { font-size: 2rem; margin-bottom: 0.5rem; }
+</style>
+
+<div class="pay-container">
+  <div class="pay-card">
+    <div class="pay-header">
+      <div class="mpesa-logo">📱</div>
+      <h1>Pay with M-Pesa</h1>
+      <p>Order #{{ order.id }} — {{ order.title or 'Service Order' }}</p>
+    </div>
+
+    <div class="order-summary">
+      <div class="summary-row">
+        <span>Service</span>
+        <span>{{ order.service.title if order.service else 'Service' }}</span>
+      </div>
+      <div class="summary-row">
+        <span>Seller</span>
+        <span>{{ order.seller.username if order.seller else 'Seller' }}</span>
+      </div>
+      {% if order.deadline %}
+      <div class="summary-row">
+        <span>Deadline</span>
+        <span>{{ order.deadline.strftime('%b %d, %Y') }}</span>
+      </div>
+      {% endif %}
+      <div class="summary-row">
+        <span>Total Amount</span>
+        <span class="total-amount">KES {{ '{:,.0f}'.format(order.amount) }}</span>
+      </div>
+    </div>
+
+    <div class="phone-group">
+      <label>M-Pesa Phone Number</label>
+      <input type="tel" id="phone" class="phone-input" placeholder="e.g. 0712345678 or 254712345678"
+             value="{{ current_user.phone or '' }}">
+    </div>
+
+    <button class="pay-btn" id="payBtn" onclick="initiatePayment()">
+      <i class="fas fa-lock"></i> Pay KES {{ '{:,.0f}'.format(order.amount) }}
+    </button>
+
+    <div class="status-msg" id="statusMsg"></div>
+    <a href="{{ url_for('order_detail', order_id=order.id) }}" class="back-link">← Back to Order</a>
+  </div>
+</div>
+
+<script>
+function initiatePayment() {
+  const phone = document.getElementById('phone').value.trim();
+  if (!phone) { showMsg('Please enter your M-Pesa phone number.', 'error'); return; }
+
+  const btn = document.getElementById('payBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending STK Push...';
+  showMsg('', '');
+
+  const form = new FormData();
+  form.append('phone', phone);
+
+  fetch('{{ url_for("pay_order_mpesa", order_id=order.id) }}', {
+    method: 'POST',
+    body: form,
+    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+  })
+  .then(r => r.json())
+  .then(data => {
+    if (data.success) {
+      showMsg('✅ ' + data.message + ' Check your phone now.', 'success');
+      btn.innerHTML = '<i class="fas fa-check"></i> STK Push Sent';
+      setTimeout(() => { window.location.href = '{{ url_for("order_detail", order_id=order.id) }}'; }, 5000);
+    } else {
+      showMsg('❌ ' + (data.error || 'Payment failed. Try again.'), 'error');
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fas fa-lock"></i> Pay KES {{ "{:,.0f}".format(order.amount) }}';
+    }
+  })
+  .catch(() => {
+    showMsg('❌ Network error. Please try again.', 'error');
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fas fa-lock"></i> Pay KES {{ "{:,.0f}".format(order.amount) }}';
+  });
+}
+
+function showMsg(text, type) {
+  const el = document.getElementById('statusMsg');
+  el.textContent = text;
+  el.className = 'status-msg ' + type;
+  el.style.display = text ? 'block' : 'none';
+}
+</script>
+{% endblock %}

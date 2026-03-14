@@ -1,0 +1,337 @@
+{# ═══════════════════════════════════════════════════
+   _reviews_section.html
+   Include in any service detail template:
+     {% set reviews_list = service.reviews.all() %}
+     {% include '_reviews_section.html' %}
+═══════════════════════════════════════════════════ #}
+
+<style>
+/* ── REVIEWS SECTION ── */
+.rv-section{margin-bottom:2rem}
+.rv-header{display:flex;align-items:center;justify-content:space-between;
+  flex-wrap:wrap;gap:1rem;margin-bottom:1.5rem}
+.rv-title{font-size:1.1rem;font-weight:700;color:#fff;
+  display:flex;align-items:center;gap:.6rem}
+.rv-title i{color:#eab308}
+.rv-badge{background:rgba(234,179,8,.12);color:#eab308;
+  font-size:.75rem;padding:.2rem .55rem;border-radius:20px;font-weight:700}
+
+/* Write review button */
+.rv-write-btn{
+  background:linear-gradient(135deg,#00ffc8,#00d4ff);
+  color:#0a0e1a;border:none;border-radius:10px;
+  padding:.6rem 1.2rem;font-size:.85rem;font-weight:700;
+  cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:.5rem;
+  transition:all .3s}
+.rv-write-btn:hover{box-shadow:0 0 16px rgba(0,255,200,.4);transform:translateY(-1px)}
+.rv-login-hint{color:#64748b;font-size:.83rem}
+.rv-login-hint a{color:#00ffc8;text-decoration:none;font-weight:600}
+
+/* Summary bar */
+.rv-summary{display:flex;align-items:center;gap:1.5rem;
+  background:rgba(234,179,8,.05);border:1px solid rgba(234,179,8,.15);
+  border-radius:12px;padding:1rem 1.2rem;margin-bottom:1.2rem}
+.rv-big-num{font-size:2.5rem;font-weight:800;color:#eab308;
+  font-family:'Syne',sans-serif;line-height:1}
+.rv-stars-big{display:flex;gap:.15rem;color:#eab308;font-size:1rem}
+.rv-total{color:#64748b;font-size:.82rem;margin-top:.2rem}
+
+/* Review cards */
+.rv-list{display:flex;flex-direction:column;gap:.8rem}
+.rv-card{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);
+  border-radius:12px;padding:1rem 1.1rem}
+.rv-card-header{display:flex;align-items:center;gap:.75rem;margin-bottom:.6rem}
+.rv-av{width:36px;height:36px;border-radius:50%;object-fit:cover;
+  background:rgba(255,255,255,.08);display:flex;align-items:center;
+  justify-content:center;color:#64748b;font-size:.85rem;flex-shrink:0}
+.rv-av img{width:100%;height:100%;border-radius:50%;object-fit:cover}
+.rv-buyer{font-weight:600;color:#e2e8f0;font-size:.88rem}
+.rv-date{color:#475569;font-size:.78rem}
+.rv-stars{display:flex;gap:.1rem;color:#eab308;font-size:.78rem;margin-left:auto}
+.rv-comment{color:#94a3b8;font-size:.87rem;line-height:1.6;margin:0}
+.rv-sub-ratings{display:flex;flex-wrap:wrap;gap:.5rem;margin-top:.5rem}
+.rv-sub{background:rgba(255,255,255,.05);border-radius:6px;
+  padding:.2rem .55rem;font-size:.73rem;color:#64748b}
+.rv-sub strong{color:#94a3b8}
+
+.rv-empty{text-align:center;padding:2.5rem 1rem;color:#475569;
+  background:rgba(255,255,255,.02);border-radius:12px;border:1px dashed rgba(255,255,255,.08)}
+.rv-empty i{font-size:2rem;display:block;margin-bottom:.7rem;color:rgba(234,179,8,.2)}
+
+/* ── WRITE REVIEW MODAL ── */
+.rv-modal-bg{
+  display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);
+  z-index:1000;align-items:center;justify-content:center;
+  backdrop-filter:blur(4px)}
+.rv-modal-bg.open{display:flex}
+.rv-modal{
+  background:#0f1429;border:1px solid rgba(0,255,200,.2);
+  border-radius:16px;padding:2rem;max-width:500px;width:90%;
+  max-height:90vh;overflow-y:auto}
+.rv-modal h3{color:#fff;font-size:1.1rem;font-weight:700;
+  margin-bottom:1.5rem;display:flex;align-items:center;gap:.5rem}
+.rv-modal h3 i{color:#eab308}
+
+/* Star picker */
+.star-picker{display:flex;gap:.3rem;margin-bottom:.5rem}
+.star-picker i{font-size:1.6rem;color:#334155;cursor:pointer;
+  transition:color .15s,transform .15s}
+.star-picker i:hover,.star-picker i.lit{color:#eab308;transform:scale(1.15)}
+
+.rv-field-label{color:#94a3b8;font-size:.82rem;font-weight:600;
+  margin-bottom:.4rem;display:block}
+.rv-textarea{
+  width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);
+  border-radius:10px;padding:.75rem 1rem;color:#fff;font-size:.9rem;
+  font-family:inherit;resize:vertical;min-height:90px;outline:none;
+  transition:border-color .25s;color-scheme:dark;margin-bottom:1rem}
+.rv-textarea:focus{border-color:#00ffc8}
+.rv-textarea::placeholder{color:#475569}
+
+.rv-sub-label{color:#64748b;font-size:.78rem;margin:.8rem 0 .3rem;display:block}
+.rv-sub-picker{display:flex;gap:.3rem;margin-bottom:.3rem}
+.rv-sub-picker i{font-size:1rem;color:#334155;cursor:pointer;transition:color .15s}
+.rv-sub-picker i:hover,.rv-sub-picker i.lit{color:#eab308}
+
+.rv-modal-btns{display:flex;gap:.7rem;margin-top:1.2rem}
+.rv-submit-btn{flex:1;background:linear-gradient(135deg,#00ffc8,#00d4ff);
+  color:#0a0e1a;border:none;border-radius:10px;padding:.75rem;
+  font-weight:700;font-size:.9rem;cursor:pointer;font-family:inherit;transition:all .3s}
+.rv-submit-btn:hover{box-shadow:0 0 16px rgba(0,255,200,.4)}
+.rv-submit-btn:disabled{opacity:.5;cursor:not-allowed}
+.rv-cancel-btn{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);
+  color:#94a3b8;border-radius:10px;padding:.75rem 1.2rem;
+  cursor:pointer;font-family:inherit;font-size:.9rem;transition:all .2s}
+.rv-cancel-btn:hover{border-color:rgba(255,100,100,.3);color:#ff6b6b}
+.rv-msg{padding:.7rem 1rem;border-radius:8px;font-size:.85rem;margin-top:.8rem;display:none}
+.rv-msg.success{background:rgba(0,255,100,.1);border:1px solid rgba(0,255,100,.25);color:#4ade80}
+.rv-msg.error{background:rgba(255,50,50,.1);border:1px solid rgba(255,50,50,.25);color:#f87171}
+</style>
+
+<!-- ── REVIEWS SECTION ── -->
+<div class="rv-section" id="reviews">
+
+  <div class="rv-header">
+    <div class="rv-title">
+      <i class="fas fa-star"></i>
+      Reviews &amp; Ratings
+      <span class="rv-badge">{{ reviews_list|length if reviews_list else 0 }}</span>
+    </div>
+
+    {% if current_user.is_authenticated and current_user.id != service.seller_id %}
+      <button class="rv-write-btn" onclick="openReviewModal()">
+        <i class="fas fa-pen"></i> Write a Review
+      </button>
+    {% elif not current_user.is_authenticated %}
+      <span class="rv-login-hint">
+        <a href="{{ url_for('login') }}?next={{ request.path }}#reviews">Sign in</a> to leave a review
+      </span>
+    {% endif %}
+  </div>
+
+  {% if reviews_list and reviews_list|length > 0 %}
+  <!-- Summary -->
+  <div class="rv-summary">
+    <div class="rv-big-num">{{ "%.1f"|format(service.get_average_rating()) }}</div>
+    <div>
+      <div class="rv-stars-big">
+        {% for i in range(5) %}
+          {% if i < service.get_average_rating()|int %}
+            <i class="fas fa-star"></i>
+          {% elif (service.get_average_rating() - i) >= 0.5 %}
+            <i class="fas fa-star-half-alt"></i>
+          {% else %}
+            <i class="far fa-star" style="color:#334155"></i>
+          {% endif %}
+        {% endfor %}
+      </div>
+      <div class="rv-total">{{ service.get_review_count() }} review{{ 's' if service.get_review_count() != 1 }}</div>
+    </div>
+  </div>
+
+  <!-- Review list -->
+  <div class="rv-list" id="rvList">
+    {% for rv in reviews_list %}
+    <div class="rv-card">
+      <div class="rv-card-header">
+        <div class="rv-av">
+          {% if rv.buyer and rv.buyer.avatar %}
+            <img src="{{ url_for('static', filename='uploads/avatars/' ~ rv.buyer.avatar) }}" alt="">
+          {% else %}
+            <i class="fas fa-user"></i>
+          {% endif %}
+        </div>
+        <div>
+          <div class="rv-buyer">{{ rv.buyer.display_name() if rv.buyer else 'Anonymous' }}</div>
+          <div class="rv-date">{{ rv.created_at.strftime('%b %d, %Y') if rv.created_at else '' }}</div>
+        </div>
+        <div class="rv-stars">
+          {% for i in range(5) %}
+            <i class="{% if i < rv.overall_rating %}fas{% else %}far{% endif %} fa-star"></i>
+          {% endfor %}
+        </div>
+      </div>
+      {% if rv.comment %}
+        <p class="rv-comment">{{ rv.comment }}</p>
+      {% endif %}
+      {% if rv.communication_rating or rv.quality_rating or rv.timeliness_rating %}
+      <div class="rv-sub-ratings">
+        {% if rv.communication_rating %}
+        <span class="rv-sub"><strong>Comm:</strong> {{ rv.communication_rating }}★</span>
+        {% endif %}
+        {% if rv.quality_rating %}
+        <span class="rv-sub"><strong>Quality:</strong> {{ rv.quality_rating }}★</span>
+        {% endif %}
+        {% if rv.timeliness_rating %}
+        <span class="rv-sub"><strong>Time:</strong> {{ rv.timeliness_rating }}★</span>
+        {% endif %}
+      </div>
+      {% endif %}
+    </div>
+    {% endfor %}
+  </div>
+
+  {% else %}
+  <div class="rv-empty">
+    <i class="fas fa-star"></i>
+    <p>No reviews yet — be the first to leave one!</p>
+  </div>
+  {% endif %}
+</div>
+
+<!-- ── WRITE REVIEW MODAL ── -->
+{% if current_user.is_authenticated and current_user.id != service.seller_id %}
+<div class="rv-modal-bg" id="rvModalBg" onclick="closeReviewModal(event)">
+  <div class="rv-modal" onclick="event.stopPropagation()">
+    <h3><i class="fas fa-star"></i> Leave a Review</h3>
+
+    <!-- Overall stars -->
+    <label class="rv-field-label">Overall Rating <span style="color:#ef4444">*</span></label>
+    <div class="star-picker" id="overallPicker" data-field="overall_rating">
+      {% for i in range(1,6) %}
+      <i class="fas fa-star" data-val="{{ i }}" onclick="pickStar('overall',{{ i }})"></i>
+      {% endfor %}
+    </div>
+    <input type="hidden" id="overallRating" value="">
+
+    <!-- Comment -->
+    <label class="rv-field-label" style="margin-top:.9rem">Your Review</label>
+    <textarea class="rv-textarea" id="rvComment" maxlength="1000"
+              placeholder="Share your experience with this seller…"></textarea>
+
+    <!-- Sub ratings (optional) -->
+    <span class="rv-sub-label">Communication (optional)</span>
+    <div class="rv-sub-picker" id="commPicker">
+      {% for i in range(1,6) %}<i class="fas fa-star" data-val="{{ i }}" onclick="pickStar('comm',{{ i }})"></i>{% endfor %}
+    </div>
+    <input type="hidden" id="commRating" value="">
+
+    <span class="rv-sub-label">Quality (optional)</span>
+    <div class="rv-sub-picker" id="qualPicker">
+      {% for i in range(1,6) %}<i class="fas fa-star" data-val="{{ i }}" onclick="pickStar('qual',{{ i }})"></i>{% endfor %}
+    </div>
+    <input type="hidden" id="qualRating" value="">
+
+    <span class="rv-sub-label">Timeliness (optional)</span>
+    <div class="rv-sub-picker" id="timePicker">
+      {% for i in range(1,6) %}<i class="fas fa-star" data-val="{{ i }}" onclick="pickStar('time',{{ i }})"></i>{% endfor %}
+    </div>
+    <input type="hidden" id="timeRating" value="">
+
+    <div class="rv-modal-btns">
+      <button class="rv-cancel-btn" onclick="closeReviewModal()">Cancel</button>
+      <button class="rv-submit-btn" id="rvSubmitBtn" onclick="submitReview({{ service.id }})">
+        <i class="fas fa-paper-plane"></i> Submit Review
+      </button>
+    </div>
+    <div class="rv-msg" id="rvMsg"></div>
+  </div>
+</div>
+
+<script>
+function openReviewModal() {
+  document.getElementById('rvModalBg').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeReviewModal(e) {
+  if (!e || e.target === document.getElementById('rvModalBg')) {
+    document.getElementById('rvModalBg').classList.remove('open');
+    document.body.style.overflow = '';
+  }
+}
+
+// Star picker
+const starState = {overall:0, comm:0, qual:0, time:0};
+const pickerMap  = {overall:'overallPicker', comm:'commPicker', qual:'qualPicker', time:'timePicker'};
+const hiddenMap  = {overall:'overallRating', comm:'commRating',  qual:'qualRating',  time:'timeRating'};
+
+function pickStar(key, val) {
+  starState[key] = val;
+  document.getElementById(hiddenMap[key]).value = val;
+  const stars = document.getElementById(pickerMap[key]).querySelectorAll('i');
+  stars.forEach((s, i) => s.classList.toggle('lit', i < val));
+}
+
+// Hover preview
+['overall','comm','qual','time'].forEach(key => {
+  const picker = document.getElementById(pickerMap[key]);
+  if (!picker) return;
+  picker.querySelectorAll('i').forEach((s, i) => {
+    s.addEventListener('mouseenter', () => {
+      picker.querySelectorAll('i').forEach((x, j) => x.classList.toggle('lit', j <= i));
+    });
+    s.addEventListener('mouseleave', () => {
+      picker.querySelectorAll('i').forEach((x, j) => x.classList.toggle('lit', j < starState[key]));
+    });
+  });
+});
+
+async function submitReview(serviceId) {
+  const overall = parseInt(document.getElementById('overallRating').value);
+  if (!overall) {
+    showRvMsg('Please select an overall star rating.', 'error');
+    return;
+  }
+  const btn = document.getElementById('rvSubmitBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Submitting…';
+
+  const payload = {
+    service_id: serviceId,
+    overall_rating: overall,
+    comment: document.getElementById('rvComment').value.trim(),
+    communication_rating: parseInt(document.getElementById('commRating').value) || null,
+    quality_rating:       parseInt(document.getElementById('qualRating').value)  || null,
+    timeliness_rating:    parseInt(document.getElementById('timeRating').value)  || null,
+  };
+
+  try {
+    const r = await fetch('/api/review/add', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(payload)
+    });
+    const d = await r.json();
+    if (r.ok && d.success) {
+      showRvMsg('✅ Review submitted! Refreshing…', 'success');
+      setTimeout(() => location.reload(), 1200);
+    } else {
+      showRvMsg(d.error || 'Failed to submit review.', 'error');
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fas fa-paper-plane"></i> Submit Review';
+    }
+  } catch(e) {
+    showRvMsg('Network error. Please try again.', 'error');
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fas fa-paper-plane"></i> Submit Review';
+  }
+}
+
+function showRvMsg(msg, type) {
+  const el = document.getElementById('rvMsg');
+  el.textContent = msg;
+  el.className = 'rv-msg ' + type;
+  el.style.display = 'block';
+}
+</script>
+{% endif %}

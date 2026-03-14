@@ -51,9 +51,9 @@
         <div class="space-y-4">
           <div class="flex justify-between">
             <span class="text-gray-300">Service:</span>
-            <a href="{{ url_for('service_detail', service_id=order.service_id) }}" class="text-blue-400 hover:text-blue-300">
-              {{ order.service.title }}
-            </a>
+            {% if order.service_id %}<a href="{{ url_for('service_detail', service_id=order.service_id) }}" class="text-blue-400 hover:text-blue-300">{% endif %}
+              {{ order.service.title if order.service else 'N/A' }}
+            {% if order.service_id %}</a>{% endif %}
           </div>
           <div class="flex justify-between">
             <span class="text-gray-300">Seller:</span>
@@ -154,10 +154,7 @@
               </a>
             {% endif %}
             {% if order.status == 'delivered' %}
-              <a href="{{ url_for('accept_order', order_id=order.id) }}" class="action-btn success">
-                <i class="fas fa-check"></i>
-                Accept Delivery
-              </a>
+              <form method="POST" action="{{ url_for('accept_order', order_id=order.id) }}" style="display:inline"><button type="submit" class="action-btn success"><i class="fas fa-check"></i> Accept Delivery</button></form>
               <a href="{{ url_for('file_dispute', order_id=order.id) }}" class="action-btn danger">
                 <i class="fas fa-exclamation-triangle"></i>
                 File Dispute
@@ -166,16 +163,10 @@
           {% elif current_user.id == order.seller_id %}
             <!-- Seller Actions -->
             {% if order.status == 'paid' %}
-              <a href="{{ url_for('start_order', order_id=order.id) }}" class="action-btn primary">
-                <i class="fas fa-play"></i>
-                Start Work
-              </a>
+              <form method="POST" action="{{ url_for('start_order', order_id=order.id) }}" style="display:inline"><button type="submit" class="action-btn primary"><i class="fas fa-play"></i> Start Work</button></form>
             {% endif %}
             {% if order.status == 'in_progress' %}
-              <a href="{{ url_for('deliver_order', order_id=order.id) }}" class="action-btn success">
-                <i class="fas fa-upload"></i>
-                Deliver Work
-              </a>
+              <form method="POST" action="{{ url_for('deliver_order', order_id=order.id) }}" style="display:inline"><button type="submit" class="action-btn success"><i class="fas fa-upload"></i> Deliver Work</button></form>
             {% endif %}
           {% endif %}
         </div>
@@ -193,7 +184,7 @@
               </div>
               <div class="flex justify-between mb-2">
                 <span class="text-gray-300">Method:</span>
-                <span class="text-white">{{ payment.payment_method.title() }}</span>
+                <span class="text-white">{{ payment.status.title() }}</span>
               </div>
               <div class="flex justify-between mb-2">
                 <span class="text-gray-300">Status:</span>
@@ -216,9 +207,9 @@
           <h2 class="text-2xl font-bold text-white mb-6">Review</h2>
           <div class="review-stars mb-4">
             {% for i in range(5) %}
-              <i class="fas fa-star {% if i < order.review.rating %}filled{% endif %}"></i>
+              <i class="fas fa-star {% if i < order.review.overall_rating %}filled{% endif %}"></i>
             {% endfor %}
-            <span class="ml-2 text-white">{{ order.review.rating }}/5</span>
+            <span class="ml-2 text-white">{{ order.review.overall_rating }}/5</span>
           </div>
           {% if order.review.comment %}
             <p class="text-gray-200 mb-4">{{ order.review.comment }}</p>

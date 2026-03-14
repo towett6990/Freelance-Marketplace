@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}Deliver Order #{{ order.id }}{% endblock %}
+{% block content %}
+<style>
+.container { max-width: 600px; margin: 3rem auto; padding: 0 1rem; }
+.card { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 20px; padding: 2rem; }
+.card h1 { color: #fff; font-size: 1.6rem; font-weight: 700; margin-bottom: 0.5rem; }
+.card p { color: #aaa; margin-bottom: 2rem; }
+label { display: block; color: #ccc; font-size: 0.9rem; margin-bottom: 0.5rem; }
+textarea { width: 100%; padding: 0.85rem 1rem; background: #1a1a1a; border: 1px solid #333; border-radius: 10px; color: #fff; font-size: 0.95rem; box-sizing: border-box; resize: vertical; font-family: inherit; margin-bottom: 1.5rem; }
+textarea:focus { outline: none; border-color: #10b981; }
+.submit-btn { width: 100%; padding: 1rem; background: linear-gradient(135deg, #10b981, #059669); border: none; border-radius: 12px; color: #fff; font-size: 1.1rem; font-weight: 700; cursor: pointer; }
+.submit-btn:hover { opacity: 0.85; }
+.back-link { display: block; text-align: center; margin-top: 1rem; color: #888; text-decoration: none; font-size: 0.9rem; }
+</style>
+<div class="container">
+  <div class="card">
+    <h1>📤 Deliver Order #{{ order.id }}</h1>
+    <p>{{ order.title or 'Service Order' }} — Buyer: {{ order.buyer.username if order.buyer else 'Unknown' }}</p>
+    <form method="POST">
+      <label>Delivery Notes / Links / Description</label>
+      <textarea name="deliverables" rows="8" placeholder="Describe what you are delivering. Include any links, file names, or instructions for the buyer..." required></textarea>
+      <button type="submit" class="submit-btn"><i class="fas fa-upload"></i> Mark as Delivered</button>
+    </form>
+    <a href="{{ url_for('order_detail', order_id=order.id) }}" class="back-link">← Back to Order</a>
+  </div>
+</div>
+{% endblock %}

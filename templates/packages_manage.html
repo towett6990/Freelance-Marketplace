@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block title %}Manage Packages — {{ service.title }}{% endblock %}
+{% block content %}
+<div style="max-width:900px;margin:0 auto">
+  <div style="display:flex;align-items:center;gap:1rem;margin-bottom:2rem">
+    <a href="{{ url_for('service_detail', service_id=service.id) }}" style="color:#00ffc8">← Back</a>
+    <h1 style="color:#00ff88;margin:0">📦 Manage Packages</h1>
+  </div>
+  <p style="color:#64748b;margin-bottom:2rem">Set up Basic, Standard, and Premium packages for <strong style="color:#00ffc8">{{ service.title }}</strong></p>
+
+  <form method="POST">
+    <input type="hidden" name="action" value="save">
+    {% for tier, emoji, color in [("basic","🥉","#3b82f6"),("standard","🥈","#a78bfa"),("premium","🥇","#f59e0b")] %}
+    {% set pkg = packages.get(tier) %}
+    <div style="background:rgba(255,255,255,.04);border:1px solid rgba(0,255,200,.15);border-radius:16px;padding:2rem;margin-bottom:1.5rem;border-top:3px solid {{ color }}">
+      <h3 style="color:{{ color }};margin:0 0 1.5rem">{{ emoji }} {{ tier.title() }} Package</h3>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+        <div>
+          <label style="color:#94a3b8;font-size:.85rem">Package Name</label>
+          <input name="{{ tier }}_name" value="{{ pkg.name if pkg else tier.title() }}" placeholder="e.g. Starter" style="width:100%;padding:.7rem;background:rgba(255,255,255,.06);border:1px solid rgba(0,255,200,.2);border-radius:8px;color:#fff;margin-top:.3rem">
+        </div>
+        <div>
+          <label style="color:#94a3b8;font-size:.85rem">Price (KES)</label>
+          <input name="{{ tier }}_price" type="number" value="{{ pkg.price if pkg else '' }}" placeholder="e.g. 5000" style="width:100%;padding:.7rem;background:rgba(255,255,255,.06);border:1px solid rgba(0,255,200,.2);border-radius:8px;color:#fff;margin-top:.3rem">
+        </div>
+        <div>
+          <label style="color:#94a3b8;font-size:.85rem">Delivery (days)</label>
+          {% if is_freelancer %}<input name="{{ tier }}_days" type="number" value="{{ pkg.delivery_days if pkg else 3 }}" style="width:100%;padding:.7rem;background:rgba(255,255,255,.06);border:1px solid rgba(0,255,200,.2);border-radius:8px;color:#fff;margin-top:.3rem">{% endif %}
+        </div>
+        <div>
+          <label style="color:#94a3b8;font-size:.85rem">Revisions (-1 = unlimited)</label>
+          <input name="{{ tier }}_revisions" type="number" value="{{ pkg.revisions if pkg else 1 }}" style="width:100%;padding:.7rem;background:rgba(255,255,255,.06);border:1px solid rgba(0,255,200,.2);border-radius:8px;color:#fff;margin-top:.3rem">
+        </div>
+      </div>
+      <div style="margin-top:1rem">
+        <label style="color:#94a3b8;font-size:.85rem">Short Description</label>
+        <input name="{{ tier }}_desc" value="{{ pkg.description if pkg else '' }}" placeholder="What's included…" style="width:100%;padding:.7rem;background:rgba(255,255,255,.06);border:1px solid rgba(0,255,200,.2);border-radius:8px;color:#fff;margin-top:.3rem">
+      </div>
+      <div style="margin-top:1rem">
+        <label style="color:#94a3b8;font-size:.85rem">Features (one per line)</label>
+        <textarea name="{{ tier }}_features" rows="4" placeholder="Feature 1&#10;Feature 2&#10;Feature 3" style="width:100%;padding:.7rem;background:rgba(255,255,255,.06);border:1px solid rgba(0,255,200,.2);border-radius:8px;color:#fff;margin-top:.3rem;resize:vertical">{% if pkg and pkg.features %}{{ pkg.features|join('
+') }}{% endif %}</textarea>
+      </div>
+      {% if pkg %}
+      <div style="margin-top:1rem;text-align:right">
+        <button type="button" onclick="deletePackage('{{ tier }}')" style="background:rgba(239,68,68,.15);color:#ef4444;border:1px solid #ef4444;padding:.4rem 1rem;border-radius:8px;cursor:pointer;font-size:.82rem">🗑 Remove</button>
+      </div>
+      {% endif %}
+    </div>
+    {% endfor %}
+
+    <div style="text-align:center;margin-top:2rem">
+      <button type="submit" style="background:linear-gradient(135deg,#00ffc8,#00d4ff);color:#060d1a;padding:1rem 3rem;border:none;border-radius:12px;font-weight:800;font-size:1rem;cursor:pointer">💾 Save All Packages</button>
+    </div>
+  </form>
+</div>
+<script>
+function deletePackage(tier) {
+  const form = document.createElement('form');
+  form.method = 'POST';
+  const a = document.createElement('input'); a.type='hidden'; a.name='action'; a.value='delete'; form.appendChild(a);
+  const t = document.createElement('input'); t.type='hidden'; t.name='tier'; t.value=tier; form.appendChild(t);
+  document.body.appendChild(form);
+  form.submit();
+}
+</script>
+{% endblock %}

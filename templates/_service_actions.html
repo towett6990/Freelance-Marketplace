@@ -1,0 +1,341 @@
+{#
+  _service_actions.html
+  Shared action buttons for all service detail pages.
+  Include with: {% include '_service_actions.html' %}
+  Requires: `service` variable in context (standard for all detail templates)
+ #}
+
+<style>
+.svc-actions{display:flex;flex-direction:column;gap:.6rem;width:100%}
+.svc-btn-pay{
+  display:flex;align-items:center;justify-content:center;gap:.5rem;
+  width:100%;padding:1rem;border-radius:12px;font-weight:800;font-size:1rem;
+  text-decoration:none;border:none;cursor:pointer;font-family:inherit;
+  background:linear-gradient(135deg,#00ffc8,#00d4ff);
+  color:#0a0e27;box-shadow:0 4px 20px rgba(0,255,200,.35);
+  transition:all .3s}
+.svc-btn-pay:hover{box-shadow:0 6px 28px rgba(0,255,200,.55);
+  transform:translateY(-2px);color:#0a0e27;text-decoration:none}
+.svc-btn-secondary{
+  display:flex;align-items:center;justify-content:center;gap:.45rem;
+  width:100%;padding:.8rem;border-radius:10px;font-weight:600;font-size:.88rem;
+  text-decoration:none;border:1px solid rgba(255,255,255,.15);
+  background:rgba(255,255,255,.06);color:#e0e0e0;
+  transition:all .25s;cursor:pointer;font-family:inherit}
+.svc-btn-secondary:hover{background:rgba(255,255,255,.1);
+  border-color:rgba(255,255,255,.25);color:#fff;text-decoration:none}
+.svc-btn-chat{
+  display:flex;align-items:center;justify-content:center;gap:.45rem;
+  width:100%;padding:.75rem;border-radius:10px;font-weight:600;font-size:.88rem;
+  text-decoration:none;border:1px solid rgba(40,167,69,.25);
+  background:rgba(40,167,69,.08);color:#28a745;
+  transition:all .25s}
+.svc-btn-chat:hover{background:rgba(40,167,69,.16);color:#34d058;text-decoration:none}
+.svc-btn-edit{
+  display:flex;align-items:center;justify-content:center;gap:.45rem;
+  width:100%;padding:.8rem;border-radius:10px;font-weight:600;font-size:.88rem;
+  text-decoration:none;border:1px solid rgba(99,102,241,.3);
+  background:rgba(99,102,241,.08);color:#818cf8;
+  transition:all .25s}
+.svc-btn-edit:hover{background:rgba(99,102,241,.16);color:#a5b4fc;text-decoration:none}
+.svc-secure-note{
+  text-align:center;color:#555;font-size:.74rem;
+  display:flex;align-items:center;justify-content:center;gap:.3rem;margin-top:.1rem}
+.svc-own-badge{
+  background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);
+  border-radius:10px;padding:.9rem;text-align:center;
+  color:#a0a0a0;font-size:.85rem;
+  display:flex;align-items:center;justify-content:center;gap:.4rem}
+
+/* ── CONTACT MODAL ── */
+.contact-modal-bg {
+  display: none; position: fixed; inset: 0; background: rgba(0,0,0,.75);
+  z-index: 2000; align-items: center; justify-content: center;
+  backdrop-filter: blur(4px);
+}
+.contact-modal-bg.open { display: flex; }
+.contact-modal {
+  background: #0f1429; border: 1px solid rgba(255,255,255,.12);
+  border-radius: 18px; padding: 2rem; max-width: 420px; width: 90%;
+  box-shadow: 0 24px 60px rgba(0,0,0,.5);
+}
+.contact-modal-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 1.5rem;
+}
+.contact-modal-title {
+  color: #fff; font-size: 1.05rem; font-weight: 700;
+  display: flex; align-items: center; gap: .5rem;
+}
+.contact-modal-title i { color: #00ffc8; }
+.contact-modal-close {
+  background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.1);
+  color: #888; border-radius: 8px; width: 32px; height: 32px;
+  cursor: pointer; font-size: .9rem; display: flex; align-items: center; justify-content: center;
+  transition: all .2s;
+}
+.contact-modal-close:hover { color: #fff; border-color: rgba(255,255,255,.25); }
+
+.contact-items { display: flex; flex-direction: column; gap: .75rem; }
+.contact-item {
+  display: flex; align-items: center; gap: .9rem;
+  background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.08);
+  border-radius: 12px; padding: .85rem 1rem; text-decoration: none;
+  transition: all .25s;
+}
+.contact-item:hover {
+  background: rgba(255,255,255,.08); border-color: rgba(255,255,255,.16);
+  transform: translateX(3px);
+}
+.contact-item-icon {
+  width: 38px; height: 38px; border-radius: 10px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center; font-size: 1rem;
+}
+.contact-item-body { flex: 1; min-width: 0; }
+.contact-item-label {
+  color: #64748b; font-size: .72rem; font-weight: 600;
+  text-transform: uppercase; letter-spacing: .05em;
+}
+.contact-item-value {
+  color: #e2e8f0; font-size: .88rem; font-weight: 500;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.contact-item-arrow { color: #475569; font-size: .75rem; }
+.contact-none {
+  text-align: center; padding: 1.5rem; color: #475569; font-size: .88rem;
+}
+.contact-none i { font-size: 1.8rem; color: #334155; display: block; margin-bottom: .6rem; }
+</style>
+
+<div class="svc-actions">
+
+  {% if current_user.is_authenticated and current_user.id != service.seller_id %}
+  {# ── BUYER / OTHER USER ── #}
+
+    {% set layout = service.category.layout_type if service.category else 'generic' %}
+    {% if layout == 'product' %}
+      {% set pay_label = 'Buy / Reserve Item' %}
+      {% set pay_icon = 'fa-shopping-cart' %}
+    {% elif layout == 'property' %}
+      {% set pay_label = 'Pay Viewing Deposit' %}
+      {% set pay_icon = 'fa-home' %}
+    {% else %}
+      {% set pay_label = 'Hire Now &amp; Pay' %}
+      {% set pay_icon = 'fa-bolt' %}
+    {% endif %}
+    <a href="{{ url_for('payment_page', service_id=service.id) }}" class="svc-btn-pay">
+      <i class="fas {{ pay_icon }}"></i> {{ pay_label }}
+    </a>
+
+    {% if packages %}
+    <a href="{{ url_for('features.view_packages', sid=service.id) }}" style="display:flex;align-items:center;justify-content:center;gap:.45rem;width:100%;padding:.8rem;border-radius:10px;font-weight:600;font-size:.88rem;text-decoration:none;border:1px solid rgba(0,255,200,.2);background:rgba(0,255,200,.06);color:#00ffc8;transition:all .25s">
+      <i class="fas fa-box"></i> View Packages ({{ packages|length }})
+    </a>
+    {% endif %}
+
+    <button type="button" class="svc-btn-secondary" onclick="openContactModal()">
+      <i class="fas fa-address-card"></i> Contact Seller
+    </button>
+
+    <a href="{{ url_for('start_chat', service_id=service.id) }}" class="svc-btn-chat">
+      <i class="fas fa-comments"></i> Start Chat
+    </a>
+
+    <p class="svc-secure-note">
+      <i class="fas fa-shield-alt" style="color:#00ffc8"></i> Secure payment via M-Pesa
+    </p>
+
+  {% elif not current_user.is_authenticated %}
+  {# ── LOGGED OUT ── #}
+
+    {% set layout = service.category.layout_type if service.category else 'generic' %}
+    {% if layout == 'product' %}{% set pay_label = 'Buy / Reserve Item' %}{% set pay_icon = 'fa-shopping-cart' %}
+    {% elif layout == 'property' %}{% set pay_label = 'Pay Viewing Deposit' %}{% set pay_icon = 'fa-home' %}
+    {% else %}{% set pay_label = 'Hire Now &amp; Pay' %}{% set pay_icon = 'fa-bolt' %}{% endif %}
+    <a href="{{ url_for('login') }}?next={{ request.path }}" class="svc-btn-pay">
+      <i class="fas {{ pay_icon }}"></i> {{ pay_label }}
+    </a>
+
+    <a href="{{ url_for('start_chat', service_id=service.id) }}" class="svc-btn-chat">
+      <i class="fas fa-comments"></i> Chat with Seller
+    </a>
+
+    <p class="svc-secure-note">
+      <a href="{{ url_for('login') }}" style="color:#00ffc8">Sign in</a> or
+      <a href="{{ url_for('register') }}" style="color:#00ffc8">register</a> to hire
+    </p>
+
+  {% else %}
+  {# ── SELLER VIEWING OWN LISTING ── #}
+
+    <div class="svc-own-badge">
+      <i class="fas fa-info-circle" style="color:#00ffc8"></i> This is your listing
+    </div>
+
+    <a href="{{ url_for('edit_service', id=service.id) }}" class="svc-btn-edit">
+      <i class="fas fa-edit"></i> Edit Listing
+    </a>
+
+    <a href="{{ url_for('dashboard') }}" class="svc-btn-secondary">
+      <i class="fas fa-chart-bar"></i> View Dashboard Stats
+    </a>
+
+    <a href="{{ url_for('features.manage_packages', sid=service.id) }}" style="display:flex;align-items:center;justify-content:center;gap:.45rem;width:100%;padding:.8rem;border-radius:10px;font-weight:600;font-size:.88rem;text-decoration:none;border:1px solid rgba(167,139,250,.2);background:rgba(167,139,250,.06);color:#a78bfa;transition:all .25s">
+      <i class="fas fa-box"></i> Manage Packages
+    </a>
+
+  {% endif %}
+
+</div>
+
+<!-- ── CONTACT INFO MODAL ── -->
+{% if current_user.is_authenticated and current_user.id != service.seller_id %}
+<div class="contact-modal-bg" id="contactModalBg" onclick="closeContactModal(event)">
+  <div class="contact-modal" onclick="event.stopPropagation()">
+
+    <div class="contact-modal-header">
+      <div class="contact-modal-title">
+        <i class="fas fa-address-card"></i>
+        Contact {{ service.seller.display_name() if service.seller else 'Seller' }}
+      </div>
+      <button class="contact-modal-close" onclick="closeContactModal()">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+
+    <div class="contact-items">
+      {% set cd = service.contact_methods or {} %}
+
+      {# Phone #}
+      {% if cd.phone %}
+        <a href="tel:{{ cd.phone }}" class="contact-item">
+          <div class="contact-item-icon" style="background:rgba(59,130,246,.15);color:#60a5fa">
+            <i class="fas fa-phone"></i>
+          </div>
+          <div class="contact-item-body">
+            <div class="contact-item-label">Phone</div>
+            <div class="contact-item-value">{{ cd.phone }}</div>
+          </div>
+          <i class="fas fa-external-link-alt contact-item-arrow"></i>
+        </a>
+      {% endif %}
+
+      {# WhatsApp #}
+      {% if cd.whatsapp %}
+        {% set wa_num = cd.whatsapp | replace(' ','') | replace('+','') %}
+        <a href="https://wa.me/{{ wa_num }}" target="_blank" class="contact-item">
+          <div class="contact-item-icon" style="background:rgba(37,211,102,.15);color:#25d366">
+            <i class="fab fa-whatsapp"></i>
+          </div>
+          <div class="contact-item-body">
+            <div class="contact-item-label">WhatsApp</div>
+            <div class="contact-item-value">{{ cd.whatsapp }}</div>
+          </div>
+          <i class="fas fa-external-link-alt contact-item-arrow"></i>
+        </a>
+      {% endif %}
+
+      {# Email from service custom_data #}
+      {% if cd.email %}
+        <a href="mailto:{{ cd.email }}" class="contact-item">
+          <div class="contact-item-icon" style="background:rgba(234,179,8,.15);color:#eab308">
+            <i class="fas fa-envelope"></i>
+          </div>
+          <div class="contact-item-body">
+            <div class="contact-item-label">Email</div>
+            <div class="contact-item-value">{{ cd.email }}</div>
+          </div>
+          <i class="fas fa-external-link-alt contact-item-arrow"></i>
+        </a>
+      {% endif %}
+
+      {# Instagram #}
+      {% if cd.instagram %}
+        {% set ig_url = cd.instagram if cd.instagram.startswith('http') else 'https://instagram.com/' ~ cd.instagram.lstrip('@') %}
+        <a href="{{ ig_url }}" target="_blank" class="contact-item">
+          <div class="contact-item-icon" style="background:rgba(225,48,108,.15);color:#e1306c">
+            <i class="fab fa-instagram"></i>
+          </div>
+          <div class="contact-item-body">
+            <div class="contact-item-label">Instagram</div>
+            <div class="contact-item-value">{{ cd.instagram }}</div>
+          </div>
+          <i class="fas fa-external-link-alt contact-item-arrow"></i>
+        </a>
+      {% endif %}
+
+      {# Facebook #}
+      {% if cd.facebook %}
+        {% set fb_url = cd.facebook if cd.facebook.startswith('http') else 'https://facebook.com/' ~ cd.facebook %}
+        <a href="{{ fb_url }}" target="_blank" class="contact-item">
+          <div class="contact-item-icon" style="background:rgba(24,119,242,.15);color:#1877f2">
+            <i class="fab fa-facebook"></i>
+          </div>
+          <div class="contact-item-body">
+            <div class="contact-item-label">Facebook</div>
+            <div class="contact-item-value">{{ cd.facebook }}</div>
+          </div>
+          <i class="fas fa-external-link-alt contact-item-arrow"></i>
+        </a>
+      {% endif %}
+
+      {# General contact field #}
+      {% if cd.contact %}
+        <div class="contact-item" style="cursor:default">
+          <div class="contact-item-icon" style="background:rgba(168,85,247,.15);color:#a855f7">
+            <i class="fas fa-info-circle"></i>
+          </div>
+          <div class="contact-item-body">
+            <div class="contact-item-label">Other Contact</div>
+            <div class="contact-item-value">{{ cd.contact }}</div>
+          </div>
+        </div>
+      {% endif %}
+
+      {# Fallback: show seller account email if NO service contact fields filled #}
+      {% if not cd.phone and not cd.whatsapp and not cd.email and not cd.instagram and not cd.facebook and not cd.contact %}
+        {% if service.seller and service.seller.email %}
+        <a href="mailto:{{ service.seller.email }}" class="contact-item">
+          <div class="contact-item-icon" style="background:rgba(234,179,8,.15);color:#eab308">
+            <i class="fas fa-envelope"></i>
+          </div>
+          <div class="contact-item-body">
+            <div class="contact-item-label">Email</div>
+            <div class="contact-item-value">{{ service.seller.email }}</div>
+          </div>
+          <i class="fas fa-external-link-alt contact-item-arrow"></i>
+        </a>
+        {% else %}
+        <div class="contact-none">
+          <i class="fas fa-comment-slash"></i>
+          This seller hasn't added contact details yet.<br>
+          Use <strong>Start Chat</strong> to reach them on the platform.
+        </div>
+        {% endif %}
+      {% endif %}
+
+    </div>
+  </div>
+</div>
+
+{% endif %}
+
+<script>
+function openContactModal() {
+  var modal = document.getElementById('contactModalBg');
+  if (modal) {
+    modal.style.display = 'flex';
+    modal.classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+}
+function closeContactModal(e) {
+  var modal = document.getElementById('contactModalBg');
+  if (!modal) return;
+  if (!e || e.target === modal) {
+    modal.style.display = 'none';
+    modal.classList.remove('open');
+    document.body.style.overflow = '';
+  }
+}
+</script>

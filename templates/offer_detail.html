@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}Custom Offer{% endblock %}
+{% block content %}
+{% set STATUS_COLORS = {"pending":"#f59e0b","accepted":"#22c55e","declined":"#ef4444","expired":"#64748b"} %}
+{% set sc = STATUS_COLORS.get(offer.status,"#64748b") %}
+<div style="max-width:600px;margin:0 auto">
+  <h1 style="color:#00ff88;margin-bottom:2rem">💼 Custom Offer</h1>
+  <div style="background:rgba(255,255,255,.04);border:1px solid rgba(0,255,200,.15);border-radius:16px;padding:2rem">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:1.5rem">
+      <div>
+        <h3 style="color:#e2e8f0;margin:0 0 .4rem">{{ offer.title }}</h3>
+        <div style="color:#64748b;font-size:.85rem">From: <a href="{{ url_for('profile', username=offer.seller.username) }}" style="color:#00ffc8">{{ offer.seller.username }}</a></div>
+      </div>
+      <span style="background:{{ sc }}22;color:{{ sc }};border:1px solid {{ sc }};padding:.3rem .9rem;border-radius:9999px;font-size:.8rem;font-weight:700">{{ offer.status.title() }}</span>
+    </div>
+    <p style="color:#94a3b8;line-height:1.7;margin-bottom:1.5rem">{{ offer.description }}</p>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.5rem">
+      <div style="background:rgba(0,255,200,.05);border-radius:8px;padding:1rem;text-align:center">
+        <div style="color:#64748b;font-size:.75rem;text-transform:uppercase;letter-spacing:.1em">Price</div>
+        <div style="color:#00ffc8;font-size:1.4rem;font-weight:800">KES {{ "{:,.0f}".format(offer.price) }}</div>
+      </div>
+      <div style="background:rgba(255,255,255,.04);border-radius:8px;padding:1rem;text-align:center">
+        <div style="color:#64748b;font-size:.75rem;text-transform:uppercase;letter-spacing:.1em">Delivery</div>
+        <div style="color:#fff;font-size:1.4rem;font-weight:800">{{ offer.delivery_days }} days</div>
+      </div>
+    </div>
+    {% if current_user.id == offer.buyer_id and offer.status == "pending" %}
+    <form method="POST" action="{{ url_for('features.respond_offer', oid=offer.id) }}">
+      <div style="display:flex;gap:1rem">
+        <button name="action" value="accept" type="submit" style="flex:1;background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff;padding:.9rem;border:none;border-radius:10px;font-weight:700;cursor:pointer">✅ Accept Offer</button>
+        <button name="action" value="decline" type="submit" onclick="return confirm('Decline this offer?')" style="flex:1;background:rgba(239,68,68,.1);color:#ef4444;border:1px solid #ef4444;padding:.9rem;border-radius:10px;font-weight:600;cursor:pointer">✕ Decline</button>
+      </div>
+    </form>
+    {% elif current_user.id == offer.buyer_id and offer.status == "accepted" %}
+    <a href="{{ url_for('features.order_from_offer', oid=offer.id) }}" style="display:block;text-align:center;background:linear-gradient(135deg,#00ffc8,#00d4ff);color:#060d1a;padding:1rem;border-radius:12px;text-decoration:none;font-weight:800">🛒 Place Order</a>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}Pending ID Reviews{% endblock %}
+
+{% block content %}
+<style>
+  .mr-card { background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.08); border-radius:12px; padding:1.25rem 1.5rem; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:1rem; margin-bottom:.75rem; transition:border-color .2s; }
+  .mr-card:hover { border-color:rgba(0,255,200,.3); }
+  .mr-avatar { width:44px; height:44px; border-radius:50%; background:linear-gradient(135deg,#00ffc8,#00d4ff); display:flex; align-items:center; justify-content:center; font-weight:900; color:#0a0e27; font-size:1.1rem; flex-shrink:0; }
+  .mr-name { font-weight:600; color:#e0e0e0; }
+  .mr-meta { font-size:.8rem; color:#a0a0a0; margin-top:.15rem; }
+  .btn-review { background:linear-gradient(135deg,#00ffc8,#00d4ff); color:#0a0e27; font-weight:700; border:none; padding:.5rem 1.25rem; border-radius:8px; cursor:pointer; font-size:.9rem; text-decoration:none; transition:all .2s; }
+  .btn-review:hover { box-shadow:0 0 16px rgba(0,255,200,.4); transform:translateY(-1px); }
+  .empty-state { text-align:center; padding:4rem 2rem; color:#555; }
+</style>
+
+<div style="max-width:800px;margin:0 auto;">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;flex-wrap:wrap;gap:1rem;">
+    <div>
+      <h2 style="margin:0;">🆔 Pending ID Reviews</h2>
+      <p style="color:#a0a0a0;margin:.3rem 0 0;">{{ users|length }} user{{ 's' if users|length != 1 }} waiting for verification</p>
+    </div>
+    <a href="{{ url_for('admin_dashboard') }}" style="color:#a0a0a0;font-size:.9rem;text-decoration:none;">← Admin Dashboard</a>
+  </div>
+
+  {% if users %}
+    {% for user in users %}
+    <div class="mr-card">
+      <div style="display:flex;align-items:center;gap:1rem;">
+        <div class="mr-avatar">{{ user.display_name()[0]|upper }}</div>
+        <div>
+          <div class="mr-name">{{ user.display_name() }}</div>
+          <div class="mr-meta">
+            {{ user.email }} &nbsp;·&nbsp;
+            Submitted {{ user.last_id_upload_at.strftime('%d %b %Y, %H:%M') if user.last_id_upload_at else 'Unknown' }}
+            &nbsp;·&nbsp; Attempt #{{ user.id_retry_count or 1 }}
+          </div>
+        </div>
+      </div>
+      <a href="{{ url_for('admin_review_id', user_id=user.id) }}" class="btn-review">Review ID →</a>
+    </div>
+    {% endfor %}
+  {% else %}
+    <div class="empty-state">
+      <div style="font-size:3rem;margin-bottom:1rem;">✅</div>
+      <p style="font-size:1.1rem;color:#a0a0a0;">No pending ID reviews — all caught up!</p>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}
