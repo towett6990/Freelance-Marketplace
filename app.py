@@ -30,6 +30,7 @@ from wtforms.validators import DataRequired, Email, Length, EqualTo, NumberRange
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename, safe_join
 from flask_limiter import Limiter
+from flask_wtf.csrf import CSRFProtect
 from flask_limiter.util import get_remote_address
 from itsdangerous import URLSafeTimedSerializer, SignatureExpired, BadSignature
 from flask_mail import Mail, Message as MailMessage
@@ -293,11 +294,30 @@ limiter = Limiter(
     storage_uri=_limiter_storage,
 )
 limiter.init_app(app)
+csrf = CSRFProtect(app)
 
 login_manager = LoginManager(app)
 login_manager.login_view = "login"
 
 mail = Mail(app)
+
+def send_order_email(to, subject, heading, body_html, order_id, cta_text="View Order"):
+    """Send a branded order notification email."""
+    try:
+        order_url = url_for("order_detail", order_id=order_id, _external=True)
+        msg = MailMessage(
+            subject=f"FreelancingHub — {subject}",
+            recipients=[to],
+            html=f"""<div style="font-family:sans-serif;max-width:500px;margin:auto;background:#0f1429;color:#e2e8f0;padding:2rem;border-radius:16px">
+<h2 style="color:#00ffc8;margin-top:0">{heading}</h2>
+<p style="color:#94a3b8;line-height:1.6">{body_html}</p>
+<a href="{order_url}" style="display:inline-block;margin-top:1.5rem;padding:.75rem 1.5rem;background:#00ffc8;color:#0f1429;font-weight:700;border-radius:8px;text-decoration:none">{cta_text}</a>
+<p style="color:#475569;font-size:.78rem;margin-top:2rem">FreelancingHub &mdash; Kenya Freelance Marketplace</p>
+</div>"""
+        )
+        mail.send(msg)
+    except Exception as e:
+        app.logger.error(f"Order email failed (order #{order_id}): {e}")
 ts = URLSafeTimedSerializer(app.config["SECRET_KEY"])
 socketio = SocketIO(app, cors_allowed_origins="*", async_mode="threading")
 @app.route('/api/review/add', methods=['POST'])
@@ -944,6 +964,7 @@ def check_payment_status(service_id):
 
 # Callback route to receive MPESA confirmation
 @app.route("/mpesa/callback", methods=["POST"])
+@csrf.exempt
 def mpesa_callback():
     """Handle M-Pesa payment callback and update payment status"""
     try:
@@ -4961,6 +4982,11 @@ def start_order(order_id):
     db.session.add(notif)
     db.session.commit()
     flash('Order marked as in progress.', 'success')
+    buyer = User.query.get(order.buyer_id)
+    if buyer and buyer.email:
+        send_order_email(buyer.email, f"Order #{order.id} Started", "Your Order Has Started 🚀",
+            f"Great news! The seller has started working on order <strong>#{order.id}</strong>. You'll be notified when it's delivered.",
+            order.id)
     return redirect(url_for('order_detail', order_id=order_id))
 
 
@@ -4990,6 +5016,11 @@ def deliver_order(order_id):
         db.session.add(notif)
         db.session.commit()
         flash('Order delivered successfully.', 'success')
+        buyer = User.query.get(order.buyer_id)
+        if buyer and buyer.email:
+            send_order_email(buyer.email, f"Order #{order.id} Delivered", "Your Order Has Been Delivered 📦",
+                f"The seller has submitted the deliverables for order <strong>#{order.id}</strong>. Please review and accept or raise a dispute.",
+                order.id, cta_text="Review Delivery")
         return redirect(url_for('order_detail', order_id=order_id))
     return render_template('deliver_order.html', order=order)
 
@@ -5027,6 +5058,11 @@ def accept_order(order_id):
     except Exception as e:
         logger.error(f"Payout failed for order {order_id}: {e}")
     flash("Order accepted. Payment will be released to seller.", "success")
+    seller = User.query.get(order.seller_id)
+    if seller and seller.email:
+        send_order_email(seller.email, f"Order #{order.id} Accepted", "Order Accepted — Payment Released 💰",
+            f"The buyer has accepted order <strong>#{order.id}</strong>. Your payment is being processed via M-Pesa.",
+            order.id, cta_text="View Order")
     return redirect(url_for('order_detail', order_id=order_id))
 
 
@@ -5051,6 +5087,12 @@ def file_dispute(order_id):
         db.session.add(notif)
         db.session.commit()
         flash('Dispute filed. Our team will review shortly.', 'warning')
+        other_id = order.seller_id if current_user.id == order.buyer_id else order.buyer_id
+        other = User.query.get(other_id)
+        if other and other.email:
+            send_order_email(other.email, f"Dispute Filed on Order #{order.id}", "A Dispute Has Been Filed ⚠️",
+                f"A dispute has been filed on order <strong>#{order.id}</strong>. Our team will review and reach out to both parties.",
+                order.id, cta_text="View Order")
         return redirect(url_for('order_detail', order_id=order_id))
     return render_template('file_dispute.html', order=order)
 
