@@ -1,0 +1,186 @@
+{% extends 'base.html' %}
+{% block title %}Admin — Services{% endblock %}
+{% block content %}
+
+<style>
+.adm-topbar { display:flex; align-items:center; justify-content:space-between; margin-bottom:2rem; flex-wrap:wrap; gap:1rem; }
+.adm-topbar-title { display:flex; align-items:center; gap:.75rem; }
+.adm-topbar-title .adm-icon { width:48px; height:48px; border-radius:12px; background:linear-gradient(135deg,#22c55e,#16a34a); display:flex; align-items:center; justify-content:center; font-size:1.3rem; color:#fff; }
+.adm-topbar-title h1 { color:#fff !important; font-size:1.5rem !important; font-weight:800; text-shadow:none !important; margin:0; }
+.adm-topbar-title p { color:#64748b; font-size:.82rem; margin:0; }
+.adm-nav { display:flex; gap:.5rem; flex-wrap:wrap; }
+.adm-nav a { display:flex; align-items:center; gap:.4rem; padding:.5rem 1rem; border-radius:8px; font-size:.82rem; font-weight:600; text-decoration:none; transition:all .2s; border:1px solid rgba(255,255,255,.1); background:rgba(255,255,255,.04); color:#94a3b8; }
+.adm-nav a:hover, .adm-nav a.active { background:rgba(0,255,200,.1); border-color:rgba(0,255,200,.3); color:#00ffc8; text-decoration:none; }
+.adm-toolbar { display:flex; gap:.75rem; margin-bottom:1.5rem; flex-wrap:wrap; }
+.adm-search-wrap { flex:1; min-width:200px; position:relative; }
+.adm-search-wrap i { position:absolute; left:.9rem; top:50%; transform:translateY(-50%); color:#475569; }
+.adm-search { width:100%; background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.1); border-radius:10px; padding:.7rem 1rem .7rem 2.5rem; color:#fff; font-size:.88rem; font-family:inherit; outline:none; }
+.adm-search:focus { border-color:rgba(0,255,200,.4); }
+.adm-select { background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.1); border-radius:10px; padding:.7rem 1rem; color:#94a3b8; font-size:.85rem; font-family:inherit; outline:none; color-scheme:dark; }
+.adm-filter-btn { padding:.7rem 1.2rem; background:linear-gradient(135deg,#00ffc8,#00d4ff); border:none; border-radius:10px; color:#0a0e27; font-weight:700; font-size:.85rem; cursor:pointer; font-family:inherit; }
+.adm-card { background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.08); border-radius:16px; overflow:hidden; }
+.adm-table { width:100%; border-collapse:collapse; font-size:.83rem; }
+.adm-table th { color:#475569; font-weight:600; text-transform:uppercase; font-size:.7rem; letter-spacing:.05em; padding:.75rem 1rem; text-align:left; border-bottom:1px solid rgba(255,255,255,.07); background:rgba(255,255,255,.02); }
+.adm-table td { padding:.75rem 1rem; color:#cbd5e1; border-bottom:1px solid rgba(255,255,255,.04); vertical-align:middle; }
+.adm-table tr:last-child td { border-bottom:none; }
+.adm-table tr:hover td { background:rgba(255,255,255,.03); }
+.adm-badge { display:inline-flex; align-items:center; gap:.3rem; padding:.2rem .6rem; border-radius:9999px; font-size:.7rem; font-weight:700; }
+.adm-badge.featured { background:rgba(245,158,11,.1); color:#fbbf24; border:1px solid rgba(245,158,11,.2); }
+.adm-badge.cat { background:rgba(0,255,200,.07); color:#00ffc8; border:1px solid rgba(0,255,200,.15); }
+.adm-actions { display:flex; gap:.4rem; flex-wrap:wrap; }
+.adm-btn { padding:.3rem .7rem; border-radius:7px; font-size:.73rem; font-weight:600; border:1px solid; cursor:pointer; font-family:inherit; transition:all .2s; }
+.adm-btn.feature  { background:rgba(245,158,11,.08); border-color:rgba(245,158,11,.25); color:#fbbf24; }
+.adm-btn.feature:hover  { background:rgba(245,158,11,.18); }
+.adm-btn.view   { background:rgba(0,255,200,.08);  border-color:rgba(0,255,200,.25);  color:#00ffc8; }
+.adm-btn.view:hover   { background:rgba(0,255,200,.18); }
+.adm-btn.del    { background:rgba(239,68,68,.08);  border-color:rgba(239,68,68,.2);   color:#f87171; }
+.adm-btn.del:hover    { background:rgba(239,68,68,.15); }
+.adm-pagination { display:flex; gap:.4rem; justify-content:center; padding:1.2rem; flex-wrap:wrap; }
+.adm-pagination a, .adm-pagination span { padding:.4rem .85rem; border-radius:8px; font-size:.82rem; font-weight:600; border:1px solid rgba(255,255,255,.1); color:#94a3b8; text-decoration:none; transition:all .2s; }
+.adm-pagination a:hover { background:rgba(0,255,200,.1); border-color:rgba(0,255,200,.3); color:#00ffc8; }
+.adm-pagination span.current { background:rgba(0,255,200,.15); border-color:rgba(0,255,200,.4); color:#00ffc8; }
+.svc-thumb { width:42px; height:42px; border-radius:8px; object-fit:cover; background:rgba(255,255,255,.06); }
+.svc-cell { display:flex; align-items:center; gap:.75rem; }
+.adm-toast { position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(80px); background:#1e2940; border:1px solid rgba(0,255,200,.3); color:#e2e8f0; padding:.75rem 1.5rem; border-radius:12px; font-size:.88rem; z-index:9999; transition:transform .3s ease; box-shadow:0 8px 32px rgba(0,0,0,.4); }
+.adm-toast.show { transform:translateX(-50%) translateY(0); }
+</style>
+
+<div>
+  <div class="adm-topbar">
+    <div class="adm-topbar-title">
+      <div class="adm-icon"><i class="fas fa-briefcase"></i></div>
+      <div>
+        <h1>Service Listings</h1>
+        <p>{{ services.total }} total listings</p>
+      </div>
+    </div>
+    <nav class="adm-nav">
+      <a href="{{ url_for('admin_dashboard') }}"><i class="fas fa-tachometer-alt"></i> Overview</a>
+      <a href="{{ url_for('admin_users') }}"><i class="fas fa-users"></i> Users</a>
+      <a href="{{ url_for('admin_services') }}" class="active"><i class="fas fa-briefcase"></i> Services</a>
+      <a href="{{ url_for('admin_payments') }}"><i class="fas fa-money-bill"></i> Payments</a>
+      <a href="{{ url_for('admin_payouts') }}"><i class="fas fa-paper-plane"></i> Payouts</a>
+      <a href="{{ url_for('admin_id_reviews') }}"><i class="fas fa-id-card"></i> ID Reviews</a>
+    </nav>
+  </div>
+
+  <form method="GET" class="adm-toolbar">
+    <div class="adm-search-wrap">
+      <i class="fas fa-search"></i>
+      <input type="text" name="q" class="adm-search" placeholder="Search listings…" value="{{ q }}">
+    </div>
+    <select name="category" class="adm-select">
+      <option value="">All Categories</option>
+      {% for cat in categories %}
+      <option value="{{ cat.id }}" {% if category == cat.id|string %}selected{% endif %}>{{ cat.name }}</option>
+      {% endfor %}
+    </select>
+    <button type="submit" class="adm-filter-btn"><i class="fas fa-filter"></i> Filter</button>
+  </form>
+
+  <div class="adm-card">
+    <div style="overflow-x:auto;-webkit-overflow-scrolling:touch;"><table class="adm-table">
+      <thead>
+        <tr>
+          <th>Service</th>
+          <th>Seller</th>
+          <th>Category</th>
+          <th>Price</th>
+          <th>Posted</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+      {% for s in services.items %}
+      <tr id="svc-row-{{ s.id }}">
+        <td>
+          <div class="svc-cell">
+            {% set imgs = s.images %}
+            {% if imgs %}
+              <img src="/static/uploads/services/{{ imgs[0].filename }}" class="svc-thumb">
+            {% else %}
+              <div class="svc-thumb" style="display:flex;align-items:center;justify-content:center;color:#334155"><i class="fas fa-image"></i></div>
+            {% endif %}
+            <div>
+              <div style="color:#e2e8f0;font-weight:600;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ s.title }}</div>
+              {% if s.custom_data and s.custom_data.get('featured') %}
+                <span class="adm-badge featured"><i class="fas fa-star"></i> Featured</span>
+              {% endif %}
+            </div>
+          </div>
+        </td>
+        <td style="color:#94a3b8">{{ s.seller.username if s.seller else '—' }}</td>
+        <td><span class="adm-badge cat">{{ s.category.name if s.category else s.category_old or '—' }}</span></td>
+        <td style="color:#00ffc8;font-weight:700">KES {{ "{:,.0f}".format(s.price) }}</td>
+        <td style="color:#475569;font-size:.78rem">{{ s.created_at.strftime('%d %b %Y') if s.created_at else '—' }}</td>
+        <td>
+          <div class="adm-actions">
+            <a href="{{ url_for('service_detail', service_id=s.id) }}" class="adm-btn view" target="_blank">
+              <i class="fas fa-eye"></i> View
+            </a>
+            <button class="adm-btn feature" onclick="featureService({{ s.id }}, this)" id="feat-btn-{{ s.id }}">
+              <i class="fas fa-star"></i> {% if s.custom_data and s.custom_data.get('featured') %}Unfeature{% else %}Feature{% endif %}
+            </button>
+            <button class="adm-btn del" onclick="deleteService({{ s.id }}, this)">
+              <i class="fas fa-trash"></i>
+            </button>
+          </div>
+        </td>
+      </tr>
+      {% else %}
+      <tr><td colspan="6" style="text-align:center;color:#475569;padding:2rem">No services found</td></tr>
+      {% endfor %}
+      </tbody>
+    </table></div>
+
+    {% if services.pages > 1 %}
+    <div class="adm-pagination">
+      {% if services.has_prev %}
+        <a href="?q={{ q }}&category={{ category }}&page={{ services.prev_num }}">← Prev</a>
+      {% endif %}
+      {% for p in services.iter_pages(left_edge=1,right_edge=1,left_current=2,right_current=2) %}
+        {% if p %}
+          {% if p == services.page %}<span class="current">{{ p }}</span>
+          {% else %}<a href="?q={{ q }}&category={{ category }}&page={{ p }}">{{ p }}</a>{% endif %}
+        {% else %}<span>…</span>{% endif %}
+      {% endfor %}
+      {% if services.has_next %}
+        <a href="?q={{ q }}&category={{ category }}&page={{ services.next_num }}">Next →</a>
+      {% endif %}
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+<div class="adm-toast" id="admToast"></div>
+
+<script>
+function showToast(msg, ok=true) {
+  const t = document.getElementById('admToast');
+  t.textContent = (ok ? '✅ ' : '❌ ') + msg;
+  t.style.borderColor = ok ? 'rgba(0,255,200,.3)' : 'rgba(239,68,68,.3)';
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3500);
+}
+
+async function deleteService(id, btn) {
+  if (!confirm('Delete this service listing? This cannot be undone.')) return;
+  const r = await fetch(`/admin/services/${id}/delete`, {method:'POST'});
+  const d = await r.json();
+  if (d.success) { showToast(d.message); document.getElementById(`svc-row-${id}`).remove(); }
+  else showToast(d.error, false);
+}
+
+async function featureService(id, btn) {
+  const r = await fetch(`/admin/services/${id}/feature`, {method:'POST'});
+  const d = await r.json();
+  if (d.success) {
+    showToast(d.message);
+    btn.innerHTML = d.featured
+      ? '<i class="fas fa-star"></i> Unfeature'
+      : '<i class="fas fa-star"></i> Feature';
+  } else showToast(d.error, false);
+}
+</script>
+
+{% endblock %}

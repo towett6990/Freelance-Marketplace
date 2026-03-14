@@ -4752,6 +4752,45 @@ def admin_payments():
     return render_template('admin_payments.html', payments=payments, status=status, total_revenue=float(total_revenue))
 
 
+@app.route("/admin/payouts")
+@login_required
+@require_role("admin")
+def admin_payouts():
+    page   = request.args.get("page", 1, type=int)
+    status = request.args.get("status", "")
+    q = Payout.query
+    if status:
+        q = q.filter_by(status=status)
+    payouts = q.order_by(Payout.created_at.desc()).paginate(page=page, per_page=25)
+    stats = {
+        "total":      Payout.query.count(),
+        "completed":  Payout.query.filter_by(status="completed").count(),
+        "failed":     Payout.query.filter_by(status="failed").count(),
+        "processing": Payout.query.filter_by(status="processing").count(),
+        "total_amt":  float(db.session.query(db.func.sum(Payout.amount)).filter_by(status="completed").scalar() or 0),
+    }
+    return render_template("admin/payouts.html", payouts=payouts, status=status, stats=stats)
+
+@app.route("/admin/payouts/<int:payout_id>/retry", methods=["POST"])
+@login_required
+@require_role("admin")
+def admin_retry_payout(payout_id):
+    payout = Payout.query.get_or_404(payout_id)
+    if payout.status not in ("failed", "processing"):
+        flash("Only failed or processing payouts can be retried.", "warning")
+        return redirect(url_for("admin_payouts"))
+    order = Order.query.get(payout.order_id)
+    if not order:
+        flash("Order not found.", "danger")
+        return redirect(url_for("admin_payouts"))
+    try:
+        from mpesa import initiate_b2c_payout
+        initiate_b2c_payout(order)
+        flash(f"Payout retry initiated for order #{payout.order_id}.", "success")
+    except Exception as e:
+        flash(f"Retry failed: {e}", "danger")
+    return redirect(url_for("admin_payouts"))
+
 @app.route('/admin/announce', methods=['POST'])
 @login_required
 @require_role('admin')

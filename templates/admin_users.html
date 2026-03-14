@@ -1,0 +1,329 @@
+{% extends 'base.html' %}
+{% block title %}Admin — Users{% endblock %}
+{% block content %}
+
+<style>
+.adm-topbar { display:flex; align-items:center; justify-content:space-between; margin-bottom:2rem; flex-wrap:wrap; gap:1rem; }
+.adm-topbar-title { display:flex; align-items:center; gap:.75rem; }
+.adm-topbar-title .adm-icon { width:48px; height:48px; border-radius:12px; background:linear-gradient(135deg,#3b82f6,#2563eb); display:flex; align-items:center; justify-content:center; font-size:1.3rem; color:#fff; }
+.adm-topbar-title h1 { color:#fff !important; font-size:1.5rem !important; font-weight:800; text-shadow:none !important; margin:0; }
+.adm-topbar-title p { color:#64748b; font-size:.82rem; margin:0; }
+.adm-nav { display:flex; gap:.5rem; flex-wrap:wrap; }
+.adm-nav a { display:flex; align-items:center; gap:.4rem; padding:.5rem 1rem; border-radius:8px; font-size:.82rem; font-weight:600; text-decoration:none; transition:all .2s; border:1px solid rgba(255,255,255,.1); background:rgba(255,255,255,.04); color:#94a3b8; }
+.adm-nav a:hover, .adm-nav a.active { background:rgba(0,255,200,.1); border-color:rgba(0,255,200,.3); color:#00ffc8; text-decoration:none; }
+
+/* Search bar */
+.adm-toolbar { display:flex; gap:.75rem; margin-bottom:1.5rem; flex-wrap:wrap; }
+.adm-search-wrap { flex:1; min-width:200px; position:relative; }
+.adm-search-wrap i { position:absolute; left:.9rem; top:50%; transform:translateY(-50%); color:#475569; }
+.adm-search { width:100%; background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.1); border-radius:10px; padding:.7rem 1rem .7rem 2.5rem; color:#fff; font-size:.88rem; font-family:inherit; outline:none; }
+.adm-search:focus { border-color:rgba(0,255,200,.4); }
+.adm-select { background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.1); border-radius:10px; padding:.7rem 1rem; color:#94a3b8; font-size:.85rem; font-family:inherit; outline:none; color-scheme:dark; }
+.adm-filter-btn { padding:.7rem 1.2rem; background:linear-gradient(135deg,#00ffc8,#00d4ff); border:none; border-radius:10px; color:#0a0e27; font-weight:700; font-size:.85rem; cursor:pointer; font-family:inherit; }
+
+/* Table card */
+.adm-card { background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.08); border-radius:16px; overflow:hidden; }
+.adm-table { width:100%; border-collapse:collapse; font-size:.83rem; }
+.adm-table th { color:#475569; font-weight:600; text-transform:uppercase; font-size:.7rem; letter-spacing:.05em; padding:.75rem 1rem; text-align:left; border-bottom:1px solid rgba(255,255,255,.07); background:rgba(255,255,255,.02); }
+.adm-table td { padding:.75rem 1rem; color:#cbd5e1; border-bottom:1px solid rgba(255,255,255,.04); vertical-align:middle; }
+.adm-table tr:last-child td { border-bottom:none; }
+.adm-table tr:hover td { background:rgba(255,255,255,.03); }
+
+.adm-badge { display:inline-flex; align-items:center; gap:.3rem; padding:.2rem .6rem; border-radius:9999px; font-size:.7rem; font-weight:700; }
+.adm-badge.seller  { background:rgba(0,255,200,.1);  color:#00ffc8;  border:1px solid rgba(0,255,200,.2); }
+.adm-badge.buyer   { background:rgba(59,130,246,.1); color:#60a5fa;  border:1px solid rgba(59,130,246,.2); }
+.adm-badge.admin   { background:rgba(139,92,246,.1); color:#a78bfa;  border:1px solid rgba(139,92,246,.2); }
+.adm-badge.banned  { background:rgba(239,68,68,.1);  color:#f87171;  border:1px solid rgba(239,68,68,.2); }
+.adm-badge.verified{ background:rgba(34,197,94,.1);  color:#4ade80;  border:1px solid rgba(34,197,94,.2); }
+.adm-badge.pending { background:rgba(245,158,11,.1); color:#fbbf24;  border:1px solid rgba(245,158,11,.2); }
+
+.adm-avatar { width:34px; height:34px; border-radius:50%; background:linear-gradient(135deg,#00ffc8,#00d4ff); display:inline-flex; align-items:center; justify-content:center; font-size:.8rem; font-weight:700; color:#0a0e27; flex-shrink:0; }
+.adm-user-cell { display:flex; align-items:center; gap:.65rem; }
+
+/* Action buttons */
+.adm-actions { display:flex; gap:.4rem; flex-wrap:wrap; }
+.adm-btn { padding:.3rem .7rem; border-radius:7px; font-size:.73rem; font-weight:600; border:1px solid; cursor:pointer; font-family:inherit; transition:all .2s; }
+.adm-btn.ban    { background:rgba(239,68,68,.08);  border-color:rgba(239,68,68,.25);  color:#f87171; }
+.adm-btn.ban:hover    { background:rgba(239,68,68,.18); }
+.adm-btn.unban  { background:rgba(34,197,94,.08);  border-color:rgba(34,197,94,.25);  color:#4ade80; }
+.adm-btn.unban:hover  { background:rgba(34,197,94,.18); }
+.adm-btn.verify { background:rgba(0,255,200,.08);  border-color:rgba(0,255,200,.25);  color:#00ffc8; }
+.adm-btn.verify:hover { background:rgba(0,255,200,.18); }
+.adm-btn.del    { background:rgba(239,68,68,.08);  border-color:rgba(239,68,68,.2);   color:#f87171; }
+.adm-btn.del:hover    { background:rgba(239,68,68,.15); }
+.adm-btn.role   { background:rgba(139,92,246,.08); border-color:rgba(139,92,246,.25); color:#a78bfa; }
+.adm-btn.role:hover   { background:rgba(139,92,246,.18); }
+
+/* Pagination */
+.adm-pagination { display:flex; gap:.4rem; justify-content:center; padding:1.2rem; flex-wrap:wrap; }
+.adm-pagination a, .adm-pagination span {
+  padding:.4rem .85rem; border-radius:8px; font-size:.82rem; font-weight:600;
+  border:1px solid rgba(255,255,255,.1); color:#94a3b8; text-decoration:none; transition:all .2s;
+}
+.adm-pagination a:hover { background:rgba(0,255,200,.1); border-color:rgba(0,255,200,.3); color:#00ffc8; }
+.adm-pagination span.current { background:rgba(0,255,200,.15); border-color:rgba(0,255,200,.4); color:#00ffc8; }
+
+/* Role modal */
+.role-modal-bg { display:none; position:fixed; inset:0; background:rgba(0,0,0,.7); z-index:2000; align-items:center; justify-content:center; backdrop-filter:blur(4px); }
+.role-modal-bg.open { display:flex; }
+.role-modal { background:#0f1429; border:1px solid rgba(255,255,255,.12); border-radius:16px; padding:1.5rem; max-width:340px; width:90%; }
+.role-modal h3 { color:#fff !important; font-size:1rem !important; font-weight:700; text-shadow:none !important; margin:0 0 1rem; }
+.role-option { display:flex; align-items:center; gap:.75rem; padding:.75rem; border-radius:10px; border:1px solid rgba(255,255,255,.08); margin-bottom:.5rem; cursor:pointer; transition:all .2s; }
+.role-option:hover { background:rgba(255,255,255,.06); }
+.role-option input { accent-color:#00ffc8; }
+.role-modal-btns { display:flex; gap:.5rem; margin-top:1rem; }
+.role-modal-btn { flex:1; padding:.7rem; border-radius:10px; font-size:.85rem; font-weight:700; font-family:inherit; cursor:pointer; border:none; transition:all .2s; }
+.role-modal-btn.save { background:linear-gradient(135deg,#00ffc8,#00d4ff); color:#0a0e27; }
+.role-modal-btn.cancel { background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.1); color:#94a3b8; }
+
+.adm-toast { position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(80px); background:#1e2940; border:1px solid rgba(0,255,200,.3); color:#e2e8f0; padding:.75rem 1.5rem; border-radius:12px; font-size:.88rem; z-index:9999; transition:transform .3s ease; box-shadow:0 8px 32px rgba(0,0,0,.4); }
+.adm-toast.show { transform:translateX(-50%) translateY(0); }
+</style>
+
+<div>
+  <!-- Top Bar -->
+  <div class="adm-topbar">
+    <div class="adm-topbar-title">
+      <div class="adm-icon"><i class="fas fa-users"></i></div>
+      <div>
+        <h1>User Management</h1>
+        <p>{{ users.total }} total users</p>
+      </div>
+    </div>
+    <nav class="adm-nav">
+      <a href="{{ url_for('admin_dashboard') }}"><i class="fas fa-tachometer-alt"></i> Overview</a>
+      <a href="{{ url_for('admin_users') }}" class="active"><i class="fas fa-users"></i> Users</a>
+      <a href="{{ url_for('admin_services') }}"><i class="fas fa-briefcase"></i> Services</a>
+      <a href="{{ url_for('admin_payments') }}"><i class="fas fa-money-bill"></i> Payments</a>
+      <a href="{{ url_for('admin_payouts') }}"><i class="fas fa-paper-plane"></i> Payouts</a>
+      <a href="{{ url_for('admin_id_reviews') }}"><i class="fas fa-id-card"></i> ID Reviews</a>
+    </nav>
+  </div>
+
+  <!-- Search / Filter -->
+  <form method="GET" class="adm-toolbar">
+    <div class="adm-search-wrap">
+      <i class="fas fa-search"></i>
+      <input type="text" name="q" class="adm-search" placeholder="Search by name or email…" value="{{ q }}">
+    </div>
+    <select name="role" class="adm-select">
+      <option value="">All Roles</option>
+      <option value="buyer"  {% if role=='buyer'  %}selected{% endif %}>Buyer</option>
+      <option value="seller" {% if role=='seller' %}selected{% endif %}>Seller</option>
+      <option value="admin"  {% if role=='admin'  %}selected{% endif %}>Admin</option>
+      <option value="banned" {% if role=='banned' %}selected{% endif %}>Banned</option>
+    </select>
+    <button type="submit" class="adm-filter-btn"><i class="fas fa-filter"></i> Filter</button>
+  </form>
+
+  <!-- Table -->
+  <div class="adm-card">
+    <div style="overflow-x:auto;-webkit-overflow-scrolling:touch;"><table class="adm-table">
+      <thead>
+        <tr>
+          <th>User</th>
+          <th>Role</th>
+          <th>Verified</th>
+          <th>Services</th>
+          <th>Joined</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+      {% for u in users.items %}
+      <tr id="user-row-{{ u.id }}">
+        <td>
+          <div class="adm-user-cell">
+            {% if u.avatar %}
+              <img src="/static/uploads/avatars/{{ u.avatar }}" style="width:34px;height:34px;border-radius:50%;object-fit:cover">
+            {% else %}
+              <div class="adm-avatar">{{ (u.username or u.email or '?')[0].upper() }}</div>
+            {% endif %}
+            <div>
+              <div style="color:#e2e8f0;font-weight:600">{{ u.username or '—' }}</div>
+              <div style="color:#475569;font-size:.72rem">{{ u.email }}</div>
+            </div>
+          </div>
+        </td>
+        <td><span class="adm-badge {{ u.role }}" id="role-badge-{{ u.id }}">{{ u.role }}</span></td>
+        <td>
+          {% if u.is_verified %}
+            <span class="adm-badge verified"><i class="fas fa-check"></i> Yes</span>
+          {% else %}
+            <span class="adm-badge pending">No</span>
+          {% endif %}
+        </td>
+        <td style="color:#94a3b8">{{ u.services | length }}</td>
+        <td style="color:#475569;font-size:.78rem">{{ u.created_at.strftime('%d %b %Y') if u.created_at else '—' }}</td>
+        <td>
+          <div class="adm-actions">
+            {% if not u.is_verified %}
+            <button class="adm-btn verify" onclick="verifyUser({{ u.id }}, this)">
+              <i class="fas fa-check"></i> Verify
+            </button>
+            {% endif %}
+            {% if u.role != 'admin' %}
+              {% if u.role == 'banned' %}
+              <button class="adm-btn unban" onclick="unbanUser({{ u.id }}, this)">
+                <i class="fas fa-unlock"></i> Unban
+              </button>
+              {% else %}
+              <button class="adm-btn ban" onclick="banUser({{ u.id }}, this)">
+                <i class="fas fa-ban"></i> Ban
+              </button>
+              {% endif %}
+              <button class="adm-btn role" onclick="openRoleModal({{ u.id }}, '{{ u.role }}')">
+                <i class="fas fa-user-tag"></i> Role
+              </button>
+              <button class="adm-btn del" onclick="deleteUser({{ u.id }}, this)">
+                <i class="fas fa-trash"></i>
+              </button>
+            {% endif %}
+          </div>
+        </td>
+      </tr>
+      {% else %}
+      <tr><td colspan="6" style="text-align:center;color:#475569;padding:2rem">No users found</td></tr>
+      {% endfor %}
+      </tbody>
+    </table></div>
+
+    <!-- Pagination -->
+    {% if users.pages > 1 %}
+    <div class="adm-pagination">
+      {% if users.has_prev %}
+        <a href="?q={{ q }}&role={{ role }}&page={{ users.prev_num }}">← Prev</a>
+      {% endif %}
+      {% for p in users.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+        {% if p %}
+          {% if p == users.page %}
+            <span class="current">{{ p }}</span>
+          {% else %}
+            <a href="?q={{ q }}&role={{ role }}&page={{ p }}">{{ p }}</a>
+          {% endif %}
+        {% else %}
+          <span>…</span>
+        {% endif %}
+      {% endfor %}
+      {% if users.has_next %}
+        <a href="?q={{ q }}&role={{ role }}&page={{ users.next_num }}">Next →</a>
+      {% endif %}
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Role Modal -->
+<div class="role-modal-bg" id="roleModalBg" onclick="closeRoleModal(event)">
+  <div class="role-modal" onclick="event.stopPropagation()">
+    <h3><i class="fas fa-user-tag" style="color:#a78bfa"></i> Change User Role</h3>
+    <div id="roleOptions">
+      <label class="role-option">
+        <input type="radio" name="newRole" value="buyer"> <span style="color:#60a5fa">👤 Buyer</span>
+      </label>
+      <label class="role-option">
+        <input type="radio" name="newRole" value="seller"> <span style="color:#00ffc8">🛠️ Seller</span>
+      </label>
+      <label class="role-option">
+        <input type="radio" name="newRole" value="admin"> <span style="color:#a78bfa">🛡️ Admin</span>
+      </label>
+    </div>
+    <div class="role-modal-btns">
+      <button class="role-modal-btn cancel" onclick="closeRoleModal()">Cancel</button>
+      <button class="role-modal-btn save" onclick="saveRole()">Save Role</button>
+    </div>
+  </div>
+</div>
+
+<div class="adm-toast" id="admToast"></div>
+
+<script>
+let roleUserId = null;
+
+function showToast(msg, ok=true) {
+  const t = document.getElementById('admToast');
+  t.textContent = (ok ? '✅ ' : '❌ ') + msg;
+  t.style.borderColor = ok ? 'rgba(0,255,200,.3)' : 'rgba(239,68,68,.3)';
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3500);
+}
+
+async function apiPost(url) {
+  const r = await fetch(url, {method:'POST', headers:{'Content-Type':'application/json'}});
+  return r.json();
+}
+
+async function banUser(id, btn) {
+  if (!confirm('Ban this user?')) return;
+  const d = await apiPost(`/admin/users/${id}/ban`);
+  if (d.success) {
+    showToast(d.message);
+    document.getElementById(`role-badge-${id}`).className = 'adm-badge banned';
+    document.getElementById(`role-badge-${id}`).textContent = 'banned';
+    btn.className = 'adm-btn unban';
+    btn.innerHTML = '<i class="fas fa-unlock"></i> Unban';
+    btn.onclick = () => unbanUser(id, btn);
+  } else showToast(d.error, false);
+}
+
+async function unbanUser(id, btn) {
+  const d = await apiPost(`/admin/users/${id}/unban`);
+  if (d.success) {
+    showToast(d.message);
+    document.getElementById(`role-badge-${id}`).className = 'adm-badge buyer';
+    document.getElementById(`role-badge-${id}`).textContent = 'buyer';
+    btn.className = 'adm-btn ban';
+    btn.innerHTML = '<i class="fas fa-ban"></i> Ban';
+    btn.onclick = () => banUser(id, btn);
+  } else showToast(d.error, false);
+}
+
+async function verifyUser(id, btn) {
+  const d = await apiPost(`/admin/users/${id}/verify`);
+  if (d.success) { showToast(d.message); btn.remove(); }
+  else showToast(d.error, false);
+}
+
+async function deleteUser(id, btn) {
+  if (!confirm('Permanently delete this user? This cannot be undone.')) return;
+  const d = await apiPost(`/admin/users/${id}/delete`);
+  if (d.success) {
+    showToast(d.message);
+    document.getElementById(`user-row-${id}`).remove();
+  } else showToast(d.error, false);
+}
+
+function openRoleModal(id, currentRole) {
+  roleUserId = id;
+  document.querySelectorAll('input[name="newRole"]').forEach(r => {
+    r.checked = r.value === currentRole;
+  });
+  document.getElementById('roleModalBg').classList.add('open');
+}
+
+function closeRoleModal(e) {
+  if (!e || e.target === document.getElementById('roleModalBg')) {
+    document.getElementById('roleModalBg').classList.remove('open');
+  }
+}
+
+async function saveRole() {
+  const newRole = document.querySelector('input[name="newRole"]:checked')?.value;
+  if (!newRole) return;
+  const r = await fetch(`/admin/users/${roleUserId}/role`, {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({role: newRole})
+  });
+  const d = await r.json();
+  if (d.success) {
+    showToast(d.message);
+    const badge = document.getElementById(`role-badge-${roleUserId}`);
+    badge.className = `adm-badge ${newRole}`;
+    badge.textContent = newRole;
+    document.getElementById('roleModalBg').classList.remove('open');
+  } else showToast(d.error, false);
+}
+</script>
+
+{% endblock %}

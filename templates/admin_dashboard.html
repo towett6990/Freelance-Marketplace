@@ -1,0 +1,417 @@
+{% extends 'base.html' %}
+{% block title %}Admin Dashboard — FreelancingHub{% endblock %}
+{% block content %}
+
+<style>
+/* ── ADMIN LAYOUT ── */
+.adm { font-family: 'Segoe UI', sans-serif; }
+
+.adm-topbar {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;
+}
+.adm-topbar-title { display: flex; align-items: center; gap: .75rem; }
+.adm-topbar-title .adm-icon {
+  width: 48px; height: 48px; border-radius: 12px;
+  background: linear-gradient(135deg, #00ffc8, #00d4ff);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.3rem; color: #0a0e27;
+}
+.adm-topbar-title h1 {
+  color: #fff !important; font-size: 1.5rem !important;
+  font-weight: 800; text-shadow: none !important; margin: 0;
+}
+.adm-topbar-title p { color: #64748b; font-size: .82rem; margin: 0; }
+
+.adm-nav { display: flex; gap: .5rem; flex-wrap: wrap; }
+.adm-nav a {
+  display: flex; align-items: center; gap: .4rem;
+  padding: .5rem 1rem; border-radius: 8px; font-size: .82rem; font-weight: 600;
+  text-decoration: none; transition: all .2s;
+  border: 1px solid rgba(255,255,255,.1);
+  background: rgba(255,255,255,.04); color: #94a3b8;
+}
+.adm-nav a:hover, .adm-nav a.active {
+  background: rgba(0,255,200,.1); border-color: rgba(0,255,200,.3);
+  color: #00ffc8; text-decoration: none;
+}
+
+/* ── STAT CARDS ── */
+.adm-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+.adm-stat {
+  background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.08);
+  border-radius: 16px; padding: 1.3rem; position: relative; overflow: hidden;
+  transition: transform .2s;
+}
+.adm-stat:hover { transform: translateY(-2px); }
+.adm-stat::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+}
+.adm-stat.cyan::before  { background: linear-gradient(90deg, #00ffc8, #00d4ff); }
+.adm-stat.green::before { background: linear-gradient(90deg, #22c55e, #16a34a); }
+.adm-stat.amber::before { background: linear-gradient(90deg, #f59e0b, #d97706); }
+.adm-stat.red::before   { background: linear-gradient(90deg, #ef4444, #dc2626); }
+.adm-stat.purple::before{ background: linear-gradient(90deg, #8b5cf6, #7c3aed); }
+.adm-stat.blue::before  { background: linear-gradient(90deg, #3b82f6, #2563eb); }
+
+.adm-stat-icon {
+  width: 40px; height: 40px; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1rem; margin-bottom: .75rem;
+}
+.adm-stat.cyan .adm-stat-icon  { background: rgba(0,255,200,.12); color: #00ffc8; }
+.adm-stat.green .adm-stat-icon { background: rgba(34,197,94,.12); color: #22c55e; }
+.adm-stat.amber .adm-stat-icon { background: rgba(245,158,11,.12); color: #f59e0b; }
+.adm-stat.red .adm-stat-icon   { background: rgba(239,68,68,.12);  color: #ef4444; }
+.adm-stat.purple .adm-stat-icon{ background: rgba(139,92,246,.12); color: #8b5cf6; }
+.adm-stat.blue .adm-stat-icon  { background: rgba(59,130,246,.12); color: #3b82f6; }
+
+.adm-stat-val { font-size: 1.8rem; font-weight: 800; color: #fff; line-height: 1; margin-bottom: .25rem; }
+.adm-stat-label { color: #64748b; font-size: .78rem; font-weight: 600; text-transform: uppercase; letter-spacing: .05em; }
+
+/* ── GRID ── */
+.adm-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem; }
+@media(max-width:900px){ .adm-grid { grid-template-columns: 1fr; } }
+
+.adm-card {
+  background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.08);
+  border-radius: 16px; padding: 1.3rem; overflow: hidden;
+}
+.adm-card-title {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 1rem;
+}
+.adm-card-title h3 {
+  color: #fff !important; font-size: .95rem !important;
+  font-weight: 700; text-shadow: none !important; margin: 0;
+  display: flex; align-items: center; gap: .5rem;
+}
+.adm-card-title a {
+  color: #00ffc8; font-size: .78rem; text-decoration: none;
+}
+.adm-card-title a:hover { color: #00d4ff; }
+
+/* ── TABLE ── */
+.adm-table { width: 100%; border-collapse: collapse; font-size: .83rem; }
+.adm-table th {
+  color: #475569; font-weight: 600; text-transform: uppercase;
+  font-size: .7rem; letter-spacing: .05em;
+  padding: .5rem .75rem; text-align: left;
+  border-bottom: 1px solid rgba(255,255,255,.06);
+}
+.adm-table td {
+  padding: .65rem .75rem; color: #cbd5e1;
+  border-bottom: 1px solid rgba(255,255,255,.04);
+  vertical-align: middle;
+}
+.adm-table tr:last-child td { border-bottom: none; }
+.adm-table tr:hover td { background: rgba(255,255,255,.03); }
+
+/* ── BADGES ── */
+.adm-badge {
+  display: inline-flex; align-items: center; gap: .3rem;
+  padding: .2rem .6rem; border-radius: 9999px; font-size: .7rem; font-weight: 700;
+}
+.adm-badge.seller  { background: rgba(0,255,200,.1);  color: #00ffc8;  border: 1px solid rgba(0,255,200,.2);  }
+.adm-badge.buyer   { background: rgba(59,130,246,.1); color: #60a5fa;  border: 1px solid rgba(59,130,246,.2); }
+.adm-badge.admin   { background: rgba(139,92,246,.1); color: #a78bfa;  border: 1px solid rgba(139,92,246,.2); }
+.adm-badge.banned  { background: rgba(239,68,68,.1);  color: #f87171;  border: 1px solid rgba(239,68,68,.2);  }
+.adm-badge.verified{ background: rgba(34,197,94,.1);  color: #4ade80;  border: 1px solid rgba(34,197,94,.2);  }
+.adm-badge.pending { background: rgba(245,158,11,.1); color: #fbbf24;  border: 1px solid rgba(245,158,11,.2); }
+.adm-badge.completed{background: rgba(34,197,94,.1);  color: #4ade80;  border: 1px solid rgba(34,197,94,.2);  }
+.adm-badge.failed  { background: rgba(239,68,68,.1);  color: #f87171;  border: 1px solid rgba(239,68,68,.2);  }
+
+/* ── ANNOUNCE BOX ── */
+.adm-announce {
+  background: rgba(139,92,246,.06); border: 1px solid rgba(139,92,246,.2);
+  border-radius: 16px; padding: 1.3rem; margin-bottom: 1.5rem;
+}
+.adm-announce h3 {
+  color: #a78bfa !important; font-size: .95rem !important;
+  font-weight: 700; text-shadow: none !important; margin: 0 0 .75rem;
+  display: flex; align-items: center; gap: .5rem;
+}
+.adm-announce-row { display: flex; gap: .75rem; }
+.adm-announce-input {
+  flex: 1; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.1);
+  border-radius: 10px; padding: .7rem 1rem; color: #fff; font-size: .88rem;
+  font-family: inherit; outline: none;
+}
+.adm-announce-input:focus { border-color: rgba(139,92,246,.5); }
+.adm-announce-btn {
+  padding: .7rem 1.3rem; background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+  border: none; border-radius: 10px; color: #fff; font-weight: 700;
+  font-size: .85rem; cursor: pointer; font-family: inherit; white-space: nowrap;
+  transition: all .25s;
+}
+.adm-announce-btn:hover { box-shadow: 0 4px 16px rgba(139,92,246,.4); }
+
+/* ── CHART ── */
+.adm-chart { display: flex; align-items: flex-end; gap: .5rem; height: 100px; margin-top: .5rem; }
+.adm-bar-wrap { flex: 1; display: flex; flex-direction: column; align-items: center; gap: .3rem; }
+.adm-bar {
+  width: 100%; border-radius: 6px 6px 0 0;
+  background: linear-gradient(180deg, #00ffc8, #00d4ff);
+  min-height: 4px; transition: height .5s ease;
+}
+.adm-bar-label { color: #475569; font-size: .65rem; }
+.adm-bar-val   { color: #94a3b8; font-size: .65rem; }
+
+/* ── AVATAR ── */
+.adm-avatar {
+  width: 30px; height: 30px; border-radius: 50%;
+  background: linear-gradient(135deg, #00ffc8, #00d4ff);
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: .75rem; font-weight: 700; color: #0a0e27; flex-shrink: 0;
+}
+.adm-user-cell { display: flex; align-items: center; gap: .6rem; }
+
+/* ── TOAST ── */
+.adm-toast {
+  position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(80px);
+  background: #1e2940; border: 1px solid rgba(0,255,200,.3);
+  color: #e2e8f0; padding: .75rem 1.5rem; border-radius: 12px;
+  font-size: .88rem; z-index: 9999; transition: transform .3s ease;
+  box-shadow: 0 8px 32px rgba(0,0,0,.4);
+}
+.adm-toast.show { transform: translateX(-50%) translateY(0); }
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .adm-topbar { flex-direction: column; align-items: flex-start; }
+  .adm-nav { width: 100%; justify-content: flex-start; }
+  .adm-nav a { flex: 1; justify-content: center; min-height: 44px; }
+  .adm-stats { grid-template-columns: repeat(2, 1fr); }
+  .adm-stat { padding: 1rem; }
+  .adm-stat-val { font-size: 1.4rem; }
+  .adm-grid { grid-template-columns: 1fr; }
+  .adm-card { overflow-x: auto; }
+  .adm-table { min-width: 500px; }
+  .adm-announce-row { flex-direction: column; }
+  .adm-announce-btn { width: 100%; }
+}
+
+@media (max-width: 480px) {
+  .adm-stats { grid-template-columns: 1fr; }
+  .adm-topbar-title h1 { font-size: 1.2rem !important; }
+}
+</style>
+
+<div class="adm">
+
+  <!-- Top Bar -->
+  <div class="adm-topbar">
+    <div class="adm-topbar-title">
+      <div class="adm-icon"><i class="fas fa-shield-alt"></i></div>
+      <div>
+        <h1>Admin Dashboard</h1>
+        <p>FreelancingHub Control Panel</p>
+      </div>
+    </div>
+    <nav class="adm-nav">
+      <a href="{{ url_for('admin_dashboard') }}" class="active"><i class="fas fa-tachometer-alt"></i> Overview</a>
+      <a href="{{ url_for('admin_users') }}"><i class="fas fa-users"></i> Users</a>
+      <a href="{{ url_for('admin_services') }}"><i class="fas fa-briefcase"></i> Services</a>
+      <a href="{{ url_for('admin_payments') }}"><i class="fas fa-money-bill"></i> Payments</a>
+      <a href="{{ url_for('admin_payouts') }}"><i class="fas fa-paper-plane"></i> Payouts</a>
+      <a href="{{ url_for('admin_id_reviews') }}"><i class="fas fa-id-card"></i> ID Reviews</a>
+    </nav>
+  </div>
+
+  <!-- Stats -->
+  <div class="adm-stats">
+    <div class="adm-stat cyan">
+      <div class="adm-stat-icon"><i class="fas fa-users"></i></div>
+      <div class="adm-stat-val">{{ total_users }}</div>
+      <div class="adm-stat-label">Total Users</div>
+    </div>
+    <div class="adm-stat green">
+      <div class="adm-stat-icon"><i class="fas fa-briefcase"></i></div>
+      <div class="adm-stat-val">{{ total_services }}</div>
+      <div class="adm-stat-label">Total Listings</div>
+    </div>
+    <div class="adm-stat amber">
+      <div class="adm-stat-icon"><i class="fas fa-money-bill-wave"></i></div>
+      <div class="adm-stat-val">KES {{ "{:,.0f}".format(total_revenue) }}</div>
+      <div class="adm-stat-label">Total Revenue</div>
+    </div>
+    <div class="adm-stat blue">
+      <div class="adm-stat-icon"><i class="fas fa-credit-card"></i></div>
+      <div class="adm-stat-val">{{ total_payments }}</div>
+      <div class="adm-stat-label">Transactions</div>
+    </div>
+    <div class="adm-stat purple">
+      <div class="adm-stat-icon"><i class="fas fa-user-plus"></i></div>
+      <div class="adm-stat-val">{{ new_users_today }}</div>
+      <div class="adm-stat-label">New Today</div>
+    </div>
+    <div class="adm-stat red">
+      <div class="adm-stat-icon"><i class="fas fa-clock"></i></div>
+      <div class="adm-stat-val">{{ pending_verify }}</div>
+      <div class="adm-stat-label">Pending Verify</div>
+    </div>
+  </div>
+
+  <!-- Announce -->
+  <div class="adm-announce">
+    <h3><i class="fas fa-bullhorn"></i> Send Announcement to All Users</h3>
+    <div class="adm-announce-row">
+      <input type="text" class="adm-announce-input" id="announceMsg" placeholder="Type your announcement message…" maxlength="300">
+      <button class="adm-announce-btn" onclick="sendAnnouncement()">
+        <i class="fas fa-paper-plane"></i> Send
+      </button>
+    </div>
+  </div>
+
+  <!-- Revenue Chart + Recent Payments -->
+  <div class="adm-grid">
+
+    <!-- Revenue Chart -->
+    <div class="adm-card">
+      <div class="adm-card-title">
+        <h3><i class="fas fa-chart-bar" style="color:#00ffc8"></i> Revenue (Last 6 Months)</h3>
+      </div>
+      {% set max_rev = monthly | map(attribute='revenue') | max %}
+      <div class="adm-chart">
+        {% for m in monthly %}
+        <div class="adm-bar-wrap">
+          <div class="adm-bar-val">{{ "{:,.0f}".format(m.revenue) }}</div>
+          <div class="adm-bar" style="height:{{ ((m.revenue / (max_rev if max_rev > 0 else 1)) * 80) | int }}px"></div>
+          <div class="adm-bar-label">{{ m.month }}</div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Recent Payments -->
+    <div class="adm-card">
+      <div class="adm-card-title">
+        <h3><i class="fas fa-receipt" style="color:#f59e0b"></i> Recent Payments</h3>
+        <a href="{{ url_for('admin_payments') }}">View all →</a>
+      </div>
+      <table class="adm-table">
+        <thead><tr><th>User</th><th>Amount</th><th>Status</th><th>Date</th></tr></thead>
+        <tbody>
+        {% for p in recent_payments %}
+        <tr>
+          <td>
+            {% set buyer = p.buyer %}
+            {% if buyer %}
+            <div class="adm-user-cell">
+              <div class="adm-avatar">{{ (buyer.username or buyer.email or '?')[0].upper() }}</div>
+              {{ buyer.username or buyer.email.split('@')[0] }}
+            </div>
+            {% else %}<span style="color:#475569">Deleted</span>{% endif %}
+          </td>
+          <td style="color:#00ffc8;font-weight:700">KES {{ "{:,.0f}".format(p.amount) }}</td>
+          <td><span class="adm-badge {{ p.status }}">{{ p.status }}</span></td>
+          <td style="color:#475569">{{ p.created_at.strftime('%d %b') if p.created_at else '—' }}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="4" style="text-align:center;color:#475569;padding:1.5rem">No payments yet</td></tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Recent Users + Recent Services -->
+  <div class="adm-grid">
+
+    <!-- Recent Users -->
+    <div class="adm-card">
+      <div class="adm-card-title">
+        <h3><i class="fas fa-user-clock" style="color:#3b82f6"></i> Recent Users</h3>
+        <a href="{{ url_for('admin_users') }}">View all →</a>
+      </div>
+      <table class="adm-table">
+        <thead><tr><th>User</th><th>Role</th><th>Verified</th><th>Joined</th></tr></thead>
+        <tbody>
+        {% for u in recent_users %}
+        <tr>
+          <td>
+            <div class="adm-user-cell">
+              <div class="adm-avatar">{{ (u.username or u.email or '?')[0].upper() }}</div>
+              <div>
+                <div style="color:#e2e8f0;font-weight:600">{{ u.username or '—' }}</div>
+                <div style="color:#475569;font-size:.72rem">{{ u.email }}</div>
+              </div>
+            </div>
+          </td>
+          <td><span class="adm-badge {{ u.role }}">{{ u.role }}</span></td>
+          <td>
+            {% if u.is_verified %}
+              <span class="adm-badge verified"><i class="fas fa-check"></i> Yes</span>
+            {% else %}
+              <span class="adm-badge pending">No</span>
+            {% endif %}
+          </td>
+          <td style="color:#475569">{{ u.created_at.strftime('%d %b %Y') if u.created_at else '—' }}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="4" style="text-align:center;color:#475569;padding:1.5rem">No users yet</td></tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Recent Services -->
+    <div class="adm-card">
+      <div class="adm-card-title">
+        <h3><i class="fas fa-list" style="color:#22c55e"></i> Recent Listings</h3>
+        <a href="{{ url_for('admin_services') }}">View all →</a>
+      </div>
+      <table class="adm-table">
+        <thead><tr><th>Title</th><th>Seller</th><th>Price</th><th>Date</th></tr></thead>
+        <tbody>
+        {% for s in recent_services %}
+        <tr>
+          <td style="color:#e2e8f0;font-weight:500;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
+            {{ s.title }}
+          </td>
+          <td style="color:#94a3b8">{{ s.seller.username if s.seller else '—' }}</td>
+          <td style="color:#00ffc8;font-weight:600">KES {{ "{:,.0f}".format(s.price) }}</td>
+          <td style="color:#475569">{{ s.created_at.strftime('%d %b') if s.created_at else '—' }}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="4" style="text-align:center;color:#475569;padding:1.5rem">No services yet</td></tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+
+</div>
+
+<!-- Toast -->
+<div class="adm-toast" id="admToast"></div>
+
+<script>
+function showToast(msg, ok=true) {
+  const t = document.getElementById('admToast');
+  t.textContent = (ok ? '✅ ' : '❌ ') + msg;
+  t.style.borderColor = ok ? 'rgba(0,255,200,.3)' : 'rgba(239,68,68,.3)';
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3500);
+}
+
+async function sendAnnouncement() {
+  const msg = document.getElementById('announceMsg').value.trim();
+  if (!msg) { showToast('Please enter a message', false); return; }
+  const r = await fetch('/admin/announce', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({message: msg})
+  });
+  const d = await r.json();
+  if (d.success) {
+    showToast(d.message);
+    document.getElementById('announceMsg').value = '';
+  } else {
+    showToast(d.error || 'Failed', false);
+  }
+}
+</script>
+
+{% endblock %}
