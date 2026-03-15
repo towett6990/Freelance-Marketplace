@@ -2,52 +2,52 @@
 {% block title %}Dispute Management{% endblock %}
 {% block content %}
 <style>
-.adm-topbar { display:flex; align-items:center; justify-content:space-between; margin-bottom:2rem; flex-wrap:wrap; gap:1rem; }
-.adm-topbar-title { display:flex; align-items:center; gap:.75rem; }
-.adm-topbar-title .adm-icon { width:48px; height:48px; border-radius:12px; background:linear-gradient(135deg,#8b5cf6,#6d28d9); display:flex; align-items:center; justify-content:center; font-size:1.3rem; color:#fff; }
-.adm-topbar-title h1 { color:#fff !important; font-size:1.5rem !important; font-weight:800; text-shadow:none !important; margin:0; }
-.adm-topbar-title p { color:#64748b; font-size:.82rem; margin:0; }
-.adm-nav { display:flex; gap:.5rem; flex-wrap:wrap; }
-.adm-nav a { display:flex; align-items:center; gap:.4rem; padding:.5rem 1rem; border-radius:8px; font-size:.82rem; font-weight:600; text-decoration:none; transition:all .2s; border:1px solid rgba(255,255,255,.1); background:rgba(255,255,255,.04); color:#94a3b8; }
-.adm-nav a:hover, .adm-nav a.active { background:rgba(0,255,200,.1); border-color:rgba(0,255,200,.3); color:#00ffc8; text-decoration:none; }
-.adm-stats { display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:1rem; margin-bottom:1.5rem; }
-.adm-stat { background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.08); border-radius:14px; padding:1.2rem 1.5rem; text-align:center; }
-.adm-stat .val { font-size:2rem; font-weight:800; line-height:1; }
-.adm-stat .lbl { color:#64748b; font-size:.78rem; font-weight:600; margin-top:.3rem; text-transform:uppercase; letter-spacing:.05em; }
-.adm-toolbar { display:flex; gap:.75rem; margin-bottom:1.5rem; flex-wrap:wrap; align-items:center; }
-.adm-filter-btn { padding:.5rem 1rem; background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.1); border-radius:8px; color:#94a3b8; font-size:.82rem; font-weight:600; cursor:pointer; font-family:inherit; text-decoration:none; transition:all .2s; }
-.adm-filter-btn:hover, .adm-filter-btn.active-open { background:rgba(239,68,68,.1); border-color:rgba(239,68,68,.3); color:#f87171; }
-.adm-filter-btn.active-resolved { background:rgba(34,197,94,.1); border-color:rgba(34,197,94,.3); color:#4ade80; }
-.adm-filter-btn.active-refunded { background:rgba(245,158,11,.1); border-color:rgba(245,158,11,.3); color:#fbbf24; }
-.adm-filter-btn.active-all { background:rgba(255,255,255,.1); border-color:rgba(255,255,255,.2); color:#fff; }
-.adm-card { background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.08); border-radius:16px; overflow:hidden; }
-.adm-table { width:100%; border-collapse:collapse; font-size:.83rem; }
-.adm-table th { color:#475569; font-weight:600; text-transform:uppercase; font-size:.7rem; letter-spacing:.05em; padding:.75rem 1rem; text-align:left; border-bottom:1px solid rgba(255,255,255,.07); background:rgba(255,255,255,.02); }
-.adm-table td { padding:.75rem 1rem; color:#cbd5e1; border-bottom:1px solid rgba(255,255,255,.04); vertical-align:middle; }
-.adm-table tr:last-child td { border-bottom:none; }
-.adm-table tr:hover td { background:rgba(255,255,255,.03); }
-.adm-badge { display:inline-flex; align-items:center; padding:.2rem .6rem; border-radius:9999px; font-size:.7rem; font-weight:700; }
-.adm-badge.disputed  { background:rgba(139,92,246,.1); color:#a78bfa; border:1px solid rgba(139,92,246,.2); }
-.adm-badge.resolved  { background:rgba(34,197,94,.1);  color:#4ade80; border:1px solid rgba(34,197,94,.2); }
-.adm-badge.refunded  { background:rgba(245,158,11,.1); color:#fbbf24; border:1px solid rgba(245,158,11,.2); }
-.adm-badge.completed { background:rgba(0,255,200,.1);  color:#00ffc8; border:1px solid rgba(0,255,200,.2); }
-.resolve-btn { padding:.3rem .8rem; background:rgba(139,92,246,.1); border:1px solid rgba(139,92,246,.3); border-radius:8px; color:#a78bfa; font-size:.78rem; font-weight:600; cursor:pointer; font-family:inherit; transition:all .2s; }
-.resolve-btn:hover { background:rgba(139,92,246,.2); }
-/* Modal overrides */
-.modal-content { background:#0f1429; border:1px solid rgba(255,255,255,.1); color:#e2e8f0; }
-.modal-header { border-bottom:1px solid rgba(255,255,255,.08); }
-.modal-footer { border-top:1px solid rgba(255,255,255,.08); }
-.modal-title { color:#fff; font-weight:700; }
-.btn-close { filter:invert(1); }
-.form-control, .form-select { background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.1); color:#e2e8f0; border-radius:10px; }
-.form-control:focus, .form-select:focus { background:rgba(255,255,255,.08); border-color:rgba(0,255,200,.4); color:#e2e8f0; box-shadow:0 0 0 3px rgba(0,255,200,.1); }
-.form-select option { background:#0f1429; color:#e2e8f0; }
-.form-label { color:#94a3b8; font-size:.82rem; font-weight:600; }
-.dispute-reason-box { background:rgba(139,92,246,.06); border:1px solid rgba(139,92,246,.2); border-radius:10px; padding:.75rem 1rem; color:#c4b5fd; font-size:.85rem; line-height:1.5; }
-.adm-pagination { display:flex; justify-content:center; gap:.5rem; margin-top:1.5rem; }
-.adm-pagination a, .adm-pagination span { padding:.4rem .8rem; border-radius:8px; font-size:.82rem; font-weight:600; border:1px solid rgba(255,255,255,.1); color:#94a3b8; text-decoration:none; background:rgba(255,255,255,.04); }
-.adm-pagination a:hover { background:rgba(0,255,200,.1); border-color:rgba(0,255,200,.3); color:#00ffc8; }
-.adm-pagination .active-page { background:rgba(0,255,200,.15); border-color:rgba(0,255,200,.4); color:#00ffc8; }
+.adm-topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:2rem;flex-wrap:wrap;gap:1rem}
+.adm-topbar-title{display:flex;align-items:center;gap:.75rem}
+.adm-icon{width:48px;height:48px;border-radius:12px;background:linear-gradient(135deg,#8b5cf6,#6d28d9);display:flex;align-items:center;justify-content:center;font-size:1.3rem;color:#fff}
+.adm-topbar-title h1{color:#fff!important;font-size:1.5rem!important;font-weight:800;text-shadow:none!important;margin:0}
+.adm-topbar-title p{color:#64748b;font-size:.82rem;margin:0}
+.adm-nav{display:flex;gap:.5rem;flex-wrap:wrap}
+.adm-nav a{display:flex;align-items:center;gap:.4rem;padding:.5rem 1rem;border-radius:8px;font-size:.82rem;font-weight:600;text-decoration:none;transition:all .2s;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04);color:#94a3b8}
+.adm-nav a:hover,.adm-nav a.active{background:rgba(0,255,200,.1);border-color:rgba(0,255,200,.3);color:#00ffc8;text-decoration:none}
+.adm-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:1rem;margin-bottom:1.5rem}
+.adm-stat{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:1.2rem 1.5rem;text-align:center}
+.adm-stat .val{font-size:2rem;font-weight:800;line-height:1}
+.adm-stat .lbl{color:#64748b;font-size:.78rem;font-weight:600;margin-top:.3rem;text-transform:uppercase;letter-spacing:.05em}
+.adm-toolbar{display:flex;gap:.75rem;margin-bottom:1.5rem;flex-wrap:wrap;align-items:center}
+.adm-filter-btn{padding:.5rem 1rem;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:8px;color:#94a3b8;font-size:.82rem;font-weight:600;cursor:pointer;font-family:inherit;text-decoration:none;transition:all .2s}
+.adm-filter-btn.active-open{background:rgba(239,68,68,.1);border-color:rgba(239,68,68,.3);color:#f87171}
+.adm-filter-btn.active-resolved{background:rgba(34,197,94,.1);border-color:rgba(34,197,94,.3);color:#4ade80}
+.adm-filter-btn.active-refunded{background:rgba(245,158,11,.1);border-color:rgba(245,158,11,.3);color:#fbbf24}
+.adm-filter-btn.active-all{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.2);color:#fff}
+.adm-card{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:16px;overflow:hidden}
+.adm-table{width:100%;border-collapse:collapse;font-size:.83rem}
+.adm-table th{color:#475569;font-weight:600;text-transform:uppercase;font-size:.7rem;letter-spacing:.05em;padding:.75rem 1rem;text-align:left;border-bottom:1px solid rgba(255,255,255,.07);background:rgba(255,255,255,.02)}
+.adm-table td{padding:.75rem 1rem;color:#cbd5e1;border-bottom:1px solid rgba(255,255,255,.04);vertical-align:middle}
+.adm-table tr:last-child td{border-bottom:none}
+.adm-table tr:hover td{background:rgba(255,255,255,.03)}
+.adm-badge{display:inline-flex;align-items:center;padding:.2rem .6rem;border-radius:9999px;font-size:.7rem;font-weight:700}
+.adm-badge.disputed{background:rgba(139,92,246,.1);color:#a78bfa;border:1px solid rgba(139,92,246,.2)}
+.adm-badge.resolved{background:rgba(34,197,94,.1);color:#4ade80;border:1px solid rgba(34,197,94,.2)}
+.adm-badge.refunded{background:rgba(245,158,11,.1);color:#fbbf24;border:1px solid rgba(245,158,11,.2)}
+.adm-badge.on_hold{background:rgba(59,130,246,.1);color:#60a5fa;border:1px solid rgba(59,130,246,.2)}
+.adm-badge.completed{background:rgba(0,255,200,.1);color:#00ffc8;border:1px solid rgba(0,255,200,.2)}
+.resolve-btn{padding:.3rem .8rem;background:rgba(139,92,246,.1);border:1px solid rgba(139,92,246,.3);border-radius:8px;color:#a78bfa;font-size:.78rem;font-weight:600;cursor:pointer;font-family:inherit;transition:all .2s}
+.resolve-btn:hover{background:rgba(139,92,246,.2)}
+.modal-content{background:#0f1429;border:1px solid rgba(255,255,255,.1);color:#e2e8f0}
+.modal-header{border-bottom:1px solid rgba(255,255,255,.08)}
+.modal-footer{border-top:1px solid rgba(255,255,255,.08)}
+.modal-title{color:#fff;font-weight:700}
+.btn-close{filter:invert(1)}
+.form-control,.form-select{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);color:#e2e8f0;border-radius:10px}
+.form-control:focus,.form-select:focus{background:rgba(255,255,255,.08);border-color:rgba(0,255,200,.4);color:#e2e8f0;box-shadow:0 0 0 3px rgba(0,255,200,.1)}
+.form-select option{background:#0f1429;color:#e2e8f0}
+.form-label{color:#94a3b8;font-size:.82rem;font-weight:600}
+.dispute-reason-box{background:rgba(139,92,246,.06);border:1px solid rgba(139,92,246,.2);border-radius:10px;padding:.75rem 1rem;color:#c4b5fd;font-size:.85rem;line-height:1.5}
+.adm-pagination{display:flex;justify-content:center;gap:.5rem;margin-top:1.5rem}
+.adm-pagination a,.adm-pagination span{padding:.4rem .8rem;border-radius:8px;font-size:.82rem;font-weight:600;border:1px solid rgba(255,255,255,.1);color:#94a3b8;text-decoration:none;background:rgba(255,255,255,.04)}
+.adm-pagination a:hover{background:rgba(0,255,200,.1);border-color:rgba(0,255,200,.3);color:#00ffc8}
+.adm-pagination .active-page{background:rgba(0,255,200,.15);border-color:rgba(0,255,200,.4);color:#00ffc8}
 </style>
 
 <div class="adm-topbar">
@@ -69,7 +69,6 @@
   </nav>
 </div>
 
-<!-- Stats -->
 <div class="adm-stats">
   <div class="adm-stat">
     <div class="val" style="color:#f87171">{{ counts.disputed }}</div>
@@ -81,40 +80,20 @@
   </div>
 </div>
 
-<!-- Filter -->
 <div class="adm-toolbar">
-  <a href="{{ url_for('admin_disputes', status='disputed') }}"
-     class="adm-filter-btn {{ 'active-open' if status == 'disputed' }}">
-    <i class="fas fa-exclamation-circle"></i> Open
-  </a>
-  <a href="{{ url_for('admin_disputes', status='resolved') }}"
-     class="adm-filter-btn {{ 'active-resolved' if status == 'resolved' }}">
-    <i class="fas fa-check-circle"></i> Resolved
-  </a>
-  <a href="{{ url_for('admin_disputes', status='refunded') }}"
-     class="adm-filter-btn {{ 'active-refunded' if status == 'refunded' }}">
-    <i class="fas fa-undo"></i> Refunded
-  </a>
-  <a href="{{ url_for('admin_disputes', status='all') }}"
-     class="adm-filter-btn {{ 'active-all' if status == 'all' }}">
-    <i class="fas fa-list"></i> All
-  </a>
+  <a href="{{ url_for('admin_disputes', status='disputed') }}" class="adm-filter-btn {{ 'active-open' if status == 'disputed' }}"><i class="fas fa-exclamation-circle"></i> Open</a>
+  <a href="{{ url_for('admin_disputes', status='resolved') }}" class="adm-filter-btn {{ 'active-resolved' if status == 'resolved' }}"><i class="fas fa-check-circle"></i> Resolved</a>
+  <a href="{{ url_for('admin_disputes', status='refunded') }}" class="adm-filter-btn {{ 'active-refunded' if status == 'refunded' }}"><i class="fas fa-undo"></i> Refunded</a>
+  <a href="{{ url_for('admin_disputes', status='all') }}" class="adm-filter-btn {{ 'active-all' if status == 'all' }}"><i class="fas fa-list"></i> All</a>
 </div>
 
-<!-- Table -->
 <div class="adm-card">
   <div style="overflow-x:auto">
     <table class="adm-table">
       <thead>
         <tr>
-          <th>Order</th>
-          <th>Buyer</th>
-          <th>Seller</th>
-          <th>Amount</th>
-          <th>Dispute Reason</th>
-          <th>Filed</th>
-          <th>Status</th>
-          <th>Action</th>
+          <th>Order</th><th>Buyer</th><th>Seller</th><th>Amount</th>
+          <th>Dispute Reason</th><th>Filed</th><th>Status</th><th>Action</th>
         </tr>
       </thead>
       <tbody>
@@ -124,83 +103,22 @@
           <td>{{ o.buyer.username if o.buyer else "-" }}</td>
           <td>{{ o.seller.username if o.seller else "-" }}</td>
           <td style="font-weight:700;color:#e2e8f0">KES {{ "{:,.2f}".format(o.amount) }}</td>
-          <td style="max-width:200px;color:#94a3b8">{{ (o.dispute_reason or "-")[:80] }}{% if o.dispute_reason and o.dispute_reason|length > 80 %}…{% endif %}</td>
-          <td style="color:#64748b;font-size:.78rem">{{ o.updated_at.strftime("%d %b %Y") if o.updated_at else "-" }}</td>
-          <td>
-            <span class="adm-badge {{ o.status }}">{{ o.status }}</span>
-          </td>
+          <td style="max-width:200px;color:#94a3b8;font-size:.8rem">{{ (o.dispute_reason or "-")[:60] }}{% if o.dispute_reason and o.dispute_reason|length > 60 %}…{% endif %}</td>
+          <td style="color:#64748b;font-size:.78rem;white-space:nowrap">{{ o.updated_at.strftime("%d %b %Y") if o.updated_at else "-" }}</td>
+          <td><span class="adm-badge {{ o.status }}">{{ o.status }}</span></td>
           <td>
             {% if o.status == "disputed" %}
             <button class="resolve-btn" data-bs-toggle="modal" data-bs-target="#resolveModal{{ o.id }}">
               <i class="fas fa-gavel"></i> Resolve
             </button>
-
-            <!-- Resolve Modal -->
-            <div class="modal fade" id="resolveModal{{ o.id }}" tabindex="-1">
-              <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content">
-                  <div class="modal-header">
-                    <h5 class="modal-title">⚖️ Resolve Dispute — Order #{{ o.id }}</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                  </div>
-                  <form method="POST" action="{{ url_for('admin_resolve_dispute', order_id=o.id) }}">
-                    <div class="modal-body">
-                      <div class="mb-3">
-                        <div class="form-label mb-1">Dispute Reason from {{ o.buyer.username if o.buyer else "buyer" }}</div>
-                        <div class="dispute-reason-box">{{ o.dispute_reason or "No reason provided." }}</div>
-                      </div>
-                      <div class="mb-3">
-                        <label class="form-label">Order Details</label>
-                        <div style="color:#64748b;font-size:.82rem">
-                          Amount: <strong style="color:#e2e8f0">KES {{ "{:,.2f}".format(o.amount) }}</strong> &nbsp;|&nbsp;
-                          Seller: <strong style="color:#e2e8f0">{{ o.seller.username if o.seller else "-" }}</strong>
-                        </div>
-                      </div>
-                      <div class="mb-3">
-                        <label class="form-label">Resolution Note <span style="color:#f87171">*</span></label>
-                        <textarea name="resolution" class="form-control" rows="3" required
-                          placeholder="Explain the resolution to both parties..."></textarea>
-                      </div>
-                      <div class="mb-3">
-                        <label class="form-label">Action</label>
-                        <select name="action" class="form-select">
-                          <optgroup label="── Order Resolution ──">
-                            <option value="resolved">Mark Resolved — no payout change</option>
-                            <option value="complete">Force Complete — release payment to seller</option>
-                            <option value="refund">Refund — mark as refunded</option>
-                            <option value="hold">Hold — freeze order pending investigation</option>
-                          </optgroup>
-                          <optgroup label="── Account Actions ──">
-                            <option value="warn_buyer">Warn Buyer — send warning email</option>
-                            <option value="warn_seller">Warn Seller — send warning email</option>
-                            <option value="ban_buyer">Ban Buyer — suspend account</option>
-                            <option value="ban_seller">Ban Seller — suspend account</option>
-                          </optgroup>
-                        </select>
-                      </div>
-                    </div>
-                    <div class="modal-footer">
-                      <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                      <button type="submit" class="btn btn-primary" style="background:linear-gradient(135deg,#8b5cf6,#6d28d9);border:none">
-                        <i class="fas fa-check"></i> Submit Resolution
-                      </button>
-                    </div>
-                  </form>
-                </div>
-              </div>
-            </div>
-            {% else %}
-            <span style="color:#334155;font-size:.82rem">—</span>
-            {% endif %}
+            {% else %}<span style="color:#334155">—</span>{% endif %}
           </td>
         </tr>
         {% else %}
-        <tr>
-          <td colspan="8" style="text-align:center;color:#334155;padding:3rem">
-            <i class="fas fa-balance-scale" style="font-size:2rem;display:block;margin-bottom:.5rem"></i>
-            No disputes found.
-          </td>
-        </tr>
+        <tr><td colspan="8" style="text-align:center;color:#334155;padding:3rem">
+          <i class="fas fa-balance-scale" style="font-size:2rem;display:block;margin-bottom:.5rem"></i>
+          No disputes found.
+        </td></tr>
         {% endfor %}
       </tbody>
     </table>
@@ -211,13 +129,70 @@
 <div class="adm-pagination">
   {% for page in disputes.iter_pages() %}
     {% if page %}
-      <a href="{{ url_for('admin_disputes', page=page, status=status) }}"
-         class="{{ 'active-page' if page == disputes.page }}">{{ page }}</a>
-    {% else %}
-      <span>…</span>
-    {% endif %}
+      <a href="{{ url_for('admin_disputes', page=page, status=status) }}" class="{{ 'active-page' if page == disputes.page }}">{{ page }}</a>
+    {% else %}<span>…</span>{% endif %}
   {% endfor %}
 </div>
 {% endif %}
+
+<!-- Modals (outside table) -->
+{% for o in disputes.items %}
+{% if o.status == "disputed" %}
+<div class="modal fade" id="resolveModal{{ o.id }}" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">⚖️ Resolve Dispute — Order #{{ o.id }}</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <form method="POST" action="{{ url_for('admin_resolve_dispute', order_id=o.id) }}">
+        <div class="modal-body">
+          <div class="mb-3">
+            <div class="form-label mb-1">Dispute Reason from {{ o.buyer.username if o.buyer else "buyer" }}</div>
+            <div class="dispute-reason-box">{{ o.dispute_reason or "No reason provided." }}</div>
+          </div>
+          <div class="mb-3">
+            <div class="form-label">Order Details</div>
+            <div style="color:#64748b;font-size:.82rem">
+              Amount: <strong style="color:#e2e8f0">KES {{ "{:,.2f}".format(o.amount) }}</strong> &nbsp;|&nbsp;
+              Buyer: <strong style="color:#e2e8f0">{{ o.buyer.username if o.buyer else "-" }}</strong> &nbsp;|&nbsp;
+              Seller: <strong style="color:#e2e8f0">{{ o.seller.username if o.seller else "-" }}</strong>
+            </div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Resolution Note <span style="color:#f87171">*</span></label>
+            <textarea name="resolution" class="form-control" rows="3" required
+              placeholder="Explain the resolution to both parties..."></textarea>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Action</label>
+            <select name="action" class="form-select">
+              <optgroup label="── Order Resolution ──">
+                <option value="resolved">Mark Resolved — no payout change</option>
+                <option value="complete">Force Complete — release payment to seller</option>
+                <option value="refund">Refund — mark as refunded</option>
+                <option value="hold">Hold — freeze order pending investigation</option>
+              </optgroup>
+              <optgroup label="── Account Actions ──">
+                <option value="warn_buyer">Warn Buyer — send warning email</option>
+                <option value="warn_seller">Warn Seller — send warning email</option>
+                <option value="ban_buyer">Ban Buyer — suspend account</option>
+                <option value="ban_seller">Ban Seller — suspend account</option>
+              </optgroup>
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-primary" style="background:linear-gradient(135deg,#8b5cf6,#6d28d9);border:none">
+            <i class="fas fa-check"></i> Submit Resolution
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endif %}
+{% endfor %}
 
 {% endblock %}
