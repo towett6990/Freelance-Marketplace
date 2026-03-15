@@ -5206,6 +5206,36 @@ def admin_resolve_dispute(order_id):
         order.status = "refunded"
     elif action == "complete":
         order.status = "completed"
+    elif action == "hold":
+        order.status = "on_hold"
+    elif action == "ban_buyer":
+        order.status = "resolved"
+        buyer = User.query.get(order.buyer_id)
+        if buyer:
+            buyer.is_banned = True
+            db.session.add(buyer)
+    elif action == "ban_seller":
+        order.status = "resolved"
+        seller = User.query.get(order.seller_id)
+        if seller:
+            seller.is_banned = True
+            db.session.add(seller)
+    elif action == "warn_buyer":
+        order.status = "resolved"
+        buyer = User.query.get(order.buyer_id)
+        if buyer and buyer.email:
+            send_order_email(buyer.email, f"Warning — Order #{order.id}",
+                "Account Warning ⚠️",
+                f"Your account has received a warning regarding order <strong>#{order.id}</strong>.<br><br><strong>Admin note:</strong> {resolution}",
+                order.id, cta_text="View Order")
+    elif action == "warn_seller":
+        order.status = "resolved"
+        seller = User.query.get(order.seller_id)
+        if seller and seller.email:
+            send_order_email(seller.email, f"Warning — Order #{order.id}",
+                "Account Warning ⚠️",
+                f"Your account has received a warning regarding order <strong>#{order.id}</strong>.<br><br><strong>Admin note:</strong> {resolution}",
+                order.id, cta_text="View Order")
     else:
         order.status = "resolved"
     # Notify both parties
