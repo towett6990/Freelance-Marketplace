@@ -2181,6 +2181,9 @@ def login():
             if not user.email_verified:
                 flash("Please verify your email before logging in.", "warning")
                 return redirect(url_for("verify_email", email=email))
+            if user.role == "banned":
+                flash("Your account has been suspended. Contact support for assistance.", "danger")
+                return redirect(url_for("login"))
             login_user(user)
             flash("Login successful.", "success")
             return redirect(url_for("dashboard"))
@@ -5212,13 +5215,13 @@ def admin_resolve_dispute(order_id):
         order.status = "resolved"
         buyer = User.query.get(order.buyer_id)
         if buyer:
-            buyer.is_banned = True
+            buyer.role = "banned"
             db.session.add(buyer)
     elif action == "ban_seller":
         order.status = "resolved"
         seller = User.query.get(order.seller_id)
         if seller:
-            seller.is_banned = True
+            seller.role = "banned"
             db.session.add(seller)
     elif action == "warn_buyer":
         order.status = "resolved"
