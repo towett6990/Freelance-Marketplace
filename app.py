@@ -5076,6 +5076,7 @@ def file_dispute(order_id):
         return redirect(url_for('dashboard'))
     if request.method == 'POST':
         order.status = 'disputed'
+        order.dispute_reason = request.form.get('reason', '').strip()
         other_id = order.seller_id if current_user.id == order.buyer_id else order.buyer_id
         notif = Notification(
             user_id=other_id,
@@ -5173,6 +5174,62 @@ def serve_id_doc(filename):
         abort(403)
     id_dir = os.path.join(app.root_path, "instance", "id_uploads")
     return send_from_directory(id_dir, filename)
+
+@app.route("/admin/disputes")
+@login_required
+@require_role("admin")
+def admin_disputes():
+    page = request.args.get("page", 1, type=int)
+    status = request.args.get("status", "disputed")
+    q = Order.query.filter_by(status=status) if status != "all" else Order.query
+    disputes = q.order_by(Order.updated_at.desc()).paginate(page=page, per_page=20)
+    counts = {
+        "disputed": Order.query.filter_by(status="disputed").count(),
+        "resolved": Order.query.filter_by(status="resolved").count(),
+    }
+    return render_template("admin/disputes.html", disputes=disputes, status=status, counts=counts)
+
+@app.route("/admin/disputes/<int:order_id>/resolve", methods=["POST"])
+@login_required
+@require_role("admin")
+def admin_resolve_dispute(order_id):
+    order = Order.query.get_or_404(order_id)
+    resolution = request.form.get("resolution", "").strip()
+    action = request.form.get("action", "")
+    if not resolution:
+        flash("Resolution note is required.", "warning")
+        return redirect(url_for("admin_disputes"))
+    order.resolution_note = resolution
+    order.resolved_at = datetime.utcnow()
+    order.resolved_by = current_user.id
+    if action == "refund":
+        order.status = "refunded"
+    elif action == "complete":
+        order.status = "completed"
+    else:
+        order.status = "resolved"
+    # Notify both parties
+    for uid, msg in [
+        (order.buyer_id, f"Your dispute for order #{order.id} has been resolved by admin."),
+        (order.seller_id, f"The dispute for order #{order.id} has been resolved by admin.")
+    ]:
+        db.session.add(Notification(
+            user_id=uid, type="order", title="Dispute Resolved",
+            body=msg, link=url_for("order_detail", order_id=order.id)
+        ))
+    # Email both
+    buyer = User.query.get(order.buyer_id)
+    seller = User.query.get(order.seller_id)
+    for u in [buyer, seller]:
+        if u and u.email:
+            send_order_email(u.email, f"Dispute Resolved — Order #{order.id}",
+                "Dispute Has Been Resolved ✅",
+                f"The dispute for order <strong>#{order.id}</strong> has been reviewed by our team.<br><br><strong>Resolution:</strong> {resolution}",
+                order.id)
+    db.session.commit()
+    flash(f"Order #{order.id} dispute resolved as '{order.status}'.", "success")
+    return redirect(url_for("admin_disputes"))
+
 if __name__ == "__main__":
     with app.app_context():
         db.create_all()

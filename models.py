@@ -212,6 +212,10 @@ class Category(db.Model):
     # Timestamps
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
     updated_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
+    dispute_reason = db.Column(db.Text, nullable=True)
+    resolution_note = db.Column(db.Text, nullable=True)
+    resolved_at = db.Column(db.DateTime, nullable=True)
+    resolved_by = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
     
     # Relationships
     services = db.relationship('Service', back_populates='category', cascade='all, delete-orphan')
@@ -430,6 +434,10 @@ class Order(db.Model):
     delivered_at = db.Column(db.DateTime, nullable=True)
     package_id = db.Column(db.Integer, nullable=True)
     updated_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
+    dispute_reason = db.Column(db.Text, nullable=True)
+    resolution_note = db.Column(db.Text, nullable=True)
+    resolved_at = db.Column(db.DateTime, nullable=True)
+    resolved_by = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
 
     # Relationships
     service = db.relationship("Service", back_populates="services_orders")
@@ -890,6 +898,10 @@ class Review(db.Model):
     # Timestamps
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), index=True)
     updated_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
+    dispute_reason = db.Column(db.Text, nullable=True)
+    resolution_note = db.Column(db.Text, nullable=True)
+    resolved_at = db.Column(db.DateTime, nullable=True)
+    resolved_by = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
     
     # Relationships (connections to other tables)
     service = db.relationship(
