@@ -170,18 +170,41 @@
 
     <div class="svc-own-badge">
       <i class="fas fa-info-circle" style="color:#00ffc8"></i> This is your listing
+      {% if service.is_sold %}<span style="margin-left:.5rem;background:rgba(245,158,11,.15);color:#fbbf24;border-radius:6px;padding:.1rem .5rem;font-size:.75rem;font-weight:700">SOLD</span>{% endif %}
+      {% if not service.is_active and not service.is_sold %}<span style="margin-left:.5rem;background:rgba(239,68,68,.1);color:#f87171;border-radius:6px;padding:.1rem .5rem;font-size:.75rem;font-weight:700">INACTIVE</span>{% endif %}
     </div>
 
     <a href="{{ url_for('edit_service', id=service.id) }}" class="svc-btn-edit">
       <i class="fas fa-edit"></i> Edit Listing
     </a>
 
-    <a href="{{ url_for('dashboard') }}" class="svc-btn-secondary">
-      <i class="fas fa-chart-bar"></i> View Dashboard Stats
-    </a>
-
     <a href="{{ url_for('features.manage_packages', sid=service.id) }}" style="display:flex;align-items:center;justify-content:center;gap:.45rem;width:100%;padding:.8rem;border-radius:10px;font-weight:600;font-size:.88rem;text-decoration:none;border:1px solid rgba(167,139,250,.2);background:rgba(167,139,250,.06);color:#a78bfa;transition:all .25s">
       <i class="fas fa-box"></i> Manage Packages
+    </a>
+
+    {% if not service.is_sold %}
+    <form method="POST" action="{{ url_for('toggle_service_active', id=service.id) }}">
+      <button type="submit" style="width:100%;padding:.8rem;border-radius:10px;font-weight:600;font-size:.88rem;border:1px solid rgba(59,130,246,.2);background:rgba(59,130,246,.06);color:#60a5fa;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:.45rem">
+        <i class="fas fa-{{ 'eye-slash' if service.is_active else 'eye' }}"></i>
+        {{ 'Deactivate Listing' if service.is_active else 'Activate Listing' }}
+      </button>
+    </form>
+
+    <form method="POST" action="{{ url_for('mark_service_sold', id=service.id) }}" onsubmit="return confirm('Mark this listing as sold? It will be hidden from buyers.')">
+      <button type="submit" style="width:100%;padding:.8rem;border-radius:10px;font-weight:600;font-size:.88rem;border:1px solid rgba(245,158,11,.2);background:rgba(245,158,11,.06);color:#fbbf24;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:.45rem">
+        <i class="fas fa-check-circle"></i> Mark as Sold
+      </button>
+    </form>
+    {% endif %}
+
+    <form method="POST" action="{{ url_for('delete_service', id=service.id) }}" onsubmit="return confirm('Delete this listing permanently? This cannot be undone.')">
+      <button type="submit" style="width:100%;padding:.8rem;border-radius:10px;font-weight:600;font-size:.88rem;border:1px solid rgba(239,68,68,.2);background:rgba(239,68,68,.06);color:#f87171;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:.45rem">
+        <i class="fas fa-trash"></i> Delete Listing
+      </button>
+    </form>
+
+    <a href="{{ url_for('dashboard') }}" class="svc-btn-secondary">
+      <i class="fas fa-chart-bar"></i> View Dashboard Stats
     </a>
 
   {% endif %}

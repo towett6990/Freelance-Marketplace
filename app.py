@@ -1162,7 +1162,7 @@ def list_services():
         db.selectinload(Service.images),
         db.selectinload(Service.seller),
         db.selectinload(Service.category),
-    )
+    ).filter_by(is_active=True, is_sold=False)
 
     # Text search — title, description, seller username
     if q:
@@ -1265,7 +1265,7 @@ def list_web_dev_services():
     sort_by = request.args.get("sort", "newest")
     
     # Base query - only Web Development services
-    query = Service.query.filter_by(category_id=category.id).options(
+    query = Service.query.filter_by(category_id=category.id, is_active=True, is_sold=False).options(
         db.joinedload(Service.images),
         db.joinedload(Service.seller),
         db.joinedload(Service.category)
@@ -5042,6 +5042,10 @@ def accept_order(order_id):
         return redirect(url_for('order_detail', order_id=order_id))
     order.status = 'completed'
     order.completed_at = datetime.utcnow()
+    # Auto mark as sold for product/property listings
+    if order.service and order.service.category and order.service.category.layout_type in ('product', 'property'):
+        order.service.is_sold = True
+        order.service.is_active = False
     notif = Notification(
         user_id=order.seller_id,
         type='order',
