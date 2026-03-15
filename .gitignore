@@ -44,3 +44,41 @@ static/uploads/avatars/*
 static/uploads/services/*
 !static/uploads/avatars/.gitkeep
 !static/uploads/services/.gitkeep
+
+# Utility/dev scripts
+add_*.py
+check_*.py
+copy_and_write.py
+count_and_save.py
+create_*.py
+delete_*.py
+dump_*.py
+fix_*.py
+get_lines.py
+mock_vision.py
+patch_*.py
+read_*.py
+run_*.py
+scanner.py
+seed_*.py
+setup_*.py
+simple_print.py
+test_*.py
+verify_setup.py
+backup.txt
+*.log
+*.code-workspace
+"python fix_duplicate.py"
+
+# VS Code
+.vscode/
+
+# Docs
+GLOBAL_SCALE_REQUIREMENTS.md
+PROJECT_BLUEPRINT.md
+
+# Uploads (keep folder structure, not files)
+static/uploads/avatars/*
+static/uploads/services/*
+!static/uploads/avatars/.gitkeep
+!static/uploads/services/.gitkeep
