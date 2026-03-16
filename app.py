@@ -5267,6 +5267,36 @@ def admin_resolve_dispute(order_id):
     flash(f"Order #{order.id} dispute resolved as '{order.status}'.", "success")
     return redirect(url_for("admin_disputes"))
 
+
+@app.route("/service/<int:id>/mark-sold", methods=["POST"])
+@login_required
+def mark_service_sold(id):
+    svc = Service.query.get_or_404(id)
+    if svc.seller_id != current_user.id and current_user.role != "admin":
+        flash("Not authorized.", "danger")
+        return redirect(url_for("service_detail", service_id=id))
+    svc.is_sold = True
+    svc.is_active = False
+    db.session.commit()
+    flash("Listing marked as sold.", "success")
+    return redirect(request.referrer or url_for("dashboard"))
+
+@app.route("/service/<int:id>/toggle-active", methods=["POST"])
+@login_required
+def toggle_service_active(id):
+    svc = Service.query.get_or_404(id)
+    if svc.seller_id != current_user.id and current_user.role != "admin":
+        flash("Not authorized.", "danger")
+        return redirect(url_for("service_detail", service_id=id))
+    if svc.is_sold:
+        flash("Cannot reactivate a sold listing.", "warning")
+        return redirect(request.referrer or url_for("dashboard"))
+    svc.is_active = not svc.is_active
+    db.session.commit()
+    status = "activated" if svc.is_active else "deactivated"
+    flash(f"Listing {status}.", "success")
+    return redirect(request.referrer or url_for("dashboard"))
+
 if __name__ == "__main__":
     with app.app_context():
         db.create_all()
