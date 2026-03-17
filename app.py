@@ -125,6 +125,53 @@ MAX_IMAGE_SIZE_MB = 10  # Increased file size limit
 MAX_VIDEO_SIZE_MB = 100  # Increased file size limit
 
 
+# PHASE 2 FIX: File content validation using magic bytes
+def validate_file_content(file_storage, allowed_mimes=None):
+    """
+    Validate actual file content using magic bytes, not just extension.
+    Prevents upload of malicious files with fake extensions.
+    """
+    if allowed_mimes is None:
+        allowed_mimes = {'image/jpeg', 'image/png', 'image/gif', 'image/webp'}
+    
+    # Read first 2048 bytes for magic byte detection
+    file_storage.stream.seek(0)
+    header = file_storage.stream.read(2048)
+    file_storage.stream.seek(0)
+    
+    if len(header) < 4:
+        raise ValueError("File too small to validate")
+    
+    # Check magic bytes for common image formats
+    # JPEG: FF D8 FF
+    # PNG: 89 50 4E 47
+    # GIF: 47 49 46 38
+    # WebP: 52 49 46 46 ... 57 45 42 50
+    
+    is_jpeg = header[:3] == b'\xff\xd8\xff'
+    is_png = header[:4] == b'\x89PNG'
+    is_gif = header[:4] == b'GIF8'
+    is_webp = header[:4] == b'RIFF' and header[8:12] == b'WEBP'
+    
+    mime_type = None
+    if is_jpeg:
+        mime_type = 'image/jpeg'
+    elif is_png:
+        mime_type = 'image/png'
+    elif is_gif:
+        mime_type = 'image/gif'
+    elif is_webp:
+        mime_type = 'image/webp'
+    
+    if mime_type is None:
+        raise ValueError(f"Invalid file content type. Allowed: {allowed_mimes}")
+    
+    if mime_type not in allowed_mimes:
+        raise ValueError(f"File type {mime_type} not allowed. Allowed: {allowed_mimes}")
+    
+    return True
+
+
 def save_service_image(file_storage, user_id, max_width=1600):
     """
     Validates and saves an uploaded image.
@@ -132,6 +179,9 @@ def save_service_image(file_storage, user_id, max_width=1600):
     Converts and resizes large images to JPEG (keeps png/webp if originally png/webp).
     """
     try:
+        # PHASE 2 FIX: Validate file content before processing
+        validate_file_content(file_storage, {'image/jpeg', 'image/png', 'image/gif', 'image/webp'})
+        
         filename = secure_filename(file_storage.filename)
         ext = filename.rsplit(".", 1)[-1].lower()
         
@@ -296,6 +346,12 @@ limiter = Limiter(
 limiter.init_app(app)
 csrf = CSRFProtect(app)
 
+# PHASE 3 FIX: Add secure session configuration
+app.config['SESSION_COOKIE_SECURE'] = os.environ.get('FLASK_ENV') == 'production'
+app.config['SESSION_COOKIE_HTTPONLY'] = True
+app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
+app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=30)
+
 login_manager = LoginManager(app)
 login_manager.login_view = "login"
 
@@ -319,7 +375,9 @@ def send_order_email(to, subject, heading, body_html, order_id, cta_text="View O
     except Exception as e:
         app.logger.error(f"Order email failed (order #{order_id}): {e}")
 ts = URLSafeTimedSerializer(app.config["SECRET_KEY"])
-socketio = SocketIO(app, cors_allowed_origins="*", async_mode="threading")
+# SECURITY FIX: Use environment variable for CORS origins instead of wildcard
+cors_origins = os.environ.get("CORS_ORIGINS", "http://localhost:5000 http://127.0.0.1:5000")
+socketio = SocketIO(app, cors_allowed_origins=cors_origins, async_mode="threading")
 @app.route('/api/review/add', methods=['POST'])
 @login_required
 def add_review():
@@ -624,10 +682,15 @@ def search_messages(conversation_id):
     if not search_term:
         return jsonify({"results": []})
     
+    # SECURITY FIX: Escape special LIKE characters to prevent SQL injection
+    # Escape: % (any chars), _ (single char), \ (escape char)
+    escaped_search = search_term.replace('\\', '\\\\').replace('%', '\\%').replace('_', '\\_')
+    
     # Filter messages by conversation_id and content containing search term
+    # Use escape character so literal % and _ are matched
     results = Message.query.filter(
         Message.conversation_id == conversation_id,
-        Message.content.ilike(f"%{search_term}%")
+        Message.content.ilike(f"%{escaped_search}%", escape='\\')
     ).order_by(Message.timestamp.desc()).all()
     
     # Return JSON with results
@@ -978,7 +1041,15 @@ def mpesa_callback():
             print("ERROR: No callback data received")
             return jsonify({"ResultCode": 1, "ResultDesc": "No data received"}), 400
 
-        # Parse M-Pesa response
+        # PHASE 2 FIX: Validate M-Pesa callback authenticity
+        from mpesa import validate_mpesa_callback
+        is_valid, validation_result = validate_mpesa_callback(callback_data)
+        
+        if not is_valid:
+            app.logger.warning(f"❌ Invalid M-Pesa callback: {validation_result}")
+            return jsonify({"ResultCode": 1, "ResultDesc": "Invalid callback"}), 400
+        
+        # Extract transaction details from validated callback
         body = callback_data.get("Body", {})
         stk_callback = body.get("stkCallback", {})
         
@@ -4260,6 +4331,21 @@ app.register_blueprint(location_bp)
 app.register_blueprint(location_views_bp)
 app.register_blueprint(features_bp)
 
+# PHASE 3 FIX: Generic error messages - hide internal details from users
+@app.errorhandler(Exception)
+def handle_error(e):
+    """Handle all uncaught exceptions with generic error messages"""
+    # Log full error internally for debugging
+    app.logger.error(f"Unhandled exception: {str(e)}", exc_info=True)
+    
+    # Return generic message to user - don't expose internal details
+    if request.is_json or request.path.startswith('/api/'):
+        return jsonify({'error': 'An unexpected error occurred. Please try again later.'}), 500
+    
+    flash('An unexpected error occurred. Please try again later.', 'danger')
+    return redirect(url_for('index'))
+
+
 @app.after_request
 def add_security_headers(response):
     # Prevent MIME sniffing
@@ -5309,4 +5395,15 @@ if __name__ == "__main__":
                 db.session.add(u)
                 db.session.commit()
                 print(f"Created default admin: {admin_email} (overwrite ADMIN_EMAIL / ADMIN_PWD env to change)")
-    socketio.run(app, host="0.0.0.0", port=5000, debug=True, allow_unsafe_werkzeug=True, use_reloader=False)
+    
+    # SECURITY FIX: Run in production mode (debug=False)
+    # Use environment variable to control debug mode
+    debug_mode = os.environ.get("FLASK_DEBUG", "false").lower() == "true"
+    socketio.run(
+        app,
+        host="0.0.0.0",
+        port=5000,
+        debug=debug_mode,
+        allow_unsafe_werkzeug=not debug_mode,
+        use_reloader=debug_mode  # Only enable reloader in debug mode
+    )
