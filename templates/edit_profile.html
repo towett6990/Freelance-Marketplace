@@ -45,5 +45,23 @@
       </button>
     </form>
   </div>
+
+  <!-- Danger Zone -->
+  <div style="max-width:600px;margin:2rem auto;padding:0 1rem">
+    <div style="background:rgba(239,68,68,.06);border:1px solid rgba(239,68,68,.2);border-radius:14px;padding:1.5rem">
+      <h4 style="color:#f87171;font-weight:700;margin:0 0 .5rem">⚠️ Danger Zone</h4>
+      <p style="color:#94a3b8;font-size:.85rem;margin:0 0 1rem">These actions are permanent and cannot be undone.</p>
+      <div style="display:flex;gap:.75rem;flex-wrap:wrap">
+        <a href="{{ url_for('export_account_data') }}"
+          style="padding:.6rem 1.2rem;background:rgba(0,255,200,.08);border:1px solid rgba(0,255,200,.2);border-radius:8px;color:#00ffc8;font-size:.85rem;font-weight:600;text-decoration:none">
+          ⬇️ Export My Data
+        </a>
+        <a href="{{ url_for('delete_account') }}"
+          style="padding:.6rem 1.2rem;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.3);border-radius:8px;color:#f87171;font-size:.85rem;font-weight:600;text-decoration:none">
+          🗑️ Delete Account
+        </a>
+      </div>
+    </div>
+  </div>
 </div>
 {% endblock %}

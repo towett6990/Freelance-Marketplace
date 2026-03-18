@@ -5398,6 +5398,74 @@ def toggle_service_active(id):
     flash(f"Listing {status}.", "success")
     return redirect(request.referrer or url_for("dashboard"))
 
+
+@app.route("/account/delete", methods=["GET", "POST"])
+@login_required
+def delete_account():
+    if request.method == "POST":
+        password = request.form.get("password", "")
+        if not current_user.check_password(password):
+            flash("Incorrect password.", "danger")
+            return redirect(url_for("delete_account"))
+        user = current_user
+        # Anonymize orders instead of deleting (preserve order history)
+        from models import Order, Review, Notification, Favorite
+        Order.query.filter_by(buyer_id=user.id).update({'buyer_id': None})
+        Order.query.filter_by(seller_id=user.id).update({'seller_id': None})
+        # Delete user data
+        Review.query.filter_by(buyer_id=user.id).delete()
+        Review.query.filter_by(seller_id=user.id).delete()
+        Notification.query.filter_by(user_id=user.id).delete()
+        Favorite.query.filter_by(user_id=user.id).delete()
+        # Delete services
+        for svc in user.services:
+            db.session.delete(svc)
+        db.session.flush()
+        from flask_login import logout_user
+        logout_user()
+        db.session.delete(user)
+        db.session.commit()
+        flash("Your account has been permanently deleted.", "info")
+        return redirect(url_for("index"))
+    return render_template("delete_account.html")
+
+@app.route("/account/export")
+@login_required
+def export_account_data():
+    from models import Order, Review, Notification, Payment
+    import json as _json
+    user = current_user
+    data = {
+        "account": {
+            "username": user.username,
+            "email": user.email,
+            "created_at": str(user.created_at),
+            "verification_status": user.verification_status,
+        },
+        "orders_as_buyer": [
+            {"id": o.id, "amount": str(o.amount), "status": o.status, "created_at": str(o.created_at)}
+            for o in Order.query.filter_by(buyer_id=user.id).all()
+        ],
+        "orders_as_seller": [
+            {"id": o.id, "amount": str(o.amount), "status": o.status, "created_at": str(o.created_at)}
+            for o in Order.query.filter_by(seller_id=user.id).all()
+        ],
+        "reviews": [
+            {"service_id": r.service_id, "rating": r.overall_rating, "created_at": str(r.created_at)}
+            for r in Review.query.filter_by(buyer_id=user.id).all()
+        ],
+        "payments": [
+            {"amount": str(p.amount), "status": p.status, "created_at": str(p.created_at)}
+            for p in Payment.query.filter_by(buyer_id=user.id).all()
+        ],
+    }
+    response = app.response_class(
+        response=_json.dumps(data, indent=2),
+        status=200,
+        mimetype="application/json"
+    )
+    response.headers["Content-Disposition"] = f"attachment; filename=freelancinghub_data_{user.id}.json"
+    return response
 if __name__ == "__main__":
     with app.app_context():
         db.create_all()
