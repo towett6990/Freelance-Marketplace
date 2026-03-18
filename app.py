@@ -5022,6 +5022,12 @@ def pay_order_mpesa(order_id):
     order = Order.query.get_or_404(order_id)
     if current_user.id != order.buyer_id:
         return jsonify({'success': False, 'error': 'Access denied'}), 403
+    # Duplicate payment check
+    if order.status not in ('pending', 'failed'):
+        return jsonify({'success': False, 'error': f'Order is already {order.status}'}), 400
+    existing = Payment.query.filter_by(order_id=order.id, status='pending').first()
+    if existing:
+        return jsonify({'success': False, 'error': 'A payment is already pending for this order. Check your M-Pesa.'}), 400
     phone = request.form.get('phone', '').strip().replace(' ', '').replace('-', '')
     if not phone:
         return jsonify({'success': False, 'error': 'Phone number required'}), 400
