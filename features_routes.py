@@ -121,7 +121,9 @@ def send_offer(buyer_id):
 @login_required
 def offer_detail(oid):
     offer = CustomOffer.query.get_or_404(oid)
-    if current_user.id not in (offer.buyer_id, offer.seller_id): abort(403)
+    # PHASE 2 FIX: Explicit IDOR protection - check ownership
+    if current_user.id not in (offer.buyer_id, offer.seller_id) and current_user.role != 'admin':
+        abort(403)
     return render_template('offer_detail.html', offer=offer)
 
 
@@ -129,7 +131,9 @@ def offer_detail(oid):
 @login_required
 def respond_offer(oid):
     offer = CustomOffer.query.get_or_404(oid)
-    if offer.buyer_id != current_user.id: abort(403)
+    # PHASE 2 FIX: Explicit IDOR protection - only buyer can respond
+    if offer.buyer_id != current_user.id and current_user.role != 'admin':
+        abort(403)
     action = request.form.get('action')
     if action == 'accept':
         offer.status = 'accepted'
@@ -299,7 +303,8 @@ def get_seller_level(uid):
 def order_from_offer(oid):
     from models_extra import CustomOffer
     offer = CustomOffer.query.get_or_404(oid)
-    if offer.buyer_id != current_user.id:
+    # PHASE 2 FIX: Explicit IDOR protection
+    if offer.buyer_id != current_user.id and current_user.role != 'admin':
         abort(403)
     if offer.status != 'accepted':
         flash('Offer must be accepted before placing an order.', 'warning')
@@ -386,6 +391,7 @@ def pay_offer(oid, order_id):
     from models import Order
     offer = CustomOffer.query.get_or_404(oid)
     order = Order.query.get_or_404(order_id)
-    if offer.buyer_id != current_user.id:
+    # PHASE 2 FIX: Explicit IDOR protection
+    if offer.buyer_id != current_user.id and current_user.role != 'admin':
         abort(403)
     return render_template('payment_offer.html', offer=offer, order=order)

@@ -347,6 +347,7 @@ limiter.init_app(app)
 csrf = CSRFProtect(app)
 
 # PHASE 3 FIX: Add secure session configuration
+app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max upload
 app.config['SESSION_COOKIE_SECURE'] = os.environ.get('FLASK_ENV') == 'production'
 app.config['SESSION_COOKIE_HTTPONLY'] = True
 app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
@@ -384,6 +385,7 @@ else:
 socketio = SocketIO(app, cors_allowed_origins=cors_origins, async_mode="threading")
 @app.route('/api/review/add', methods=['POST'])
 @login_required
+@limiter.limit('5 per minute; 20 per hour')
 def add_review():
     """Add a new review for a service"""
     try:
@@ -526,6 +528,7 @@ def get_service_reviews(service_id):
 
 @app.route('/api/review/<int:review_id>/edit', methods=['PUT'])
 @login_required
+@limiter.limit('5 per minute; 20 per hour')
 def edit_review(review_id):
     """Edit a review (only by author)"""
     try:
@@ -582,6 +585,7 @@ def edit_review(review_id):
 
 @app.route('/api/review/<int:review_id>/delete', methods=['DELETE'])
 @login_required
+@limiter.limit('5 per minute; 10 per hour')
 def delete_review(review_id):
     """Delete a review (only by author or admin)"""
     try:
@@ -2481,6 +2485,7 @@ def mark_notifications_read():
     return jsonify({'ok': True, 'count': notif_count_for_user(current_user.id)})
 
 
+@limiter.limit("10 per minute")
 @app.route("/api/notifications/count")
 @login_required
 def api_notif_count():
