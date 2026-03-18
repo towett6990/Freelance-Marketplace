@@ -81,3 +81,4 @@ static/uploads/avatars/*
 static/uploads/services/*
 !static/uploads/avatars/.gitkeep
 !static/uploads/services/.gitkeep
+logs/

@@ -14,6 +14,38 @@ from flask import (
 # Suppress noisy eventlet warnings
 logging.getLogger('eventlet').setLevel(logging.ERROR)
 logging.getLogger('eventlet.wsgi').setLevel(logging.ERROR)
+
+# ── Structured logging setup ─────────────────────────────────────────────────
+import logging.handlers
+
+def setup_logging(app):
+    log_level = logging.DEBUG if os.environ.get('FLASK_ENV') != 'production' else logging.INFO
+    formatter = logging.Formatter(
+        '[%(asctime)s] %(levelname)s in %(module)s: %(message)s',
+        datefmt='%Y-%m-%d %H:%M:%S'
+    )
+    # File handler with rotation (10MB max, keep 5 backups)
+    os.makedirs('logs', exist_ok=True)
+    file_handler = logging.handlers.RotatingFileHandler(
+        'logs/freelancinghub.log', maxBytes=10*1024*1024, backupCount=5
+    )
+    file_handler.setFormatter(formatter)
+    file_handler.setLevel(log_level)
+    # Error-only log
+    error_handler = logging.handlers.RotatingFileHandler(
+        'logs/errors.log', maxBytes=5*1024*1024, backupCount=3
+    )
+    error_handler.setFormatter(formatter)
+    error_handler.setLevel(logging.ERROR)
+    # M-Pesa specific log
+    mpesa_handler = logging.handlers.RotatingFileHandler(
+        'logs/mpesa.log', maxBytes=5*1024*1024, backupCount=5
+    )
+    mpesa_handler.setFormatter(formatter)
+    app.logger.addHandler(file_handler)
+    app.logger.addHandler(error_handler)
+    app.logger.setLevel(log_level)
+    logging.getLogger('mpesa').addHandler(mpesa_handler)
 warnings.filterwarnings('ignore', message='.*Connection.*')
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
@@ -270,6 +302,7 @@ def save_service_video(file_storage, user_id):
 
 
 app = Flask(__name__)
+setup_logging(app)
 
 # ─────────────────────────────────────────
 # SECRET KEY
