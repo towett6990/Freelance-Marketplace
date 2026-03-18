@@ -376,7 +376,11 @@ def send_order_email(to, subject, heading, body_html, order_id, cta_text="View O
         app.logger.error(f"Order email failed (order #{order_id}): {e}")
 ts = URLSafeTimedSerializer(app.config["SECRET_KEY"])
 # SECURITY FIX: Use environment variable for CORS origins instead of wildcard
-cors_origins = os.environ.get("CORS_ORIGINS", "http://localhost:5000 http://127.0.0.1:5000")
+_env = os.environ.get("FLASK_ENV", "development")
+if _env == "production":
+    cors_origins = os.environ.get("CORS_ORIGINS", "http://localhost:5000")
+else:
+    cors_origins = "*"  # Allow all origins in development
 socketio = SocketIO(app, cors_allowed_origins=cors_origins, async_mode="threading")
 @app.route('/api/review/add', methods=['POST'])
 @login_required
