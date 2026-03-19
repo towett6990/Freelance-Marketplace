@@ -304,6 +304,25 @@ def save_service_video(file_storage, user_id):
 app = Flask(__name__)
 setup_logging(app)
 
+# ── Request timing ───────────────────────────────────────────────────────────
+import time
+@app.before_request
+def start_timer():
+    from flask import g
+    g.start_time = time.time()
+
+@app.after_request
+def log_request_time(response):
+    from flask import g
+    if hasattr(g, 'start_time'):
+        elapsed = (time.time() - g.start_time) * 1000
+        if elapsed > 500:  # Log requests slower than 500ms
+            app.logger.warning(f"SLOW REQUEST: {request.method} {request.path} took {elapsed:.0f}ms")
+        else:
+            app.logger.debug(f"{request.method} {request.path} {elapsed:.0f}ms")
+    return response
+
+
 # ─────────────────────────────────────────
 # SECRET KEY
 # ─────────────────────────────────────────
@@ -965,7 +984,8 @@ def chat(conversation_id):
 def inject_globals():
     notif_count = 0
     chat_count  = 0
-    if current_user.is_authenticated:
+    # Skip DB queries for static assets and API calls
+    if current_user.is_authenticated and not request.path.startswith('/static') and not request.path.startswith('/api'):
         notif_count = notif_count_for_user(current_user.id)
         chat_count  = unread_count_for_user(current_user.id)
     return {
