@@ -380,7 +380,8 @@ limiter.init_app(app)
 csrf = CSRFProtect(app)
 
 # PHASE 3 FIX: Add secure session configuration
-app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max upload
+app.config['MAX_CONTENT_LENGTH'] = 200 * 1024 * 1024  # 200MB global max (videos)
+# Per-type limits enforced in save_service_image/save_service_video (see MAX_IMAGE_SIZE_MB, MAX_VIDEO_SIZE_MB)
 app.config['SESSION_COOKIE_SECURE'] = os.environ.get('FLASK_ENV') == 'production'
 app.config['SESSION_COOKIE_HTTPONLY'] = True
 app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
