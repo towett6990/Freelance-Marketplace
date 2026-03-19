@@ -397,6 +397,7 @@ limiter = Limiter(
 )
 limiter.init_app(app)
 csrf = CSRFProtect(app)
+app.config['WTF_CSRF_HEADERS'] = ['X-CSRFToken', 'X-CSRF-Token']
 
 # PHASE 3 FIX: Add secure session configuration
 app.config['MAX_CONTENT_LENGTH'] = 200 * 1024 * 1024  # 200MB global max (videos)

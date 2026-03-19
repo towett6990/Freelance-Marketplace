@@ -233,7 +233,7 @@ document.getElementById('delete-chat-btn').addEventListener('click', () => docum
 document.getElementById('cancel-delete').addEventListener('click', () => document.getElementById('delete-modal').classList.add('hidden'));
 document.getElementById('delete-modal').addEventListener('click', e => { if (e.target === e.currentTarget) e.currentTarget.classList.add('hidden'); });
 document.getElementById('confirm-delete').addEventListener('click', function() {
-  fetch('/conversation/' + conversationId + '/delete', { method: 'POST', headers: {'Content-Type':'application/json'} })
+  fetch('/conversation/' + conversationId + '/delete', { method: 'POST', headers: {'Content-Type':'application/json', 'X-CSRFToken': document.querySelector('meta[name=csrf-token]').getAttribute('content')} })
     .then(r => r.json())
     .then(d => { if (d.success) { alert('Deleted'); window.location.href='/conversations'; } else alert('Error: ' + d.message); })
     .catch(() => alert('Error deleting conversation'));
@@ -461,7 +461,7 @@ async function sendMessageWithLocation() {
   const cid  = document.getElementById('conversationId').value;
   if (!chatLocationData) return;
   try {
-    const r = await fetch('/send-message', { method: 'POST', headers: {'Content-Type':'application/json'},
+    const r = await fetch('/send-message', { method: 'POST', headers: {'Content-Type':'application/json', 'X-CSRFToken': document.querySelector('meta[name=csrf-token]').getAttribute('content')},
       body: JSON.stringify({ message: msg, location: chatLocationData, conversation_id: parseInt(cid) }) });
     const d = await r.json();
     if (r.ok) { document.getElementById('message-input').value = ''; chatLocationData = null; document.getElementById('chatLocationDisplay').style.display='none'; location.reload(); }

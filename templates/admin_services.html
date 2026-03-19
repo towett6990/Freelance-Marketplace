@@ -166,14 +166,14 @@ function showToast(msg, ok=true) {
 
 async function deleteService(id, btn) {
   if (!confirm('Delete this service listing? This cannot be undone.')) return;
-  const r = await fetch(`/admin/services/${id}/delete`, {method:'POST'});
+  const r = await fetch(`/admin/services/${id}/delete`, {method:'POST', headers:{'X-CSRFToken': document.querySelector('meta[name=csrf-token]').getAttribute('content')}});
   const d = await r.json();
   if (d.success) { showToast(d.message); document.getElementById(`svc-row-${id}`).remove(); }
   else showToast(d.error, false);
 }
 
 async function featureService(id, btn) {
-  const r = await fetch(`/admin/services/${id}/feature`, {method:'POST'});
+  const r = await fetch(`/admin/services/${id}/feature`, {method:'POST', headers:{'X-CSRFToken': document.querySelector('meta[name=csrf-token]').getAttribute('content')}});
   const d = await r.json();
   if (d.success) {
     showToast(d.message);

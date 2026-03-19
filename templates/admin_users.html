@@ -250,7 +250,7 @@ function showToast(msg, ok=true) {
 }
 
 async function apiPost(url) {
-  const r = await fetch(url, {method:'POST', headers:{'Content-Type':'application/json'}});
+  const r = await fetch(url, {method:'POST', headers:{'Content-Type':'application/json', 'X-CSRFToken': document.querySelector('meta[name=csrf-token]').getAttribute('content')}});
   return r.json();
 }
 
