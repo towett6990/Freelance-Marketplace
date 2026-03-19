@@ -37,6 +37,10 @@ pytesseract.pytesseract.tesseract_cmd = _tess
 # ─────────────────────────────────────────────────────────────
 ENABLE_OCR = True
 
+# PHASE 3 FIX: Raise auto-approval threshold - only auto-approve at 95%+ confidence
+# All lower confidence verifications go to manual review for security
+AUTO_APPROVE_THRESHOLD = 0.95
+
 
 # ═══════════════════════════════════════════════════════════════
 # OCR VERIFIER
@@ -135,13 +139,15 @@ class NationalIDVerifier:
 
             min_conf = self.ID_PATTERNS.get(result['country'], {}).get('min_confidence', 0.65)
 
-            if confidence >= min_conf and not ocr['has_critical_issues']:
+            # PHASE 3 FIX: Use higher threshold for auto-approval (95% instead of 50-65%)
+            # This ensures only very high confidence matches are auto-approved
+            if confidence >= AUTO_APPROVE_THRESHOLD and not ocr['has_critical_issues']:
                 result['status']  = 'verified'
                 result['message'] = f"{result['country']} National ID auto-verified ({confidence:.0%})"
             else:
                 result['status']  = 'manual_review'
                 result['message'] = (
-                    f"Low OCR confidence ({confidence:.0%}) — queued for manual review"
+                    f"Confidence ({confidence:.0%}) below threshold — queued for manual review"
                 )
 
             return result

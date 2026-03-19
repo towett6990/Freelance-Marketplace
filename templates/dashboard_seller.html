@@ -414,10 +414,15 @@ canvas{max-height:200px}
             {% for order in recent_orders %}
             <tr>
               <td>
-                <a href="{{ url_for('service_detail', service_id=order.service_id) }}"
-                   style="color:var(--cyan);text-decoration:none;font-weight:500">
-                  {{ order.service.title[:30] ~ '…' if order.service and order.service.title|length > 30
-                     else (order.service.title if order.service else '—') }}
+              <td>
+                {% if order.service %}
+                <a href="{{ url_for('service_detail', service_id=order.service.id) if order.service else '#' }}" style="color:var(--cyan);text-decoration:none;font-weight:500">
+                  {{ order.service.title[:30] ~ "…" if order.service.title|length > 30 else order.service.title }}
+                </a>
+                {% else %}
+                <span style="color:var(--muted)">—</span>
+                {% endif %}
+              </td>
                 </a>
               </td>
               <td style="color:var(--muted)">

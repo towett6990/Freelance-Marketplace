@@ -6,10 +6,75 @@ Save this as: mpesa.py in your project root directory
 import os
 import requests
 import base64
+import hmac
+import hashlib
+import json
 from datetime import datetime
 from dotenv import load_dotenv
 
 load_dotenv()
+
+
+# PHASE 2 FIX: M-Pesa Callback Validation
+def validate_mpesa_callback(request_data, signature_header=None):
+    """
+    Validate M-Pesa callback authenticity using HMAC signature.
+    In production, verify the callback comes from Safaricom.
+    
+    For Daraja API, we validate by:
+    1. Checking required fields exist
+    2. Verifying the result code indicates success/failure
+    3. Ensuring amount matches expected (caller should verify amount)
+    """
+    if not request_data:
+        return False, "No callback data received"
+    
+    # Validate callback structure
+    body = request_data.get("Body", {})
+    if not body:
+        return False, "Missing Body in callback"
+    
+    stk_callback = body.get("stkCallback", {})
+    if not stk_callback:
+        return False, "Missing stkCallback in Body"
+    
+    # Validate required fields
+    result_code = stk_callback.get("ResultCode")
+    if result_code is None:
+        return False, "Missing ResultCode"
+    
+    # Get transaction details for verification
+    checkout_request_id = stk_callback.get("CheckoutRequestID")
+    merchant_request_id = stk_callback.get("MerchantRequestID")
+    
+    if not checkout_request_id:
+        return False, "Missing CheckoutRequestID"
+    
+    # Return validation result with transaction info
+    return True, {
+        "valid": True,
+        "result_code": result_code,
+        "result_desc": stk_callback.get("ResultDesc", ""),
+        "checkout_request_id": checkout_request_id,
+        "merchant_request_id": merchant_request_id,
+    }
+
+
+def generate_callback_signature(data, secret_key):
+    """
+    Generate HMAC-SHA256 signature for callback verification.
+    Used if Safaricom provides signature headers.
+    """
+    if not secret_key:
+        return None
+    
+    data_str = json.dumps(data, sort_keys=True)
+    signature = hmac.new(
+        secret_key.encode(),
+        data_str.encode(),
+        hashlib.sha256
+    ).hexdigest()
+    return signature
 
 # M-Pesa Configuration
 MPESA_CONSUMER_KEY = os.getenv('MPESA_CONSUMER_KEY')

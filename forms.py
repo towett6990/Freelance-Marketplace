@@ -8,13 +8,18 @@ from wtforms import (
     StringField, SelectField, PasswordField, SubmitField,
     TextAreaField, DecimalField
 )
-from wtforms.validators import DataRequired, Email, Length, EqualTo, NumberRange
+from wtforms.validators import DataRequired, Email, Length, EqualTo, NumberRange, Regexp
 
 
 class RegistrationForm(FlaskForm):
     username = StringField("Display name", validators=[Length(max=120)])
     email = StringField("Email", validators=[DataRequired(), Email()])
-    password = PasswordField("Password", validators=[DataRequired(), Length(min=6)])
+    password = PasswordField("Password", validators=[
+        DataRequired(),
+        Length(min=8, message="Password must be at least 8 characters"),
+        Regexp(r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]',
+               message="Password must contain: uppercase, lowercase, number, and special character (@$!%*?&)")
+    ])
     confirm_password = PasswordField("Confirm", validators=[DataRequired(), EqualTo("password")])
     role = SelectField("Role", choices=[("buyer","Buyer"),("seller","Seller")], validators=[DataRequired()])
     submit = SubmitField("Register")
