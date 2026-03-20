@@ -96,7 +96,7 @@
                   <p style="color:#10b981;font-size:.65rem;margin-top:.25rem">📍 Click to view on map</p>
                 </div>
               {% endif %}
-              <p style="font-size: 0.75rem; color: #9ca3af; margin-top: 0.25rem;">{{ msg.timestamp.strftime('%H:%M') }}</p>
+              <p style="font-size: 0.75rem; color: #9ca3af; margin-top: 0.25rem;">{{ (msg.timestamp | eat).strftime('%H:%M') }}</p>
             </div>
           </div>
         {% else %}
@@ -111,7 +111,7 @@
                 </div>
               {% endif %}
               <p style="font-size: 0.75rem; color: rgba(0,0,0,0.5); margin-top: 0.25rem; display: flex; justify-content: flex-end; gap: 0.5rem;">
-                <span>{{ msg.timestamp.strftime('%H:%M') }}</span>
+                <span>{{ (msg.timestamp | eat).strftime('%H:%M') }}</span>
                 <span id="tick-{{ msg.id }}" class="message-ticks">
                   {% if msg.is_read %}<span style="color:#0099ff">✓✓</span>
                   {% elif msg.delivered %}<span style="color:#999">✓✓</span>

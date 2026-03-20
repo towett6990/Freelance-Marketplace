@@ -166,7 +166,7 @@
           
           <div class="info-item">
             <i class="fas fa-calendar-alt"></i>
-            <span>Joined {{ service.seller.created_at.strftime('%b %Y') if service.seller and service.seller.created_at else 'Recently' }}</span>
+            <span>Joined {{ (service.seller.created_at | eat).strftime('%b %Y') if service.seller and service.seller.created_at else 'Recently' }}</span>
           </div>
         </div>
       </div>
@@ -306,7 +306,7 @@
               </div>
               <div class="reviewer-info">
                 <span class="reviewer-name">{{ review.buyer.username if review.buyer else 'Anonymous' }}</span>
-                <span class="review-date">{{ review.created_at.strftime('%b %d, %Y') if review.created_at else 'Recent' }}</span>
+                <span class="review-date">{{ (review.created_at | eat).strftime('%b %d, %Y') if review.created_at else 'Recent' }}</span>
               </div>
               <div class="review-rating">
                 {% for i in range(5) %}

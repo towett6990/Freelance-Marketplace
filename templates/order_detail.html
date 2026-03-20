@@ -37,7 +37,7 @@
               <div class="step-content">
                 <h3 class="step-title">{{ step_name }}</h3>
                 {% if step_date %}
-                  <p class="step-date">{{ step_date.strftime('%B %d, %Y at %I:%M %p') }}</p>
+                  <p class="step-date">{{ (step_date | eat).strftime('%B %d, %Y at %I:%M %p') }} EAT</p>
                 {% endif %}
               </div>
             </div>
@@ -70,7 +70,7 @@
           {% if order.deadline %}
             <div class="flex justify-between">
               <span class="text-gray-300">Deadline:</span>
-              <span class="text-white">{{ order.deadline.strftime('%B %d, %Y') }}</span>
+              <span class="text-white">{{ (order.deadline | eat).strftime('%B %d, %Y') }}</span>
             </div>
           {% endif %}
         </div>
@@ -99,7 +99,7 @@
             <div class="message-item {% if message.sender_id == current_user.id %}sent{% else %}received{% endif %}">
               <div class="message-header">
                 <span class="message-sender">{{ message.sender.display_name() }}</span>
-                <span class="message-time">{{ message.timestamp.strftime('%b %d, %I:%M %p') }}</span>
+                <span class="message-time">{{ (message.timestamp | eat).strftime('%b %d, %I:%M %p') }}</span>
               </div>
               <div class="message-content">{{ message.content }}</div>
               {% if message.file_path %}
