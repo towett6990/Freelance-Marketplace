@@ -233,7 +233,7 @@ def save_service_image(file_storage, user_id, max_width=1600):
             raise ValueError(f"Image file too large (max {MAX_IMAGE_SIZE_MB}MB)")
         
         # create unique name
-        base = f"{user_id}_{int(datetime.utcnow().timestamp())}_{uuid.uuid4().hex}"
+        base = f"{user_id}_{int(datetime.now(timezone.utc).timestamp())}_{uuid.uuid4().hex}"
         out_ext = ext if ext in ("png","webp","gif") else "jpg"
         out_name = f"{base}.{out_ext}"
         out_path = os.path.join(SERVICE_IMG_FOLDER, out_name)
@@ -292,7 +292,7 @@ def save_service_video(file_storage, user_id):
     if size > MAX_VIDEO_SIZE_MB * 1024 * 1024:
         raise ValueError(f"Video file too large (max {MAX_VIDEO_SIZE_MB}MB)")
     # create unique name
-    base = f"{user_id}_{int(datetime.utcnow().timestamp())}_{uuid.uuid4().hex}"
+    base = f"{user_id}_{int(datetime.now(timezone.utc).timestamp())}_{uuid.uuid4().hex}"
     ext = filename.rsplit(".",1)[-1].lower()
     out_name = f"{base}.{ext}"
     out_path = os.path.join(SERVICE_IMG_FOLDER, out_name)
@@ -457,7 +457,7 @@ def add_review():
             return jsonify({'error': 'Missing service_id or overall_rating'}), 400
         
         # Get service
-        service = Service.query.get(service_id)
+        service = db.session.get(Service, service_id)
         if not service:
             return jsonify({'error': 'Service not found'}), 404
         
@@ -534,7 +534,7 @@ def add_review():
 def get_review(review_id):
     """Get a single review"""
     try:
-        review = Review.query.get(review_id)
+        review = db.session.get(Review, review_id)
         if not review:
             return jsonify({'error': 'Review not found'}), 404
         return jsonify(review.to_dict()), 200
@@ -550,7 +550,7 @@ def get_service_reviews(service_id):
         page = request.args.get('page', 1, type=int)
         per_page = 10
         
-        service = Service.query.get(service_id)
+        service = db.session.get(Service, service_id)
         if not service:
             return jsonify({'error': 'Service not found'}), 404
         
@@ -586,7 +586,7 @@ def get_service_reviews(service_id):
 def edit_review(review_id):
     """Edit a review (only by author)"""
     try:
-        review = Review.query.get(review_id)
+        review = db.session.get(Review, review_id)
         if not review:
             return jsonify({'error': 'Review not found'}), 404
         
@@ -643,7 +643,7 @@ def edit_review(review_id):
 def delete_review(review_id):
     """Delete a review (only by author or admin)"""
     try:
-        review = Review.query.get(review_id)
+        review = db.session.get(Review, review_id)
         if not review:
             return jsonify({'error': 'Review not found'}), 404
         
@@ -672,7 +672,7 @@ def delete_review(review_id):
 def can_review_service(service_id):
     """Check if current user can review a service"""
     try:
-        service = Service.query.get(service_id)
+        service = db.session.get(Service, service_id)
         if not service:
             return jsonify({'error': 'Service not found'}), 404
         
@@ -942,7 +942,7 @@ def start_chat(service_id):
         return redirect(url_for("service_detail", service_id=service_id))
     
     # Get or create conversation with the seller
-    seller = User.query.get(service.seller_id)
+    seller = db.session.get(User, service.seller_id)
     if not seller:
         flash("Seller not found.", "danger")
         return redirect(url_for("service_detail", service_id=service_id))
@@ -1170,7 +1170,7 @@ def mpesa_callback():
                 # Update linked order status if exists
                 if payment.order_id:
                     from models import Order
-                    order = Order.query.get(payment.order_id)
+                    order = db.session.get(Order, payment.order_id)
                     if order:
                         order.status = 'paid'
                         db.session.commit()
@@ -1920,7 +1920,7 @@ def api_web_dev_services():
 def api_category_config(category_id):
     """API endpoint to get category configuration including custom fields"""
     try:
-        category = Category.query.get(category_id)
+        category = db.session.get(Category, category_id)
         if not category:
             return jsonify({'error': 'Category not found'}), 404
         
@@ -2228,7 +2228,7 @@ def register():
         import random
         from datetime import datetime, timedelta
         code = str(random.randint(100000, 999999))
-        expires = datetime.utcnow() + timedelta(minutes=15)
+        expires = datetime.now(timezone.utc) + timedelta(minutes=15)
         u = User(username=username, email=email, password=generate_password_hash(password), role=role,
                  email_verified=False, email_verification_code=code, email_code_expires_at=expires)
         db.session.add(u)
@@ -2261,7 +2261,7 @@ def resend_verification():
         return redirect(url_for("login"))
     code = str(random.randint(100000, 999999))
     user.email_verification_code = code
-    user.email_code_expires_at = datetime.utcnow() + timedelta(minutes=15)
+    user.email_code_expires_at = datetime.now(timezone.utc) + timedelta(minutes=15)
     db.session.commit()
     try:
         msg = MailMessage(
@@ -2288,7 +2288,7 @@ def verify_email():
         return redirect(url_for("login"))
     if request.method == "POST":
         code = request.form.get("code", "").strip()
-        if not user.email_code_expires_at or datetime.utcnow() > user.email_code_expires_at:
+        if not user.email_code_expires_at or datetime.now(timezone.utc) > user.email_code_expires_at:
             flash("Verification code expired. Please register again.", "danger")
             return redirect(url_for("register"))
         if code == user.email_verification_code:
@@ -2531,7 +2531,7 @@ def mark_notifications_read():
     """Mark all (or one) notification as read. Called via AJAX."""
     notif_id = request.json.get('id') if request.is_json else None
     if notif_id:
-        n = Notification.query.get(notif_id)
+        n = db.session.get(Notification, notif_id)
         if n and n.user_id == current_user.id:
             n.is_read = True
     else:
@@ -2938,7 +2938,7 @@ def on_send_message(data):
         return
 
     # Get receiver_id from conversation object (more reliable than client data)
-    conversation = Conversation.query.get(conversation_id)
+    conversation = db.session.get(Conversation, conversation_id)
     if not conversation:
         return
     
@@ -3041,7 +3041,7 @@ def initiate_call(data):
         db.session.commit()
         
         # Get caller info
-        caller = User.query.get(current_user.id)
+        caller = db.session.get(User, current_user.id)
         caller_name = caller.display_name() if caller else "Unknown"
         
         # Emit incoming call to conversation room
@@ -3073,7 +3073,7 @@ def accept_call(data):
             emit("error", {"message": "Missing call_id"})
             return
         
-        call = Call.query.get(call_id)
+        call = db.session.get(Call, call_id)
         if not call:
             emit("error", {"message": "Call not found"})
             return
@@ -3114,7 +3114,7 @@ def reject_call(data):
             emit("error", {"message": "Missing call_id"})
             return
         
-        call = Call.query.get(call_id)
+        call = db.session.get(Call, call_id)
         if not call:
             emit("error", {"message": "Call not found"})
             return
@@ -3157,7 +3157,7 @@ def end_call(data):
             emit("error", {"message": "Missing call_id"})
             return
         
-        call = Call.query.get(call_id)
+        call = db.session.get(Call, call_id)
         if not call:
             emit("error", {"message": "Call not found"})
             return
@@ -3206,8 +3206,8 @@ def notify_message_received(data):
         db.session.commit()
         
         # Get sender info
-        message = Message.query.get(message_id)
-        sender = User.query.get(current_user.id) if message else None
+        message = db.session.get(Message, message_id)
+        sender = db.session.get(User, current_user.id) if message else None
         sender_name = sender.display_name() if sender else "Unknown"
         
         # Emit notification to receiver's personal room
@@ -3285,7 +3285,7 @@ def join_chat(data):
         join_room(f"convo_{conversation_id}")
         
         # Get conversation info
-        convo = Conversation.query.get(conversation_id)
+        convo = db.session.get(Conversation, conversation_id)
         if convo:
             # Emit user joined event to the room
             emit("user_joined", {
@@ -3321,7 +3321,7 @@ def leave_chat(data):
         leave_room(f"convo_{conversation_id}")
         
         # Get conversation info
-        convo = Conversation.query.get(conversation_id)
+        convo = db.session.get(Conversation, conversation_id)
         if convo:
             # Emit user left event to the room
             emit("user_left", {
@@ -3357,7 +3357,7 @@ def message_read(data):
         
         # If specific message_id provided, mark that message as read
         if message_id:
-            message = Message.query.get(message_id)
+            message = db.session.get(Message, message_id)
             if message and message.receiver_id == current_user.id:
                 message.is_read = True
                 message.read_at = datetime.now(timezone.utc)
@@ -3391,7 +3391,7 @@ def message_delivered(data):
             emit("error", {"message": "Missing message_id"})
             return
         
-        message = Message.query.get(message_id)
+        message = db.session.get(Message, message_id)
         if message and message.receiver_id == current_user.id:
             # Create delivery notification
             notification = MessageNotification(
@@ -3774,7 +3774,7 @@ def create_service():
         
         # Get category object for custom fields
         if category_id:
-            category_obj = Category.query.get(category_id)
+            category_obj = db.session.get(Category, category_id)
         else:
             category_obj = Category.query.filter_by(slug=category_slug).first()
         
@@ -3886,7 +3886,7 @@ def edit_service(id):
     # Get category for the service
     category_obj = None
     if svc.category_id:
-        category_obj = Category.query.get(svc.category_id)
+        category_obj = db.session.get(Category, svc.category_id)
     elif svc.category_old:
         category_obj = Category.query.filter_by(slug=svc.category_old).first()
     
@@ -3904,7 +3904,7 @@ def edit_service(id):
         category_id = request.form.get("category_id", type=int)
         if category_id:
             svc.category_id = category_id
-            category_obj = Category.query.get(category_id)
+            category_obj = db.session.get(Category, category_id)
             if category_obj:
                 svc.category_old = category_obj.slug
         
@@ -4132,7 +4132,7 @@ def post_service():
         
         category_obj = None
         if category_id:
-            category_obj = Category.query.get(category_id)
+            category_obj = db.session.get(Category, category_id)
         elif category_slug:
             category_obj = Category.query.filter_by(slug=category_slug).first()
         
@@ -4465,7 +4465,7 @@ def send_message():
             return jsonify({'error': 'Message or location required'}), 400
         
         # Get conversation
-        conversation = Conversation.query.get(conversation_id)
+        conversation = db.session.get(Conversation, conversation_id)
         if not conversation:
             return jsonify({'error': 'Conversation not found'}), 404
         
@@ -4740,7 +4740,7 @@ def admin_dashboard():
     total_services  = Service.query.count()
     total_payments  = Payment.query.count()
     total_revenue   = db.session.query(db.func.sum(Payment.amount)).filter_by(status='completed').scalar() or 0
-    new_users_today = User.query.filter(User.created_at >= datetime.utcnow().date()).count()
+    new_users_today = User.query.filter(User.created_at >= datetime.now(timezone.utc).date()).count()
     pending_verify  = User.query.filter_by(verification_status='pending', manual_review_required=True).count()
     banned_users    = User.query.filter_by(is_banned=True).count() if hasattr(User, 'is_banned') else 0
 
@@ -4757,7 +4757,7 @@ def admin_dashboard():
     from sqlalchemy import extract
     monthly = []
     for i in range(5, -1, -1):
-        d = datetime.utcnow() - timedelta(days=30*i)
+        d = datetime.now(timezone.utc) - timedelta(days=30*i)
         rev = db.session.query(db.func.sum(Payment.amount)).filter(
             Payment.status == 'completed',
             extract('month', Payment.created_at) == d.month,
@@ -4953,7 +4953,7 @@ def admin_retry_payout(payout_id):
     if payout.status not in ("failed", "processing"):
         flash("Only failed or processing payouts can be retried.", "warning")
         return redirect(url_for("admin_payouts"))
-    order = Order.query.get(payout.order_id)
+    order = db.session.get(Order, payout.order_id)
     if not order:
         flash("Order not found.", "danger")
         return redirect(url_for("admin_payouts"))
@@ -5000,7 +5000,7 @@ def pay_offer_mpesa():
         buyer_phone = '254' + buyer_phone[1:]
     if not buyer_phone.startswith('254') or len(buyer_phone) != 12:
         return jsonify({'success': False, 'message': 'Invalid buyer phone format'}), 400
-    order = Order.query.get(order_id)
+    order = db.session.get(Order, order_id)
     if not order or order.buyer_id != current_user.id:
         return jsonify({'success': False, 'message': 'Order not found'}), 404
     try:
@@ -5130,7 +5130,7 @@ def start_order(order_id):
         flash('Order must be paid before starting.', 'warning')
         return redirect(url_for('order_detail', order_id=order_id))
     order.status = 'in_progress'
-    order.started_at = datetime.utcnow()
+    order.started_at = datetime.now(timezone.utc)
     notif = Notification(
         user_id=order.buyer_id,
         type='order',
@@ -5141,7 +5141,7 @@ def start_order(order_id):
     db.session.add(notif)
     db.session.commit()
     flash('Order marked as in progress.', 'success')
-    buyer = User.query.get(order.buyer_id)
+    buyer = db.session.get(User, order.buyer_id)
     if buyer and buyer.email:
         send_order_email(buyer.email, f"Order #{order.id} Started", "Your Order Has Started 🚀",
             f"Great news! The seller has started working on order <strong>#{order.id}</strong>. You'll be notified when it's delivered.",
@@ -5163,7 +5163,7 @@ def deliver_order(order_id):
             flash('Order must be in progress to deliver.', 'warning')
             return redirect(url_for('order_detail', order_id=order_id))
         order.status = 'delivered'
-        order.delivered_at = datetime.utcnow()
+        order.delivered_at = datetime.now(timezone.utc)
         order.deliverables = request.form.get('deliverables', '')
         notif = Notification(
             user_id=order.buyer_id,
@@ -5175,7 +5175,7 @@ def deliver_order(order_id):
         db.session.add(notif)
         db.session.commit()
         flash('Order delivered successfully.', 'success')
-        buyer = User.query.get(order.buyer_id)
+        buyer = db.session.get(User, order.buyer_id)
         if buyer and buyer.email:
             send_order_email(buyer.email, f"Order #{order.id} Delivered", "Your Order Has Been Delivered 📦",
                 f"The seller has submitted the deliverables for order <strong>#{order.id}</strong>. Please review and accept or raise a dispute.",
@@ -5197,7 +5197,7 @@ def accept_order(order_id):
         flash('Order must be delivered before accepting.', 'warning')
         return redirect(url_for('order_detail', order_id=order_id))
     order.status = 'completed'
-    order.completed_at = datetime.utcnow()
+    order.completed_at = datetime.now(timezone.utc)
     # Auto mark as sold for product/property listings
     if order.service and order.service.category and order.service.category.layout_type in ('product', 'property'):
         order.service.is_sold = True
@@ -5221,7 +5221,7 @@ def accept_order(order_id):
     except Exception as e:
         logger.error(f"Payout failed for order {order_id}: {e}")
     flash("Order accepted. Payment will be released to seller.", "success")
-    seller = User.query.get(order.seller_id)
+    seller = db.session.get(User, order.seller_id)
     if seller and seller.email:
         send_order_email(seller.email, f"Order #{order.id} Accepted", "Order Accepted — Payment Released 💰",
             f"The buyer has accepted order <strong>#{order.id}</strong>. Your payment is being processed via M-Pesa.",
@@ -5252,7 +5252,7 @@ def file_dispute(order_id):
         db.session.commit()
         flash('Dispute filed. Our team will review shortly.', 'warning')
         other_id = order.seller_id if current_user.id == order.buyer_id else order.buyer_id
-        other = User.query.get(other_id)
+        other = db.session.get(User, other_id)
         if other and other.email:
             send_order_email(other.email, f"Dispute Filed on Order #{order.id}", "A Dispute Has Been Filed ⚠️",
                 f"A dispute has been filed on order <strong>#{order.id}</strong>. Our team will review and reach out to both parties.",
@@ -5363,7 +5363,7 @@ def admin_resolve_dispute(order_id):
         flash("Resolution note is required.", "warning")
         return redirect(url_for("admin_disputes"))
     order.resolution_note = resolution
-    order.resolved_at = datetime.utcnow()
+    order.resolved_at = datetime.now(timezone.utc)
     order.resolved_by = current_user.id
     if action == "refund":
         order.status = "refunded"
@@ -5373,19 +5373,19 @@ def admin_resolve_dispute(order_id):
         order.status = "on_hold"
     elif action == "ban_buyer":
         order.status = "resolved"
-        buyer = User.query.get(order.buyer_id)
+        buyer = db.session.get(User, order.buyer_id)
         if buyer:
             buyer.role = "banned"
             db.session.add(buyer)
     elif action == "ban_seller":
         order.status = "resolved"
-        seller = User.query.get(order.seller_id)
+        seller = db.session.get(User, order.seller_id)
         if seller:
             seller.role = "banned"
             db.session.add(seller)
     elif action == "warn_buyer":
         order.status = "resolved"
-        buyer = User.query.get(order.buyer_id)
+        buyer = db.session.get(User, order.buyer_id)
         if buyer and buyer.email:
             send_order_email(buyer.email, f"Warning — Order #{order.id}",
                 "Account Warning ⚠️",
@@ -5393,7 +5393,7 @@ def admin_resolve_dispute(order_id):
                 order.id, cta_text="View Order")
     elif action == "warn_seller":
         order.status = "resolved"
-        seller = User.query.get(order.seller_id)
+        seller = db.session.get(User, order.seller_id)
         if seller and seller.email:
             send_order_email(seller.email, f"Warning — Order #{order.id}",
                 "Account Warning ⚠️",
@@ -5411,8 +5411,8 @@ def admin_resolve_dispute(order_id):
             body=msg, link=url_for("order_detail", order_id=order.id)
         ))
     # Email both
-    buyer = User.query.get(order.buyer_id)
-    seller = User.query.get(order.seller_id)
+    buyer = db.session.get(User, order.buyer_id)
+    seller = db.session.get(User, order.seller_id)
     for u in [buyer, seller]:
         if u and u.email:
             send_order_email(u.email, f"Dispute Resolved — Order #{order.id}",

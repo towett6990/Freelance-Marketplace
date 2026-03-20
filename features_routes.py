@@ -105,7 +105,7 @@ def send_offer(buyer_id):
             description   = request.form.get('description', ''),
             price         = Decimal(request.form.get('price', '0')),
             delivery_days = int(request.form.get('delivery_days', 3)),
-            expires_at    = datetime.utcnow() + timedelta(days=7),
+            expires_at    = datetime.now(timezone.utc) + timedelta(days=7),
         )
         db.session.add(offer)
         db.session.commit()
@@ -202,7 +202,7 @@ def seller_analytics():
     sids     = [s.id for s in services]
 
     # Views last 30 days
-    since = datetime.utcnow() - timedelta(days=30)
+    since = datetime.now(timezone.utc) - timedelta(days=30)
     from sqlalchemy import func
     total_views = ServiceView.query.filter(
         ServiceView.service_id.in_(sids),
@@ -212,7 +212,7 @@ def seller_analytics():
     # Views per day (last 14 days)
     daily_views = []
     for i in range(13, -1, -1):
-        day_start = datetime.utcnow().replace(hour=0,minute=0,second=0,microsecond=0) - timedelta(days=i)
+        day_start = datetime.now(timezone.utc).replace(hour=0,minute=0,second=0,microsecond=0) - timedelta(days=i)
         day_end   = day_start + timedelta(days=1)
         cnt = ServiceView.query.filter(
             ServiceView.service_id.in_(sids),
@@ -224,7 +224,7 @@ def seller_analytics():
     # Earnings from M-Pesa payments (seller receives completed payments)
     payments        = Payment.query.filter_by(seller_id=current_user.id, status='completed').all()
     total_earned    = sum(float(p.amount or 0) for p in payments)
-    this_month      = datetime.utcnow().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+    this_month      = datetime.now(timezone.utc).replace(day=1, hour=0, minute=0, second=0, microsecond=0)
     month_earned    = sum(float(p.amount or 0) for p in payments
                           if p.created_at and p.created_at >= this_month)
     total_orders    = len(payments)
@@ -234,7 +234,7 @@ def seller_analytics():
     # Monthly earnings chart (last 6 months)
     monthly = []
     for i in range(5, -1, -1):
-        m_start = (datetime.utcnow().replace(day=1, hour=0, minute=0, second=0, microsecond=0) - timedelta(days=i*30)).replace(day=1)
+        m_start = (datetime.now(timezone.utc).replace(day=1, hour=0, minute=0, second=0, microsecond=0) - timedelta(days=i*30)).replace(day=1)
         m_end   = (m_start + timedelta(days=32)).replace(day=1)
         earn    = sum(float(p.amount or 0) for p in payments
                       if p.created_at and m_start <= p.created_at < m_end)
@@ -271,7 +271,7 @@ def track_view(sid):
     ih   = hashlib.md5(ip.encode()).hexdigest()
     uid  = current_user.id if current_user.is_authenticated else None
     # Deduplicate: same user/ip within 1 hour
-    since = datetime.utcnow() - timedelta(hours=1)
+    since = datetime.now(timezone.utc) - timedelta(hours=1)
     exists = ServiceView.query.filter(
         ServiceView.service_id == sid,
         ServiceView.viewed_at  >= since,
@@ -341,7 +341,7 @@ def create_order(sid):
     from datetime import datetime, timedelta
     service = Service.query.get_or_404(sid)
     pkg_id = request.args.get('pkg', type=int)
-    pkg = ServicePackage.query.get(pkg_id) if pkg_id else None
+    pkg = db.session.get(ServicePackage, pkg_id) if pkg_id else None
 
     if current_user.id == service.seller_id:
         flash('You cannot order your own service.', 'warning')
@@ -349,10 +349,10 @@ def create_order(sid):
 
     if request.method == 'POST':
         pkg_id = request.form.get('pkg_id', type=int)
-        pkg = ServicePackage.query.get(pkg_id) if pkg_id else None
+        pkg = db.session.get(ServicePackage, pkg_id) if pkg_id else None
         amount = pkg.price if pkg else service.price
         delivery_days = (pkg.delivery_days if pkg else None) or getattr(service, 'delivery_days', None)
-        deadline = datetime.utcnow() + timedelta(days=delivery_days) if delivery_days else None
+        deadline = datetime.now(timezone.utc) + timedelta(days=delivery_days) if delivery_days else None
 
         order = Order(
             service_id=service.id,

@@ -676,7 +676,7 @@ class Location(db.Model):
     def is_expired(self):
         if not self.expires_at:
             return False
-        return datetime.utcnow() > self.expires_at
+        return datetime.now(timezone.utc) > self.expires_at
     
     def __repr__(self):
         return f'<Location {self.user_id} - {self.city}>'
