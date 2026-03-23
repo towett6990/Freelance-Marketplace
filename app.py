@@ -18,58 +18,23 @@ logging.getLogger('eventlet.wsgi').setLevel(logging.ERROR)
 # ── Structured logging setup ─────────────────────────────────────────────────
 import logging.handlers
 
-def setup_logging(app)
-
-# ── Timezone filter for templates (UTC → EAT East Africa Time UTC+3) ─────────
-from datetime import timezone, timedelta
-EAT = timezone(timedelta(hours=3))
-
-@app.template_filter('eat')
-def to_eat(dt):
-    if not dt:
-        return ''
-    if dt.tzinfo is None:
-        dt = dt.replace(tzinfo=timezone.utc)
-    return dt.astimezone(EAT)
-
-@app.template_filter('timeago')
-def timeago(dt):
-    if not dt:
-        return ''
-    if dt.tzinfo is None:
-        dt = dt.replace(tzinfo=timezone.utc)
-    now = datetime.now(timezone.utc)
-    diff = now - dt
-    seconds = diff.total_seconds()
-    if seconds < 60:
-        return 'just now'
-    elif seconds < 3600:
-        return f'{int(seconds/60)}m ago'
-    elif seconds < 86400:
-        return f'{int(seconds/3600)}h ago'
-    elif seconds < 604800:
-        return f'{int(seconds/86400)}d ago'
-    else:
-        return dt.astimezone(EAT).strftime('%d %b %Y'):
+def setup_logging(app):
     log_level = logging.DEBUG if os.environ.get('FLASK_ENV') != 'production' else logging.INFO
     formatter = logging.Formatter(
         '[%(asctime)s] %(levelname)s in %(module)s: %(message)s',
         datefmt='%Y-%m-%d %H:%M:%S'
     )
-    # File handler with rotation (10MB max, keep 5 backups)
     os.makedirs('logs', exist_ok=True)
     file_handler = logging.handlers.RotatingFileHandler(
         'logs/freelancinghub.log', maxBytes=10*1024*1024, backupCount=5
     )
     file_handler.setFormatter(formatter)
     file_handler.setLevel(log_level)
-    # Error-only log
     error_handler = logging.handlers.RotatingFileHandler(
         'logs/errors.log', maxBytes=5*1024*1024, backupCount=3
     )
     error_handler.setFormatter(formatter)
     error_handler.setLevel(logging.ERROR)
-    # M-Pesa specific log
     mpesa_handler = logging.handlers.RotatingFileHandler(
         'logs/mpesa.log', maxBytes=5*1024*1024, backupCount=5
     )
@@ -78,6 +43,7 @@ def timeago(dt):
     app.logger.addHandler(error_handler)
     app.logger.setLevel(log_level)
     logging.getLogger('mpesa').addHandler(mpesa_handler)
+
 warnings.filterwarnings('ignore', message='.*Connection.*')
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
