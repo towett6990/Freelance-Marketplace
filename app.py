@@ -5563,6 +5563,13 @@ def export_account_data():
     )
     response.headers["Content-Disposition"] = f"attachment; filename=freelancinghub_data_{user.id}.json"
     return response
+@app.route('/sw.js')
+def service_worker():
+    response = app.send_static_file('sw.js')
+    response.headers['Service-Worker-Allowed'] = '/'
+    response.headers['Cache-Control'] = 'no-cache'
+    return response
+
 if __name__ == "__main__":
     with app.app_context():
         db.create_all()
