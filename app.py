@@ -4306,9 +4306,21 @@ def pay_service(service_id):
             print(f"❌ {error_msg}")
             return jsonify({'success': False, 'message': error_msg}), 400
         
-        # Create payment record
-        print(f"\n💾 Creating payment record...")
+        # Create order first
+        print(f"\n💾 Creating order and payment record...")
+        order = Order(
+            service_id=service_id,
+            buyer_id=current_user.id,
+            seller_id=service.seller_id,
+            amount=service.price,
+            currency='KES',
+            title=service.title,
+            status='pending'
+        )
+        db.session.add(order)
+        db.session.flush()
         payment = Payment(
+            order_id=order.id,
             service_id=service_id,
             buyer_id=current_user.id,
             seller_id=service.seller_id,

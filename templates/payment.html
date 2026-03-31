@@ -408,9 +408,10 @@ async function initiatePayment() {
   showPayMsg('📱 Sending payment request to your phone… Check for M-Pesa prompt.', 'info');
 
   try {
+    const csrfToken = document.querySelector('meta[name=csrf-token]').getAttribute('content');
     const resp = await fetch('/pay_service/{{ service.id }}', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken },
       body: JSON.stringify({
         buyer_phone: buyerPhone,
         seller_phone: sellerPhone
