@@ -276,7 +276,7 @@
           Reviews & Ratings
         </h3>
         
-        {% if service.reviews and service.reviews|length > 0 %}
+        {% if service.reviews.all()|length > 0 %}
         <div class="reviews-summary">
           <div class="rating-big">
             <span class="rating-number">{{ "%.1f"|format(service.get_average_rating()) }}</span>
@@ -294,7 +294,7 @@
         </div>
         
         <div class="reviews-list">
-          {% for review in service.reviews[:5] %}
+          {% for review in service.reviews.all()[:5] %}
           <div class="review-card">
             <div class="review-header">
               <div class="reviewer-avatar">
@@ -325,9 +325,9 @@
           {% endfor %}
         </div>
         
-        {% if service.reviews|length > 5 %}
+        {% if service.reviews.all()|length > 5 %}
         <a href="#" class="view-all-reviews">
-          View All {{ service.reviews|length }} Reviews
+          View All {{ service.reviews.all()|length }} Reviews
         </a>
         {% endif %}
         {% else %}
