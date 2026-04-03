@@ -69,7 +69,7 @@
         <div class="rate-card">
           <div class="rate-label">Hourly Rate</div>
           {% if service.custom_data and service.custom_data.hourly_rate %}
-            <div class="rate-amount">KES {{ "%.0f"|format(service.custom_data.hourly_rate) }}</div>
+            <div class="rate-amount">KES {{ "%.0f"|format(service.custom_data.hourly_rate|float) }}</div>
           {% else %}
             <div class="rate-amount">KES {{ "%.0f"|format(service.price) }}</div>
           {% endif %}
