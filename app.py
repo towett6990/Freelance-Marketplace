@@ -5570,6 +5570,17 @@ def service_worker():
     response.headers['Cache-Control'] = 'no-cache'
     return response
 
+@app.route("/api/user/<int:user_id>/status")
+@login_required
+def get_user_status(user_id):
+    user = db.session.get(User, user_id)
+    if not user:
+        return jsonify({"online": False}), 404
+    return jsonify({
+        "online": getattr(user, "is_online", False),
+        "last_seen": user.last_seen.isoformat() if hasattr(user, "last_seen") and user.last_seen else None
+    })
+
 if __name__ == "__main__":
     with app.app_context():
         db.create_all()
