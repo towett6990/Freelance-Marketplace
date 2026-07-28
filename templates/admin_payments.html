@@ -87,7 +87,7 @@
           {% set buyer = p.buyer %}
           {% if buyer %}
           <div class="adm-user-cell">
-            <div class="adm-avatar">{{ (buyer.username or buyer.email or '?')[0].upper() }}</div>
+            <div class="adm-avatar">{{  (buyer.username or buyer.email or '?')[0].upper() }}</div>
             <div>
               <div style="color:#e2e8f0;font-weight:600">{{ buyer.username or '—' }}</div>
               <div style="color:#475569;font-size:.7rem">{{ p.phone_number }}</div>
@@ -104,7 +104,7 @@
         </td>
         <td><span class="adm-badge {{ p.status }}">{{ p.status }}</span></td>
         <td style="color:#475569;font-size:.78rem">
-          {{ p.created_at.strftime('%d %b %Y %H:%M') if p.created_at else '—' }}
+          {{  p.created_at.strftime('%d %b %Y %H:%M') if p.created_at else '—' }}
         </td>
       </tr>
       {% else %}

@@ -1,0 +1,39 @@
+{% if service.image_list or service.video_list %}
+<div class="fh-slider">
+  <div class="fh-slider-track">
+    {% for img in service.image_list %}
+    <div class="fh-slide{% if loop.first %} active{% endif %}">
+      <img src="{{ '/uploads/services/' ~ img }}" alt="{{ service.title }}">
+    </div>
+    {% endfor %}
+    {% for vid in service.video_list %}
+    <div class="fh-slide">
+      <video controls preload="metadata">
+        <source src="{{ '/uploads/services/' ~ vid }}" type="video/mp4">
+      </video>
+    </div>
+    {% endfor %}
+    {% if (service.image_list|length + service.video_list|length) > 1 %}
+    <button class="fh-prev" onclick="fhPrev()">&#10094;</button>
+    <button class="fh-next" onclick="fhNext()">&#10095;</button>
+    <div class="fh-counter" id="fhCounter">1 / {{ service.image_list|length + service.video_list|length }}</div>
+    {% endif %}
+  </div>
+  {% if (service.image_list|length + service.video_list|length) > 1 %}
+  <div class="fh-thumbs">
+    {% for img in service.image_list %}
+    <div class="fh-thumb{% if loop.first %} active{% endif %}" onclick="fhGoto({{ loop.index0 }})">
+      <img src="{{ '/uploads/services/' ~ img }}" alt="">
+    </div>
+    {% endfor %}
+    {% for vid in service.video_list %}
+    <div class="fh-thumb" onclick="fhGoto({{ service.image_list|length + loop.index0 }})">
+      <span>&#9654;</span>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+</div>
+{% else %}
+<div class="fh-no-image"><i class="fas fa-image"></i></div>
+{% endif %}

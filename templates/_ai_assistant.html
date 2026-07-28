@@ -205,6 +205,16 @@
   .soko-panel{width:calc(100vw - 28px);right:14px;bottom:84px;max-height:70vh;}
   .soko-bubble{bottom:16px;right:16px;}
 }
+.soko-copy-btn{background:none;border:none;color:rgba(255,255,255,.4);cursor:pointer;padding:0 0 0 6px;font-size:.7rem;vertical-align:middle;transition:color .2s}
+.soko-copy-btn:hover{color:#00ffc8}
+.soko-copy-btn{background:none;border:none;color:rgba(255,255,255,.4);cursor:pointer;padding:0 0 0 6px;font-size:.7rem;vertical-align:middle;transition:color .2s}
+.soko-copy-btn:hover{color:#00ffc8}
+.soko-copy-btn{background:none;border:none;color:rgba(255,255,255,.4);cursor:pointer;padding:0 0 0 6px;font-size:.7rem;vertical-align:middle;transition:color .2s}
+.soko-copy-btn:hover{color:#00ffc8}
+.soko-action-btn-wrap{padding:.3rem .8rem .5rem}
+.soko-action-btn{background:linear-gradient(135deg,#00ffc8,#00b894);color:#0a1628;border:none;padding:.5rem 1.2rem;border-radius:20px;font-weight:700;cursor:pointer;font-size:.85rem;transition:opacity .2s}
+.soko-action-btn:hover{opacity:.85}
+.soko-action-btn:disabled{opacity:.5;cursor:not-allowed}
 </style>
 
 <script>
@@ -267,7 +277,8 @@
         .replace(/\[([^\]]+)\]\((\/[^)]+)\)/g,'<a href="$2" onclick="closeSokoOnNav()">$1</a>')
         .replace(/\n/g,'<br>');
     }
-    div.innerHTML=`<div class="soko-msg-bubble">${html}</div><div class="soko-msg-time">${time}</div>`;
+    const copyBtn = role==='ai' ? `<button class="soko-copy-btn" onclick="navigator.clipboard.writeText(this.closest('.soko-msg').querySelector('.soko-msg-bubble').innerText).then(()=>{this.innerHTML='<i class=\'fas fa-check\'></i>';setTimeout(()=>this.innerHTML='<i class=\'fas fa-copy\'></i>',1500)})" title="Copy"><i class="fas fa-copy"></i></button>` : '';
+    div.innerHTML=`<div class="soko-msg-bubble">${html}</div><div class="soko-msg-time">${time}${copyBtn}</div>`;
     msgs.appendChild(div);
     scrollBottom();
     return div;
@@ -310,14 +321,31 @@
     try{
       const res=await fetch('/api/ai-assistant',{
         method:'POST',
-        headers:{'Content-Type':'application/json'},
+        headers:{'Content-Type':'application/json','X-CSRFToken':document.querySelector('meta[name=csrf-token]')?.getAttribute('content')||''},
         body:JSON.stringify({message:msg,history:sokoHistory})
       });
       const data=await res.json();
       removeTyping();
       if(data.success&&data.reply){
-        addMsg('ai',data.reply);
-        sokoHistory.push({role:'assistant',content:data.reply});
+        const reply = data.reply;
+        // Check for ACTION_REQUIRED format
+        if(reply.startsWith('ACTION_REQUIRED|')){
+          const parts = reply.split('|');
+          const actionType = parts[1];
+          const paramStr = parts[2];
+          const confirmMsg = parts[3] || 'Confirm action?';
+          const params = {};
+          paramStr.split(',').forEach(p => {
+            const [k,v] = p.split(':');
+            if(k && v) params[k.trim()] = isNaN(v) ? v.trim() : Number(v.trim());
+          });
+          addMsg('ai', '🔔 ' + confirmMsg);
+          showActionBtn('✅ Confirm', actionType, params);
+          sokoHistory.push({role:'assistant',content:confirmMsg});
+        } else {
+          addMsg('ai',reply);
+          sokoHistory.push({role:'assistant',content:reply});
+        }
       } else {
         addMsg('ai',`⚠️ ${data.error||'Something went wrong. Please try again.'}`);
       }
@@ -329,6 +357,107 @@
       document.getElementById('sokoStatusText').textContent='Kenya Market Assistant • Online';
       input.focus();
     }
+  };
+
+
+  // ── AI Action Handler ─────────────────────────────────
+  async function executeAiAction(action, params){
+    try{
+      const res = await fetch('/api/ai-action', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': document.querySelector('meta[name=csrf-token]')?.getAttribute('content')||''
+        },
+        body: JSON.stringify({action, params})
+      });
+      const data = await res.json();
+      return data;
+    } catch(e){
+      return {success: false, error: 'Connection error'};
+    }
+  }
+
+  // Parse AI response for action commands
+  function parseAiActions(reply){
+    const actions = [];
+    // Detect listing update suggestions
+    if(reply.includes('update_price:') || reply.includes('UPDATE_PRICE:')){
+      const match = reply.match(/(?:update_price|UPDATE_PRICE):\s*(\d+)\s+for\s+listing\s+#?(\d+)/i);
+      if(match) actions.push({type:'update_price', price: match[1], service_id: match[2]});
+    }
+    if(reply.includes('toggle_listing:') || reply.includes('TOGGLE_LISTING:')){
+      const match = reply.match(/(?:toggle_listing|TOGGLE_LISTING):\s*#?(\d+)/i);
+      if(match) actions.push({type:'toggle_listing', service_id: match[1]});
+    }
+    return actions;
+  }
+
+  // Show action confirmation button
+  function showActionBtn(label, action, params){
+    const msgs = document.getElementById('sokoMessages');
+    const div = document.createElement('div');
+    div.className = 'soko-action-btn-wrap';
+    const paramsJson = JSON.stringify(params).replace(/"/g, '&quot;');
+    div.innerHTML = `<button class="soko-action-btn" data-action="${action}" data-params="${paramsJson}">${label}</button>`;
+    div.querySelector('button').addEventListener('click', function(){
+      const a = this.getAttribute('data-action');
+      const p = JSON.parse(this.getAttribute('data-params').replace(/&quot;/g, '"'));
+      confirmAction(a, p, this);
+    });
+    msgs.appendChild(div);
+    scrollBottom();
+  }
+
+  window.confirmAction = async function(action, params, btn){
+    btn = btn || event.target;
+    btn.disabled = true;
+    btn.textContent = 'Processing...';
+    const result = await executeAiAction(action, params);
+    if(result.success){
+      addMsg('ai', '✅ ' + result.message);
+      btn.closest('.soko-action-btn-wrap').remove();
+    } else {
+      addMsg('ai', '❌ ' + (result.error || 'Action failed'));
+      btn.disabled = false;
+      btn.textContent = 'Retry';
+    }
+  };
+
+  // Enhanced sendSokoMessage to detect action intents
+  const _origSend = window.sendSokoMessage;
+  window.sendSokoMessage = async function(){
+    const input = document.getElementById('sokoInput');
+    const msg = input.value.trim().toLowerCase();
+
+    // Detect direct action intents
+    if(msg.startsWith('deactivate listing') || msg.startsWith('activate listing')){
+      const idMatch = msg.match(/listing\s+#?(\d+)/i);
+      if(idMatch){
+        addMsg('user', input.value.trim());
+        input.value = ''; input.style.height = 'auto';
+        showActionBtn(
+          (msg.includes('deactivate') ? '🔴 Deactivate' : '🟢 Activate') + ' Listing #' + idMatch[1],
+          'toggle_listing', {service_id: parseInt(idMatch[1])}
+        );
+        return;
+      }
+    }
+    if(msg.startsWith('update price') || msg.startsWith('change price')){
+      const match = msg.match(/(?:to|:)\s*(?:kes\s*)?(\d+)\s+(?:for\s+)?(?:listing\s+)?#?(\d+)/i);
+      if(match){
+        addMsg('user', input.value.trim());
+        input.value = ''; input.style.height = 'auto';
+        showActionBtn(
+          `💰 Update Listing #${match[2]} price to KES ${match[1]}`,
+          'update_price', {service_id: parseInt(match[2]), price: parseInt(match[1])}
+        );
+        return;
+      }
+    }
+
+    // Default: send to AI
+    return _origSend();
   };
 
   document.addEventListener('DOMContentLoaded',function(){addMsg('ai',getWelcomeMsg());});

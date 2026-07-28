@@ -104,7 +104,7 @@
           <td>{{ o.seller.username if o.seller else "-" }}</td>
           <td style="font-weight:700;color:#e2e8f0">KES {{ "{:,.2f}".format(o.amount) }}</td>
           <td style="max-width:200px;color:#94a3b8;font-size:.8rem">{{ (o.dispute_reason or "-")[:60] }}{% if o.dispute_reason and o.dispute_reason|length > 60 %}…{% endif %}</td>
-          <td style="color:#64748b;font-size:.78rem;white-space:nowrap">{{ o.updated_at.strftime("%d %b %Y") if o.updated_at else "-" }}</td>
+          <td style="color:#64748b;font-size:.78rem;white-space:nowrap">{{  o.updated_at.strftime("%d %b %Y") if o.updated_at else "-" }}</td>
           <td><span class="adm-badge {{ o.status }}">{{ o.status }}</span></td>
           <td>
             {% if o.status == "disputed" %}

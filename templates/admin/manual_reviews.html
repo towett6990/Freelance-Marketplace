@@ -28,7 +28,7 @@
                                 <td>
                                     <strong>{{ user.username }}</strong>
                                     {% if user.avatar %}
-                                        <img src="{{ url_for('static', filename='uploads/avatars/' + user.avatar) }}" 
+                                        <img src="{{ '/uploads/avatars/' + user.avatar }}" 
                                              class="rounded-circle ms-2" width="30" height="30">
                                     {% endif %}
                                 </td>
@@ -46,7 +46,7 @@
                                             {% if user.id_confidence_score >= 0.7 %}bg-success
                                             {% elif user.id_confidence_score >= 0.4 %}bg-warning
                                             {% else %}bg-danger{% endif %}">
-                                            {{ "%.2f"|format(user.id_confidence_score) }}
+                                            {{  "%.2f"|format(user.id_confidence_score) }}
                                         </span>
                                     {% else %}
                                         <span class="badge bg-secondary">N/A</span>

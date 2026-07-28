@@ -3,6 +3,7 @@ import io
 import json
 import logging
 import warnings
+import platform  # Added to detect Windows vs Linux
 from datetime import datetime, timedelta, timezone
 from functools import wraps
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -11,9 +12,14 @@ from flask import (
     flash, send_from_directory, session, jsonify, current_app
 )
 
-# Suppress noisy eventlet warnings
-logging.getLogger('eventlet').setLevel(logging.ERROR)
-logging.getLogger('eventlet.wsgi').setLevel(logging.ERROR)
+# ── Tesseract OCR Path Configuration ──────────────────────────────────────────
+import pytesseract
+if platform.system() == "Windows":
+    # Your local Windows path for development
+    pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
+else:
+    # Standard Linux path for Azure (after installing via apt.txt)
+    pytesseract.pytesseract.tesseract_cmd = '/usr/bin/tesseract'
 
 # ── Structured logging setup ─────────────────────────────────────────────────
 import logging.handlers
@@ -45,12 +51,28 @@ def setup_logging(app):
     logging.getLogger('mpesa').addHandler(mpesa_handler)
 
 warnings.filterwarnings('ignore', message='.*Connection.*')
+
+# ── Flask App & Database Configuration ──────────────────────────────────────
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_login import (
     LoginManager, UserMixin, login_user, logout_user,
     login_required, current_user
 )
+
+# Detect Database URL from Azure Environment or Local .env
+# Azure uses 'AZURE_MYSQL_CONNECTIONSTRING' for the auto-wired MySQL Flexible Server
+AZURE_DB_URL = os.environ.get('AZURE_MYSQL_CONNECTIONSTRING')
+LOCAL_DB_URL = os.environ.get('DATABASE_URL', "mysql+pymysql://freelance_user:Kipkoech@2006@127.0.0.1:3306/freelance_marketplace")
+
+app = Flask(__name__)
+app.config['SQLALCHEMY_DATABASE_URI'] = AZURE_DB_URL if AZURE_DB_URL else LOCAL_DB_URL
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'your-dev-secret-key-123')
+
+# Redis Configuration (Ensures it doesn't crash if Redis was skipped)
+app.config['REDIS_URL'] = os.environ.get('AZURE_REDIS_CONNECTIONSTRING', 'redis://localhost:6379/0')
+
 from flask_wtf import FlaskForm
 from wtforms import (
     StringField, SelectField, PasswordField, SubmitField,
@@ -68,13 +90,10 @@ from flask_socketio import SocketIO, emit, join_room, leave_room
 from dotenv import load_dotenv
 load_dotenv()
 from decimal import Decimal
-import pytesseract
 from PIL import Image, ImageFilter, ImageOps, UnidentifiedImageError
 import cv2
-import face_recognition
 import numpy as np
 import uuid
-pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
 
 # Import db and models from models.py - this is the single source of truth
 from models import db
@@ -87,6 +106,7 @@ from models_extra import (
     ServicePackage, CustomOffer, ServiceView, Favorite, SellerLevel
 )
 from features_routes import features_bp
+
 USE_MOCK_VISION = os.environ.get("USE_MOCK_VISION", "False").lower() == "true"
 KEY_PATH = os.getenv("GOOGLE_APPLICATION_CREDENTIALS")
 GOOGLE_CLOUD_VISION_API_KEY = os.getenv("GOOGLE_CLOUD_VISION_API_KEY")
@@ -95,37 +115,41 @@ GOOGLE_CLOUD_VISION_API_KEY = os.getenv("GOOGLE_CLOUD_VISION_API_KEY")
 from verification_system import register_verification_routes
 
 if USE_MOCK_VISION:
-    
     from mock_vision import MockImageAnnotatorClient as ImageAnnotatorClient
     from mock_vision import MockCredentials as service_account
     import mock_vision as vision
 else:
-   
     from google.oauth2 import service_account
     from google.cloud import vision
 
 if USE_MOCK_VISION:
     client = ImageAnnotatorClient()
 else:
-    if not GOOGLE_CLOUD_VISION_API_KEY or not KEY_PATH:
-        raise EnvironmentError("Missing Vision API key or credentials path in .env")
-    credentials = service_account.Credentials.from_service_account_file(KEY_PATH)
-    client = vision.ImageAnnotatorClient(credentials=credentials)
+    # On Azure, you might want to store your Google JSON key in an environment variable
+    if not GOOGLE_CLOUD_VISION_API_KEY and not KEY_PATH:
+        logging.warning("Missing Vision API key or credentials path. Identity features may fail.")
+    
+    if KEY_PATH and os.path.exists(KEY_PATH):
+        credentials = service_account.Credentials.from_service_account_file(KEY_PATH)
+        client = vision.ImageAnnotatorClient(credentials=credentials)
+    else:
+        # Fallback for API Key usage if JSON file isn't present
+        client = vision.ImageAnnotatorClient()
 
-
-client = vision.ImageAnnotatorClient()
-
+# Suppress noisy eventlet warnings again just in case
+logging.getLogger('eventlet').setLevel(logging.ERROR)
+logging.getLogger('eventlet.wsgi').setLevel(logging.ERROR)
 # --------------------
 # Config & folders
 # --------------------
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 STATIC_DIR = os.path.join(BASE_DIR, "static")
-UPLOAD_FOLDER = os.path.join(STATIC_DIR, "uploads")
+UPLOAD_FOLDER = "/home/site/uploads" if os.path.exists("/home/site") else os.path.join(STATIC_DIR, "uploads")
 ID_FOLDER = os.path.join(UPLOAD_FOLDER, "ids")
 AVATAR_FOLDER = os.path.join(UPLOAD_FOLDER, "avatars")
 CHAT_UPLOAD_FOLDER = os.path.join(UPLOAD_FOLDER, "chat")
-SERVICE_IMG_FOLDER = os.path.join(STATIC_DIR, "uploads", "services")
-SERVICE_VIDEO_FOLDER = os.path.join(STATIC_DIR, "uploads", "services", "videos")
+SERVICE_IMG_FOLDER = os.path.join(UPLOAD_FOLDER, "services")
+SERVICE_VIDEO_FOLDER = os.path.join(UPLOAD_FOLDER, "services", "videos")
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 os.makedirs(ID_FOLDER, exist_ok=True)
 os.makedirs(AVATAR_FOLDER, exist_ok=True)
@@ -1071,7 +1095,8 @@ def index():
 
 
 # Folder to save uploaded IDs
-app.config["ID_FOLDER"] = os.path.join(app.root_path, "static", "uploads", "ids")
+app.config["ID_FOLDER"] = ID_FOLDER
+app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 os.makedirs(app.config["ID_FOLDER"], exist_ok=True)
 
 @app.route('/pay/<int:service_id>', methods=['GET'])
@@ -2318,7 +2343,7 @@ def verify_email():
         return redirect(url_for("login"))
     if request.method == "POST":
         code = request.form.get("code", "").strip()
-        if not user.email_code_expires_at or datetime.now(timezone.utc) > user.email_code_expires_at:
+        if not user.email_code_expires_at or datetime.now(timezone.utc) > user.email_code_expires_at.replace(tzinfo=timezone.utc):
             flash("Verification code expired. Please register again.", "danger")
             return redirect(url_for("register"))
         if code == user.email_verification_code:
@@ -2652,8 +2677,8 @@ def reset_with_token(token):
 
 @app.route("/uploads/<path:filename>")
 def uploaded_file(filename):
-    filepath = safe_join(app.config["UPLOAD_FOLDER"], filename)
-    return send_from_directory(app.config["UPLOAD_FOLDER"], filename)
+    upload_dir = "/home/site/uploads" if os.path.exists("/home/site") else os.path.join(app.static_folder, "uploads")
+    return send_from_directory(upload_dir, filename)
 
 @app.route("/profile/<string:username>")
 def profile(username):
@@ -2799,7 +2824,8 @@ def edit_profile():
         file = request.files.get('avatar')
         if file and file.filename != '':
             filename = secure_filename(file.filename)
-            filepath = os.path.join(app.root_path, 'static/uploads/avatars', filename)
+            upload_dir = '/home/site/uploads' if os.path.exists('/home/site') else os.path.join(app.static_folder, 'uploads')
+            filepath = os.path.join(upload_dir, 'avatars', filename)
             file.save(filepath)
             current_user.avatar = filename
 
@@ -4200,6 +4226,7 @@ def post_service():
         
         # Check for uploaded files - support both 'media' and 'image' field names
         files = request.files.getlist("media")
+        app.logger.warning(f"UPLOAD DEBUG: {len(files)} media files: {[f.filename for f in files]}")
         if not files or all(not f.filename for f in files):
             files = request.files.getlist("image")
         
@@ -4238,6 +4265,11 @@ def post_service():
             image_filenames=json.dumps(image_filenames) if image_filenames else None
         )
         db.session.add(svc)
+        db.session.flush()  # Get svc.id
+        for fname in image_filenames:
+            if fname:
+                svc_img = ServiceImage(service_id=svc.id, filename=fname)
+                db.session.add(svc_img)
         db.session.commit()
         flash("Service posted successfully.", "success")
         return redirect(url_for("service_view", id=svc.id))
@@ -4613,6 +4645,7 @@ def serve_static(filename):
 # ═══════════════════════════════════════════════
 @app.route('/api/ai-assistant', methods=['POST'])
 @login_required
+@csrf.exempt
 @limiter.limit("30 per minute; 200 per hour")   # protect OpenAI quota
 def ai_assistant():
     """Soko AI — GPT-powered marketplace assistant."""
@@ -4628,14 +4661,17 @@ def ai_assistant():
         if len(user_message) > 1000:
             return jsonify({'error': 'Message too long'}), 400
 
-        openai_key = os.environ.get('OPENAI_API_KEY', '')
+        openai_key = os.environ.get('OPENAI_API_KEY', '') or os.environ.get('GROQ_API_KEY', '')
         if not openai_key:
-            return jsonify({'error': 'AI assistant is not configured yet. Add OPENAI_API_KEY to your .env file.'}), 503
+            return jsonify({'error': 'AI assistant is not configured yet.'}), 503
 
         # ── Live marketplace context ──────────────────────────
         try:
             total_services  = Service.query.count()
             total_sellers   = db.session.query(db.func.count(db.distinct(Service.seller_id))).scalar() or 0
+            total_users     = User.query.count()
+            total_buyers    = User.query.filter_by(can_sell=False).count()
+            total_seller_accounts = User.query.filter_by(can_sell=True).count()
 
             # Recent services with category
             recent_svcs = (Service.query
@@ -4673,6 +4709,7 @@ Name: {user_name}
 Role: {user_role} {'(has ' + str(user_services) + ' active listings)' if user_role == 'seller' else '(buyer who can also sell)'}
 
 ━━━ LIVE MARKETPLACE DATA ━━━
+Total registered users: {total_users} | Sellers: {total_seller_accounts} | Buyers: {total_buyers}
 Total active listings: {total_services}
 Active sellers: {total_sellers}
 Categories: {cats_text}
@@ -4738,18 +4775,101 @@ Data Analyst               KES 1,000–4,000/hr
         messages.append({"role": "user", "content": user_message})
 
         # ── Call OpenAI ──────────────────────────────────────
-        client   = openai.OpenAI(api_key=openai_key)
-        response = client.chat.completions.create(
-            model       = "gpt-4o-mini",
-            messages    = messages,
-            max_tokens  = 600,
-            temperature = 0.7,
-        )
+        import requests as _req
+        cf_token = os.environ.get('CLOUDFLARE_API_TOKEN', '')
+        cf_account = os.environ.get('CLOUDFLARE_ACCOUNT_ID', '')
+        if not cf_token or not cf_account:
+            return jsonify({'error': 'AI assistant is not configured.'}), 503
 
-        reply = response.choices[0].message.content.strip()
+        cf_url = f"https://api.cloudflare.com/client/v4/accounts/{cf_account}/ai/run/@cf/meta/llama-3.1-8b-instruct"
+        cf_headers = {"Authorization": f"Bearer {cf_token}", "Content-Type": "application/json"}
+        # Build enhanced messages with system prompt
+        system_msg = {
+            "role": "system",
+            "content": f"""You are Soko AI, the official smart assistant for FreelancingHub - Kenya's #1 freelance marketplace.
+
+LANGUAGE: Detect the user's language and respond in the SAME language. Support English and Kiswahili naturally. Mix both if the user mixes them (Sheng is fine).
+
+YOUR CAPABILITIES:
+- Help buyers find the right services and sellers
+- Help sellers improve listings, pricing, and attract buyers
+- Give Kenya market rate advice (prices in KES)
+- Explain M-Pesa payments and how the platform works
+- Recommend services based on budget and needs
+- Answer questions about orders, disputes, and reviews
+- Give business advice tailored to the Kenyan market
+
+MARKETPLACE CONTEXT:
+- Platform: FreelancingHub (taw-freelance-portal.azurewebsites.net)
+- Currency: Kenya Shillings (KES)
+- Payment: M-Pesa
+- User: {user_name} (role: {user_role})
+- Active listings: {total_services}
+- Categories: {cats_text}
+
+RECENT LISTINGS:
+{recent_text}
+
+PERSONALITY:
+- Friendly, helpful, and professional
+- Use Kenyan expressions naturally (Sawa, Karibu, Asante, etc.)
+- Give specific, actionable advice not vague answers
+- Be concise but thorough
+- Use bullet points and numbered lists for clarity
+- Always encourage users to post or buy on the platform
+
+DECISION FEATURES:
+- If user asks for recommendations, ask clarifying questions first
+- If user asks about pricing, give specific KES ranges
+- If user seems frustrated, acknowledge and offer solutions
+- If user asks something outside your scope, redirect to platform features
+
+CRITICAL - ACTION RULES:
+You CANNOT directly make changes to listings, prices, orders, or profiles.
+When a user asks you to change something, you MUST respond with ONLY this exact format:
+
+ACTION_REQUIRED|action_type|param1:value1,param2:value2|Confirmation message
+
+Examples:
+- User: "change my listing price to 300000"
+  You respond: ACTION_REQUIRED|update_price|service_id:8,price:300000|Update listing #8 price to KES 300,000?
+
+- User: "deactivate my listing"
+  You respond: ACTION_REQUIRED|toggle_listing|service_id:8|Deactivate listing #8?
+
+- User: "update my bio to I am a land seller in Kirinyaga"
+  You respond: ACTION_REQUIRED|update_bio|bio:I am a land seller in Kirinyaga|Update your bio?
+
+NEVER say you have made a change. ALWAYS use ACTION_REQUIRED format for any site changes.
+If you don't know the listing ID, ask the user first.
+
+AVAILABLE ACTIONS:
+- update_price: service_id, price
+- update_listing: service_id, title, description
+- toggle_listing: service_id (activate/deactivate)
+- mark_sold: service_id
+- delete_listing: service_id (CONFIRM TWICE - destructive)
+- update_profile: username
+- update_bio: bio
+- update_mpesa: phone
+- deliver_order: order_id
+- start_order: order_id
+- accept_order: order_id
+- get_listings: (no params needed)
+- get_orders: (no params needed)
+- become_seller: (no params needed)
+
+For get_listings and get_orders, respond with the data in a readable format.
+For destructive actions like delete_listing, warn the user first."""
+        }
+        enhanced_messages = [system_msg] + messages
+        cf_payload = {"messages": enhanced_messages, "max_tokens": 800}
+        cf_resp = _req.post(cf_url, headers=cf_headers, json=cf_payload, timeout=30)
+        cf_resp.raise_for_status()
+        reply = cf_resp.json()["result"]["response"].strip()
 
         # Log usage (optional — remove in production if noisy)
-        tokens = response.usage.total_tokens if response.usage else 0
+        tokens = 0  # Cloudflare AI does not return token usage
         app.logger.info(f"Soko AI: user={current_user.id} tokens={tokens}")
 
         return jsonify({'reply': reply, 'success': True, 'role': user_role})
@@ -4764,7 +4884,10 @@ Data Analyst               KES 1,000–4,000/hr
         elif 'connection' in str(e).lower() or 'timeout' in str(e).lower():
             msg = "Connection timeout — please try again."
         else:
-            msg = "Something went wrong. Please try again in a moment."
+            if '429' in str(e) or 'quota' in str(e).lower():
+                msg = "Soko AI is busy — please wait a moment and try again."
+            else:
+                msg = "Something went wrong. Please try again in a moment."
         return jsonify({'error': msg, 'success': False}), 500
 
 
@@ -5605,3 +5728,197 @@ if __name__ == "__main__":
         allow_unsafe_werkzeug=not debug_mode,
         use_reloader=debug_mode  # Only enable reloader in debug mode
     )
+
+# ═══════════════════════════════════════════════════════════
+# SOKO AI ACTIONS — Let AI perform real actions on the site
+# ═══════════════════════════════════════════════════════════
+@app.route('/api/ai-action', methods=['POST'])
+@login_required
+@csrf.exempt
+def ai_action():
+    """Execute actions on behalf of logged-in user via Soko AI."""
+    data = request.get_json() or {}
+    action = data.get('action', '').strip()
+    params = data.get('params', {})
+
+    try:
+        # ACTION: Update listing price
+        if action == 'update_price':
+            service_id = params.get('service_id')
+            new_price = params.get('price')
+            svc = Service.query.filter_by(id=service_id, seller_id=current_user.id).first()
+            if not svc:
+                return jsonify({'success': False, 'error': 'Listing not found or not yours.'})
+            svc.price = Decimal(str(new_price))
+            db.session.commit()
+            return jsonify({'success': True, 'message': f'Price updated to KES {new_price} for "{svc.title}"'})
+
+        # ACTION: Update listing title/description
+        elif action == 'update_listing':
+            service_id = params.get('service_id')
+            svc = Service.query.filter_by(id=service_id, seller_id=current_user.id).first()
+            if not svc:
+                return jsonify({'success': False, 'error': 'Listing not found or not yours.'})
+            if params.get('title'):
+                svc.title = params['title']
+            if params.get('description'):
+                svc.description = params['description']
+            db.session.commit()
+            return jsonify({'success': True, 'message': f'Listing "{svc.title}" updated successfully.'})
+
+        # ACTION: Toggle listing active/inactive
+        elif action == 'toggle_listing':
+            service_id = params.get('service_id')
+            svc = Service.query.filter_by(id=service_id, seller_id=current_user.id).first()
+            if not svc:
+                return jsonify({'success': False, 'error': 'Listing not found or not yours.'})
+            svc.is_active = not svc.is_active
+            db.session.commit()
+            status = 'activated' if svc.is_active else 'deactivated'
+            return jsonify({'success': True, 'message': f'Listing "{svc.title}" {status}.'})
+
+        # ACTION: Get my listings
+        elif action == 'get_listings':
+            svcs = Service.query.filter_by(seller_id=current_user.id).order_by(Service.created_at.desc()).all()
+            listings = [{'id': s.id, 'title': s.title, 'price': float(s.price), 'active': s.is_active} for s in svcs]
+            return jsonify({'success': True, 'listings': listings})
+
+        # ACTION: Get my orders
+        elif action == 'get_orders':
+            from models import Order
+            orders = Order.query.filter(
+                (Order.buyer_id == current_user.id) | (Order.seller_id == current_user.id)
+            ).order_by(Order.created_at.desc()).limit(10).all()
+            result = [{'id': o.id, 'title': o.title, 'status': o.status, 'amount': float(o.amount)} for o in orders]
+            return jsonify({'success': True, 'orders': result})
+
+        # ACTION: Update profile bio
+        elif action == 'update_bio':
+            new_bio = params.get('bio', '').strip()
+            if not new_bio:
+                return jsonify({'success': False, 'error': 'Bio cannot be empty.'})
+            current_user.bio = new_bio
+            db.session.commit()
+            return jsonify({'success': True, 'message': 'Your bio has been updated.'})
+
+        # ACTION: Deliver order
+        elif action == 'deliver_order':
+            from models import Order
+            order_id = params.get('order_id')
+            order = Order.query.filter_by(id=order_id, seller_id=current_user.id).first()
+            if not order:
+                return jsonify({'success': False, 'error': 'Order not found or not yours.'})
+            if order.status != 'in_progress':
+                return jsonify({'success': False, 'error': f'Order is {order.status}, cannot deliver.'})
+            order.status = 'delivered'
+            from datetime import datetime, timezone
+            order.delivered_at = datetime.now(timezone.utc)
+            db.session.commit()
+            return jsonify({'success': True, 'message': f'Order #{order_id} marked as delivered.'})
+
+        # ACTION: Delete listing
+        elif action == 'delete_listing':
+            service_id = params.get('service_id')
+            svc = Service.query.filter_by(id=service_id, seller_id=current_user.id).first()
+            if not svc:
+                return jsonify({'success': False, 'error': 'Listing not found or not yours.'})
+            db.session.delete(svc)
+            db.session.commit()
+            return jsonify({'success': True, 'message': f'Listing "{svc.title}" deleted.'})
+
+        # ACTION: Mark listing as sold
+        elif action == 'mark_sold':
+            service_id = params.get('service_id')
+            svc = Service.query.filter_by(id=service_id, seller_id=current_user.id).first()
+            if not svc:
+                return jsonify({'success': False, 'error': 'Listing not found or not yours.'})
+            svc.is_sold = True
+            svc.is_active = False
+            db.session.commit()
+            return jsonify({'success': True, 'message': f'Listing "{svc.title}" marked as sold.'})
+
+        # ACTION: Update username
+        elif action == 'update_profile':
+            new_username = params.get('username', '').strip()
+            if not new_username:
+                return jsonify({'success': False, 'error': 'Username cannot be empty.'})
+            existing = User.query.filter_by(username=new_username).first()
+            if existing and existing.id != current_user.id:
+                return jsonify({'success': False, 'error': f'Username {new_username} is already taken.'})
+            old_name = current_user.username
+            current_user.username = new_username
+            db.session.commit()
+            return jsonify({'success': True, 'message': f'Username changed from {old_name} to {new_username}.'})
+
+        # ACTION: Start order
+        elif action == 'start_order':
+            from models import Order
+            order_id = params.get('order_id')
+            order = Order.query.filter_by(id=order_id, seller_id=current_user.id).first()
+            if not order:
+                return jsonify({'success': False, 'error': 'Order not found or not yours.'})
+            if order.status != 'paid':
+                return jsonify({'success': False, 'error': f'Order must be paid before starting. Current status: {order.status}'})
+            order.status = 'in_progress'
+            from datetime import datetime, timezone
+            order.started_at = datetime.now(timezone.utc)
+            db.session.commit()
+            return jsonify({'success': True, 'message': f'Order #{order_id} started.'})
+
+        # ACTION: Accept delivered order
+        elif action == 'accept_order':
+            from models import Order
+            order_id = params.get('order_id')
+            order = Order.query.filter_by(id=order_id, buyer_id=current_user.id).first()
+            if not order:
+                return jsonify({'success': False, 'error': 'Order not found or not yours.'})
+            if order.status != 'delivered':
+                return jsonify({'success': False, 'error': f'Order must be delivered first. Current status: {order.status}'})
+            order.status = 'completed'
+            from datetime import datetime, timezone
+            order.completed_at = datetime.now(timezone.utc)
+            db.session.commit()
+            return jsonify({'success': True, 'message': f'Order #{order_id} accepted and completed.'})
+
+        # ACTION: Get my orders
+        elif action == 'get_orders':
+            from models import Order
+            orders = Order.query.filter(
+                (Order.buyer_id == current_user.id) | (Order.seller_id == current_user.id)
+            ).order_by(Order.created_at.desc()).limit(10).all()
+            result = [{'id': o.id, 'title': o.title, 'status': o.status, 'amount': float(o.amount)} for o in orders]
+            return jsonify({'success': True, 'orders': result, 'message': f'You have {len(result)} recent orders.'})
+
+        # ACTION: Get my listings
+        elif action == 'get_listings':
+            svcs = Service.query.filter_by(seller_id=current_user.id).order_by(Service.created_at.desc()).all()
+            listings = [{'id': s.id, 'title': s.title, 'price': float(s.price), 'active': s.is_active, 'sold': s.is_sold} for s in svcs]
+            return jsonify({'success': True, 'listings': listings, 'message': f'You have {len(listings)} listings.'})
+
+        # ACTION: Become seller
+        elif action == 'become_seller':
+            if current_user.can_sell:
+                return jsonify({'success': False, 'error': 'You are already a seller.'})
+            current_user.can_sell = True
+            db.session.commit()
+            return jsonify({'success': True, 'message': 'You are now a seller! You can post listings.'})
+
+        # ACTION: Update M-Pesa phone
+        elif action == 'update_mpesa':
+            phone = params.get('phone', '').strip()
+            if not phone:
+                return jsonify({'success': False, 'error': 'Phone number cannot be empty.'})
+            current_user.mpesa_phone = phone
+            db.session.commit()
+            return jsonify({'success': True, 'message': f'M-Pesa number updated to {phone}.'})
+
+        # ACTION: Delete account
+        elif action == 'delete_account':
+            return jsonify({'success': False, 'error': 'Account deletion must be done from Settings for security reasons.'})
+
+        else:
+            return jsonify({'success': False, 'error': f'Unknown action: {action}'})
+
+    except Exception as e:
+        app.logger.error(f"AI Action error: {e}")
+        return jsonify({'success': False, 'error': str(e)})

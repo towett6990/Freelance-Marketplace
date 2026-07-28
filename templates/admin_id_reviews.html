@@ -81,7 +81,7 @@
               <td style="padding: 1rem 0;">
                 <div style="display: flex; align-items: center;">
                   <div style="width: 2.5rem; height: 2.5rem; border-radius: 9999px; background: #4b5563; display: flex; align-items: center; justify-content: center; margin-right: 0.75rem; color: var(--body-color);">
-                    {{ user.username[0].upper() if user.username else user.email[0].upper() }}
+                    {{  user.username[0].upper() if user.username else user.email[0].upper() }}
                   </div>
                   <div>
                     <p style="color: var(--body-color); font-weight: 500;">{{ user.username or user.email }}</p>
@@ -91,13 +91,13 @@
               </td>
               <td style="padding: 1rem 0;">
                 <span style="padding: 0.25rem 0.5rem; border-radius: 9999px; font-size: 0.875rem; {% if user.id_confidence_score >= 0.6 %}background: rgba(234, 179, 8, 0.2); color: #eab308;{% elif user.id_confidence_score >= 0.4 %}background: rgba(249, 115, 22, 0.2); color: #f97316;{% else %}background: rgba(239, 68, 68, 0.2); color: #ef4444;{% endif %}">
-                  {{ "%.2f"|format(user.id_confidence_score) }}
+                  {{  "%.2f"|format(user.id_confidence_score) }}
                 </span>
               </td>
-              <td style="padding: 1rem 0; color: #d1d5db;">{{ "%.2f"|format(user.id_content_score or 0) }}</td>
-              <td style="padding: 1rem 0; color: #d1d5db;">{{ "%.2f"|format(user.id_quality_score or 0) }}</td>
+              <td style="padding: 1rem 0; color: #d1d5db;">{{  "%.2f"|format(user.id_content_score or 0) }}</td>
+              <td style="padding: 1rem 0; color: #d1d5db;">{{  "%.2f"|format(user.id_quality_score or 0) }}</td>
               <td style="padding: 1rem 0; color: #9ca3af;">
-                {{ user.last_id_upload_at.strftime("%Y-%m-%d %H:%M") if user.last_id_upload_at else "Unknown" }}
+                {{  user.last_id_upload_at.strftime("%Y-%m-%d %H:%M") if user.last_id_upload_at else "Unknown" }}
               </td>
               <td style="padding: 1rem 0;">
                 <a href="{{ url_for('admin_id_review_detail', user_id=user.id) }}"
@@ -135,8 +135,8 @@
             <h3 style="color: var(--body-color); font-weight: 500;">{{ user.username or user.email }}</h3>
             <span style="color: #3b82f6; font-size: 0.875rem;">Reviewing</span>
           </div>
-          <p style="color: #9ca3af; font-size: 0.875rem; margin-bottom: 0.5rem;">Confidence: {{ "%.2f"|format(user.id_confidence_score) }}</p>
-          <p style="color: #9ca3af; font-size: 0.875rem;">Started: {{ user.manual_reviewed_at.strftime("%H:%M") if user.manual_reviewed_at else "Unknown" }}</p>
+          <p style="color: #9ca3af; font-size: 0.875rem; margin-bottom: 0.5rem;">Confidence: {{  "%.2f"|format(user.id_confidence_score) }}</p>
+          <p style="color: #9ca3af; font-size: 0.875rem;">Started: {{  user.manual_reviewed_at.strftime("%H:%M") if user.manual_reviewed_at else "Unknown" }}</p>
         </div>
         {% endfor %}
       </div>

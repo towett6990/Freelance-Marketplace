@@ -53,7 +53,7 @@
       {% for order in buying %}
       <a href="{{ url_for('order_detail', order_id=order.id) }}" class="order-card">
         <div class="order-info">
-          <h3>{{ order.title or (order.service.title if order.service else 'Order #' + order.id|string) }}</h3>
+          <h3>{{  order.title or (order.service.title if order.service else 'Order #' + order.id|string) }}</h3>
           <p>Seller: {{ order.seller.username if order.seller else 'Unknown' }}</p>
           <span class="status-badge status-{{ order.status }}">{{ order.status.replace('_', ' ').title() }}</span>
         </div>
@@ -79,7 +79,7 @@
       {% for order in selling %}
       <a href="{{ url_for('order_detail', order_id=order.id) }}" class="order-card">
         <div class="order-info">
-          <h3>{{ order.title or (order.service.title if order.service else 'Order #' + order.id|string) }}</h3>
+          <h3>{{  order.title or (order.service.title if order.service else 'Order #' + order.id|string) }}</h3>
           <p>Buyer: {{ order.buyer.username if order.buyer else 'Unknown' }}</p>
           <span class="status-badge status-{{ order.status }}">{{ order.status.replace('_', ' ').title() }}</span>
         </div>

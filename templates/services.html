@@ -118,24 +118,26 @@
   gap:1.2rem;align-content:start}
 
 .svc-card{
-  background:rgba(255,255,255,.04);border:1px solid var(--bdr);
-  border-radius:var(--radius);overflow:hidden;
-  transition:all .3s;text-decoration:none;display:flex;flex-direction:column}
-.svc-card:hover{border-color:rgba(0,255,200,.25);
-  background:var(--card-hover);transform:translateY(-3px);
-  box-shadow:0 12px 40px rgba(0,0,0,.3)}
+  background:var(--card-bg,rgba(255,255,255,.06));border:1px solid var(--bdr);
+  border-radius:16px;overflow:hidden;
+  transition:all .35s cubic-bezier(.4,0,.2,1);text-decoration:none;display:flex;flex-direction:column;
+  box-shadow:0 2px 12px rgba(0,0,0,.18)}
+.svc-card:hover{border-color:rgba(0,255,200,.4);
+  background:var(--card-hover);transform:translateY(-5px);
+  box-shadow:0 20px 50px rgba(0,0,0,.35)}
 
-.svc-card-img{width:100%;height:160px;object-fit:cover;
-  background:rgba(255,255,255,.05);display:flex;align-items:center;
-  justify-content:center;color:#334155;font-size:2rem;flex-shrink:0}
-.svc-card-img img{width:100%;height:100%;object-fit:cover}
+.svc-card-img{width:100%;height:240px;object-fit:cover;position:relative;
+  background:linear-gradient(135deg,#1a2e3a,#0f1f2e);display:flex;align-items:center;
+  justify-content:center;color:#334155;font-size:2rem;flex-shrink:0;overflow:hidden}
+.svc-card-img img{width:100%;height:100%;object-fit:cover;transition:transform .4s ease;display:block}
+.svc-card:hover .svc-card-img img{transform:scale(1.06)}
 
 .svc-card-body{padding:1rem;flex:1;display:flex;flex-direction:column;gap:.5rem}
 
 .svc-card-cat{font-size:.72rem;font-weight:700;text-transform:uppercase;
   letter-spacing:.05em;color:var(--cyan);opacity:.8}
 
-.svc-card-title{color:#fff;font-size:.92rem;font-weight:600;line-height:1.4;
+.svc-card-title{color:var(--body-color,#fff);font-size:.97rem;font-weight:600;line-height:1.4;
   display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 
 .svc-card-seller{display:flex;align-items:center;gap:.5rem;margin-top:auto;
@@ -214,6 +216,15 @@
   .srp-results-header{flex-direction:column;align-items:stretch}
   .srp-sort{width:100%}
 }
+
+html.light .svc-card{background:#ffffff;border-color:rgba(0,0,0,.1);box-shadow:0 2px 16px rgba(0,0,0,.1)}
+html.light .svc-card:hover{box-shadow:0 12px 40px rgba(0,0,0,.18);border-color:rgba(0,180,150,.3)}
+html.light .svc-card-title{color:#1a2e3a}
+html.light .svc-card-cat{color:#006b5e}
+html.light .svc-card-seller{border-top-color:rgba(0,0,0,.08)}
+html.light .svc-seller-name{color:#2d4a5a}
+html.light .svc-card-img{background:linear-gradient(135deg,#e8f4f8,#d1eaf5)}
+html.light .svc-card-img i{color:#5a8a9a}
 </style>
 
 <form method="GET" action="{{ url_for('list_services') }}" id="searchForm">
@@ -391,7 +402,7 @@
             <!-- Image -->
             <div class="svc-card-img">
               {% if svc.images and svc.images[0] %}
-                <img src="{{ url_for('static', filename='uploads/services/' ~ svc.images[0].filename) }}"
+                <img src="{{ '/uploads/services/' ~ svc.images[0].filename }}"
                      alt="{{ svc.title }}" loading="lazy">
               {% else %}
                 <i class="fas fa-briefcase"></i>
@@ -406,13 +417,13 @@
               <div class="svc-card-title">{{ svc.title }}</div>
               <div class="svc-card-seller">
                 {% if svc.seller and svc.seller.avatar %}
-                  <img src="{{ url_for('static', filename='uploads/avatars/' ~ svc.seller.avatar) }}"
+                  <img src="{{ '/uploads/avatars/' ~ svc.seller.avatar }}"
                        class="svc-av" alt="">
                 {% else %}
                   <div class="svc-av"><i class="fas fa-user"></i></div>
                 {% endif %}
                 <span class="svc-seller-name">
-                  {{ svc.seller.display_name() if svc.seller else 'Anonymous' }}
+                  {{  svc.seller.display_name() if svc.seller else 'Anonymous' }}
                 </span>
                 {% if svc.seller and svc.seller.is_verified %}
                 <span style="color:#00ffc8;font-size:.7rem" title="Verified">
@@ -430,7 +441,7 @@
               {% if rcount > 0 %}
               <span class="svc-rating">
                 <i class="fas fa-star"></i>
-                {{ "%.1f"|format(rating) }}
+                {{  "%.1f"|format(rating) }}
                 <span>({{ rcount }})</span>
               </span>
               {% else %}

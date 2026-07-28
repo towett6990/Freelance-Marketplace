@@ -272,11 +272,11 @@
       {# Avatar #}
       <div class="profile-avatar-wrap">
         {% if user.avatar %}
-          <img src="{{ url_for('static', filename='uploads/avatars/' ~ user.avatar) }}"
+          <img src="{{ '/uploads/avatars/' ~ user.avatar }}"
                alt="{{ user.username }}" class="profile-avatar">
         {% else %}
           <div class="profile-avatar avatar-placeholder">
-            {{ (user.username or 'U')[0].upper() }}
+            {{  (user.username or 'U')[0].upper() }}
           </div>
         {% endif %}
 
@@ -405,7 +405,7 @@
                 {# Image #}
                 {% if service.images %}
                   <div class="scard-img">
-                    <img src="{{ url_for('static', filename='uploads/services/' ~ service.images[0].filename) }}"
+                    <img src="{{ '/uploads/services/' ~ service.images[0].filename }}"
                          alt="{{ service.title }}">
                   </div>
                 {% else %}
@@ -514,7 +514,7 @@
                   <div class="review-header">
                     <div class="review-author-info">
                       {% if review.reviewer and review.reviewer.avatar %}
-                        <img src="{{ url_for('static', filename='uploads/avatars/' ~ review.reviewer.avatar) }}"
+                        <img src="{{ '/uploads/avatars/' ~ review.reviewer.avatar }}"
                              class="review-avatar" alt="">
                       {% else %}
                         <div class="review-avatar review-avatar-ph">
@@ -523,7 +523,7 @@
                       {% endif %}
                       <div>
                         <span class="review-name">{{ review.reviewer.username if review.reviewer else 'Anonymous' }}</span>
-                        <span class="review-date">{{ review.created_at.strftime('%d %b %Y') if review.created_at else '' }}</span>
+                        <span class="review-date">{{  review.created_at.strftime('%d %b %Y') if review.created_at else '' }}</span>
                       </div>
                     </div>
                     <div class="review-stars">

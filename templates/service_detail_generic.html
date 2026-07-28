@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
-{% block title %}{{ service.title }}{% endblock %}
+{% block title %}{{ service.title }} — FreelancingHub{% endblock %}
 {% block content %}
+{% include '_slider_assets.html' %}
 {% set reviews_list = service.reviews.all() %}
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
@@ -23,41 +24,20 @@
 
     <!-- Images -->
     <div class="gd-gallery">
-      {% if service.images %}
-        <img src="{{ url_for('static', filename='uploads/services/' ~ service.images[0].filename) }}" class="gd-main-img" id="gdMain" alt="{{ service.title }}">
-        {% if service.images|length > 1 %}
-        <div class="gd-thumbs">
-          {% for img in service.images %}
-          <img src="{{ url_for('static', filename='uploads/services/' ~ img.filename) }}"
-               class="gd-thumb {% if loop.first %}gt-active{% endif %}"
-               onclick="document.getElementById('gdMain').src=this.src;document.querySelectorAll('.gd-thumb').forEach(t=>t.classList.remove('gt-active'));this.classList.add('gt-active')" alt="">
-          {% endfor %}
-        </div>
-        {% endif %}
-      {% else %}
-        <div class="gd-img-ph"><i class="fas fa-box-open"></i><p>No images uploaded</p></div>
-      {% endif %}
+{% include '_slider.html' %}
     </div>
-
     <!-- Details panel -->
     <div class="gd-panel">
       <h1 class="gd-title">{{ service.title }}</h1>
-
       {% if cd.get('sub_category') %}<span class="gd-cat-badge">{{ cd.get('sub_category') }}</span>{% endif %}
       {% if cd.get('condition') %}<span class="gd-cond-badge">{{ cd.get('condition') }}</span>{% endif %}
-
-      <div class="gd-rating-row">
         {% for i in range(5) %}<i class="{{ 'fas' if i < avg_rating else 'far' }} fa-star {% if i < avg_rating %}s-on{% else %}s-off{% endif %}"></i>{% endfor %}
-        <span class="gd-rv">{{ "%.1f"|format(avg_rating) }} ({{ service.get_review_count() }} reviews)</span>
+        <span class="gd-rv">{{  "%.1f"|format(avg_rating) }} ({{ service.get_review_count() }} reviews)</span>
       </div>
-
-      <div class="gd-price-box">
         {% if service.price and service.price > 0 %}
           <span class="gd-price">{{ sym }} {{ "{:,.0f}".format(service.price|float) }}</span>
           {% if cd.get('price_type') == 'Negotiable' %}<span class="gd-neg">Negotiable</span>{% endif %}
-        {% else %}
           <span class="gd-price" style="color:#fbbf24">{{ cd.get('price_type','Negotiable') }}</span>
-        {% endif %}
       </div>
 
       {% if cd.get('location') %}
@@ -149,5 +129,11 @@
 .sim-pr{font-family:'Syne',sans-serif;font-size:.8rem;font-weight:700;color:#34d399}
 @media(max-width:900px){.gd-layout{grid-template-columns:1fr}}
 @media(max-width:600px){.gd-page{padding:1rem}.gd-actions{flex-direction:column}}
+
+<style>
+
+
 </style>
+</style>
+{% endif %}
 {% endblock %}

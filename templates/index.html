@@ -261,16 +261,21 @@
 
   /* RESPONSIVE */
   @media(max-width:768px){
-    .hp-nav{padding:1rem 1.5rem}
+    .hp-nav{padding:.8rem 1rem}
     .hp-nav-links{display:none}
+    .hp-nav-auth{gap:.5rem}
+    .hp-btn{padding:.55rem .9rem;font-size:.8rem}
     .hp-h1{font-size:2.6rem}
     .hp-hero{padding:4rem 1.5rem 3rem;min-height:600px}
     .hp-hero-btns{flex-direction:column;align-items:center}
     .hp-stats{flex-direction:column;gap:.8rem;align-items:center}
+  }
+  @media(max-width:640px){
     .hp-sec{padding:4rem 1.5rem}
     .hp-cat-grid{grid-template-columns:repeat(3,1fr);gap:1rem}
     .hp-sec-hdr-row{flex-direction:column;align-items:flex-start}
-    .hp-search-inner{flex-direction:column;border-radius:12px}
+    .hp-search-inner{flex-direction:column;border-radius:12px;width:100%}
+    .hp-search-input,.hp-search-cat,.hp-search-btn{width:100%;box-sizing:border-box}
     .hp-search-cat{border:none;border-top:1px solid rgba(0,255,200,.15);border-bottom:1px solid rgba(0,255,200,.15);padding:.8rem 1rem}
     .hp-search-btn{padding:.9rem;border-radius:0 0 12px 12px}
     .hp-cta h2{font-size:1.8rem}
@@ -465,7 +470,7 @@
       <a href="{{ url_for('service_detail', service_id=svc.id) }}" class="hp-feat-card">
         <div class="hp-feat-img">
           {% if svc.images and svc.images|length > 0 %}
-            <img src="{{ url_for('static', filename='uploads/services/' ~ svc.images[0].filename) }}" alt="{{ svc.title }}" loading="lazy">
+            <img src="{{ '/uploads/services/' ~ svc.images[0].filename }}" alt="{{ svc.title }}" loading="lazy">
           {% else %}
             <div class="hp-feat-ph">
               {% if svc.category and svc.category.slug == 'car-sales' %}<i class="fas fa-car"></i>
@@ -483,7 +488,7 @@
           <div class="hp-feat-price">{{ sym }} {{ '{:,.0f}'.format(svc.price|float) }}</div>
           <div class="hp-feat-seller">
             {% if svc.seller and svc.seller.avatar %}
-              <img src="{{ url_for('static', filename='uploads/avatars/' ~ svc.seller.avatar) }}" class="hp-feat-avatar" alt="seller">
+              <img src="{{ '/uploads/avatars/' ~ svc.seller.avatar }}" class="hp-feat-avatar" alt="seller">
             {% else %}
               <div class="hp-feat-avatar-ph"><i class="fas fa-user"></i></div>
             {% endif %}

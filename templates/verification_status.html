@@ -23,7 +23,7 @@
                         </div>
                         {% if current_user.id_confidence_score %}
                         <p><strong>Confidence Score:</strong> 
-                            <span class="badge bg-success">{{ "%.2f"|format(current_user.id_confidence_score) }}</span>
+                            <span class="badge bg-success">{{  "%.2f"|format(current_user.id_confidence_score) }}</span>
                         </p>
                         {% endif %}
                         {% if current_user.manual_reviewed_at %}
@@ -51,7 +51,7 @@
                                                 {% if current_user.id_confidence_score >= 0.7 %}bg-success
                                                 {% elif current_user.id_confidence_score >= 0.4 %}bg-warning
                                                 {% else %}bg-danger{% endif %}">
-                                                {{ "%.2f"|format(current_user.id_confidence_score) }}
+                                                {{  "%.2f"|format(current_user.id_confidence_score) }}
                                             </span>
                                         </h3>
                                     </div>

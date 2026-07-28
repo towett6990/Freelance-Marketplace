@@ -26,12 +26,12 @@
     {% for user in users %}
     <div class="mr-card">
       <div style="display:flex;align-items:center;gap:1rem;">
-        <div class="mr-avatar">{{ user.display_name()[0]|upper }}</div>
+        <div class="mr-avatar">{{  user.display_name()[0]|upper }}</div>
         <div>
           <div class="mr-name">{{ user.display_name() }}</div>
           <div class="mr-meta">
             {{ user.email }} &nbsp;·&nbsp;
-            Submitted {{ user.last_id_upload_at.strftime('%d %b %Y, %H:%M') if user.last_id_upload_at else 'Unknown' }}
+            Submitted {{  user.last_id_upload_at.strftime('%d %b %Y, %H:%M') if user.last_id_upload_at else 'Unknown' }}
             &nbsp;·&nbsp; Attempt #{{ user.id_retry_count or 1 }}
           </div>
         </div>

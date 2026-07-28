@@ -192,7 +192,7 @@
       <a href="/service/{{ svc.id }}" class="service-card">
         <div class="card-img">
           {% if svc.images and svc.images|length > 0 %}
-            <img src="/static/uploads/services/{{ svc.images[0].filename }}"
+            <img src="/uploads/services/{{ svc.images[0].filename }}"
                  alt="{{ svc.title }}"
                  onerror="this.parentElement.innerHTML='<i class=\'fas fa-box card-img-placeholder\'></i>'">
           {% else %}
@@ -226,7 +226,7 @@
     {% if total_pages > 1 %}
     <div class="pagination">
       {% if page > 1 %}
-        <a href="?{{ request.query_string.decode().replace('page='+page|string, 'page='+(page-1)|string) or 'page='+(page-1)|string }}">
+        <a href="?{{  request.query_string.decode().replace('page='+page|string, 'page='+(page-1)|string) or 'page='+(page-1)|string }}">
           <i class="fas fa-chevron-left"></i>
         </a>
       {% endif %}
@@ -238,7 +238,7 @@
         {% endif %}
       {% endfor %}
       {% if page < total_pages %}
-        <a href="?{{ request.query_string.decode().replace('page='+page|string, 'page='+(page+1)|string) or 'page='+(page+1)|string }}">
+        <a href="?{{  request.query_string.decode().replace('page='+page|string, 'page='+(page+1)|string) or 'page='+(page+1)|string }}">
           <i class="fas fa-chevron-right"></i>
         </a>
       {% endif %}

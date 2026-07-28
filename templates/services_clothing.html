@@ -114,7 +114,7 @@
         <article class="prod-card">
           <a href="{{ url_for('service_detail', service_id=svc.id) }}" class="card-img-link">
             {% if svc.images %}
-              <img src="{{ url_for('static', filename='uploads/services/' ~ svc.images[0].filename) }}" class="card-img" alt="{{ svc.title }}" loading="lazy">
+              <img src="{{ '/uploads/services/' ~ svc.images[0].filename }}" class="card-img" alt="{{ svc.title }}" loading="lazy">
             {% else %}
               <div class="card-img-ph" style="background:linear-gradient(135deg,#3b0764,#6b21a8)"><i class="fas fa-tshirt"></i></div>
             {% endif %}
@@ -134,7 +134,7 @@
               <div class="seller-info">
                 <div class="s-av">{{ (svc.seller.username[0] if svc.seller else 'S')|upper }}</div>
                 <span class="s-name">{{ svc.seller.username if svc.seller else 'Seller' }}</span>
-                {% set r = svc.get_average_rating() %}{% if r > 0 %}<span class="s-rat">⭐ {{ "%.1f"|format(r) }}</span>{% endif %}
+                {% set r = svc.get_average_rating() %}{% if r > 0 %}<span class="s-rat">⭐ {{  "%.1f"|format(r) }}</span>{% endif %}
               </div>
               <a href="{{ url_for('service_detail', service_id=svc.id) }}" class="btn-view" style="background:linear-gradient(135deg,#be185d,#9d174d)">View →</a>
             </div>

@@ -68,7 +68,7 @@
               {% set badge = {"completed": "success", "failed": "danger", "processing": "warning"} %}
               <span class="badge bg-{{ badge.get(p.status, "secondary") }}">{{ p.status }}</span>
             </td>
-            <td class="text-muted small">{{ p.created_at.strftime("%d %b %Y %H:%M") if p.created_at else "-" }}</td>
+            <td class="text-muted small">{{  p.created_at.strftime("%d %b %Y %H:%M") if p.created_at else "-" }}</td>
             <td>
               {% if p.status in ("failed", "processing") %}
               <form method="POST" action="{{ url_for('admin_retry_payout', payout_id=p.id) }}"

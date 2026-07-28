@@ -59,8 +59,8 @@
   display:flex;align-items:center;justify-content:center;font-size:1.1rem;
   margin-bottom:.9rem;color:var(--kpi-color,var(--cyan))}
 .db-kpi-val{font-family:'Poppins',sans-serif;font-size:2rem;font-weight:800;
-  color:#fff;line-height:1;margin-bottom:.3rem}
-.db-kpi-lbl{color:var(--muted);font-size:.78rem;font-weight:500;
+  color:var(--body-color, #fff);line-height:1;margin-bottom:.3rem}
+.db-kpi-lbl{color:var(--body-color);opacity:0.7;font-size:.78rem;font-weight:500;
   text-transform:uppercase;letter-spacing:.04em}
 
 /* ── BECOME SELLER BANNER ── */
@@ -131,12 +131,19 @@
 
 /* ── LIGHT MODE ── */
 html.light .db-kpi,html.light .db-card,html.light .svc-card{
-  background:rgba(0,0,0,.03);border-color:rgba(0,0,0,.08)}
+  background:#ffffff !important;border-color:rgba(0,0,0,.15) !important;box-shadow:0 2px 8px rgba(0,0,0,.08) !important}
 html.light .db-header{background:linear-gradient(135deg,#e8f4f8,#d1eaf5)}
 html.light .db-title,html.light .svc-card-title,html.light .admin-svc-title{color:#1a2e3a}
-html.light .db-kpi-val,html.light .db-cust-val{color:#1a2e3a}
+html.light .db-kpi-val,html.light .db-cust-val{color:#1a2e3a !important}
 html.light .db-table td{color:#2d4a5a}
 html.light .db-table th{color:#5a7a8a}
+html.light .db-kpi-icon{background:rgba(0,180,160,.12)}
+html.light .db-kpi-label{color:#4a6a7a}
+html.light .db-kpi-sub{color:#5a7a8a}
+html.light .db-kpi-val{color:#1a2e3a !important;font-weight:700}
+html.light .db-section-title{color:#1a2e3a}
+html.light .db-card{background:#ffffff}
+html.light .chart-container{background:#f8fbfc}
 
 @media(max-width:640px){
   .db-wrap{padding:1rem 1rem 4rem}
@@ -167,7 +174,7 @@ html.light .db-table th{color:#5a7a8a}
   <div class="db-header">
     <div class="db-header-left">
       {# FIX: onerror fallback prevents 404 when avatar file is missing #}
-      <img src="{{ user.avatar_url or url_for('static', filename='images/avatar_placeholder.png') }}"
+      <img src="{{  user.avatar_url or url_for('static', filename='images/avatar_placeholder.png') }}"
            alt="Avatar"
            class="db-avatar"
            onerror="this.onerror=null;this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 56 56%22%3E%3Ccircle cx=%2228%22 cy=%2228%22 r=%2228%22 fill=%22%230a1f2e%22/%3E%3Ccircle cx=%2228%22 cy=%2222%22 r=%2210%22 fill=%22%2300ffc8%22 opacity=%220.7%22/%3E%3Cellipse cx=%2228%22 cy=%2248%22 rx=%2216%22 ry=%2210%22 fill=%22%2300ffc8%22 opacity=%220.5%22/%3E%3C/svg%3E'">
@@ -239,7 +246,7 @@ html.light .db-table th{color:#5a7a8a}
       <div class="admin-svc-row">
         <div>
           <div class="admin-svc-title">{{ svc.title }}</div>
-          <div class="admin-svc-seller">by {{ svc.seller.display_name() if svc.seller else 'Unknown' }}</div>
+          <div class="admin-svc-seller">by {{  svc.seller.display_name() if svc.seller else 'Unknown' }}</div>
         </div>
         <div class="admin-svc-price">KSh {{ "{:,.0f}".format(svc.price|float) }}</div>
       </div>
@@ -282,7 +289,7 @@ html.light .db-table th{color:#5a7a8a}
           {% for p in payment_history %}
           <tr>
             <td style="font-weight:600;color:#e0e0e0">{{ p.service.title if p.service else 'Service' }}</td>
-            <td style="color:var(--muted);font-size:.78rem">{{ p.created_at.strftime('%b %d, %Y') if p.created_at else '—' }}</td>
+            <td style="color:var(--muted);font-size:.78rem">{{  p.created_at.strftime('%b %d, %Y') if p.created_at else '—' }}</td>
             <td style="color:var(--muted);font-size:.78rem">{{ p.mpesa_receipt_number or '—' }}</td>
             <td style="color:var(--cyan);font-weight:700">KSh {{ "{:,.0f}".format(p.amount|float) }}</td>
             <td>
@@ -343,7 +350,7 @@ html.light .db-table th{color:#5a7a8a}
         <div class="svc-card-price">KSh {{ "{:,.0f}".format(svc.price|float) }}</div>
         <div class="svc-card-actions">
           <a href="{{ url_for('service_detail', service_id=svc.id) }}" class="svc-action-view">👁 View</a>
-          <a href="{{ url_for('edit_service', service_id=svc.id) }}" class="svc-action-edit">✏️ Edit</a>
+          <a href="{{ url_for('edit_service', id=svc.id) }}" class="svc-action-edit">✏️ Edit</a>
           <a href="{{ url_for('features.manage_packages', sid=svc.id) }}" class="svc-action-pkg">📦 Packages</a>
         </div>
       </div>

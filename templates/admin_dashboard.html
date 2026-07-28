@@ -299,14 +299,14 @@
             {% set buyer = p.buyer %}
             {% if buyer %}
             <div class="adm-user-cell">
-              <div class="adm-avatar">{{ (buyer.username or buyer.email or '?')[0].upper() }}</div>
+              <div class="adm-avatar">{{  (buyer.username or buyer.email or '?')[0].upper() }}</div>
               {{ buyer.username or buyer.email.split('@')[0] }}
             </div>
             {% else %}<span style="color:#475569">Deleted</span>{% endif %}
           </td>
           <td style="color:#00ffc8;font-weight:700">KES {{ "{:,.0f}".format(p.amount) }}</td>
           <td><span class="adm-badge {{ p.status }}">{{ p.status }}</span></td>
-          <td style="color:#475569">{{ p.created_at.strftime('%d %b') if p.created_at else '—' }}</td>
+          <td style="color:#475569">{{  p.created_at.strftime('%d %b') if p.created_at else '—' }}</td>
         </tr>
         {% else %}
         <tr><td colspan="4" style="text-align:center;color:#475569;padding:1.5rem">No payments yet</td></tr>
@@ -332,7 +332,7 @@
         <tr>
           <td>
             <div class="adm-user-cell">
-              <div class="adm-avatar">{{ (u.username or u.email or '?')[0].upper() }}</div>
+              <div class="adm-avatar">{{  (u.username or u.email or '?')[0].upper() }}</div>
               <div>
                 <div style="color:#e2e8f0;font-weight:600">{{ u.username or '—' }}</div>
                 <div style="color:#475569;font-size:.72rem">{{ u.email }}</div>
@@ -347,7 +347,7 @@
               <span class="adm-badge pending">No</span>
             {% endif %}
           </td>
-          <td style="color:#475569">{{ u.created_at.strftime('%d %b %Y') if u.created_at else '—' }}</td>
+          <td style="color:#475569">{{  u.created_at.strftime('%d %b %Y') if u.created_at else '—' }}</td>
         </tr>
         {% else %}
         <tr><td colspan="4" style="text-align:center;color:#475569;padding:1.5rem">No users yet</td></tr>
@@ -372,7 +372,7 @@
           </td>
           <td style="color:#94a3b8">{{ s.seller.username if s.seller else '—' }}</td>
           <td style="color:#00ffc8;font-weight:600">KES {{ "{:,.0f}".format(s.price) }}</td>
-          <td style="color:#475569">{{ s.created_at.strftime('%d %b') if s.created_at else '—' }}</td>
+          <td style="color:#475569">{{  s.created_at.strftime('%d %b') if s.created_at else '—' }}</td>
         </tr>
         {% else %}
         <tr><td colspan="4" style="text-align:center;color:#475569;padding:1.5rem">No services yet</td></tr>

@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
-{% block title %}{{ service.title }}{% endblock %}
+{% block title %}{{ service.title }} — FreelancingHub{% endblock %}
 {% block content %}
+{% include '_slider_assets.html' %}
 <div class="freelancer-detail-container">
   <!-- Header Banner -->
   <div class="detail-header">
@@ -15,7 +16,7 @@
         <div class="profile-avatar-section">
           {% if service.seller and service.seller.avatar %}
             <img 
-              src="{{ url_for('static', filename='uploads/avatars/' ~ service.seller.avatar) }}" 
+              src="{{ '/uploads/avatars/' ~ service.seller.avatar }}" 
               class="profile-avatar"
               alt="{{ service.seller.username }}"
             >
@@ -60,7 +61,7 @@
                 {% endif %}
               {% endfor %}
             </div>
-            <span class="rating-value">{{ "%.1f"|format(avg_rating) }}</span>
+            <span class="rating-value">{{  "%.1f"|format(avg_rating) }}</span>
             <span class="review-count">({{ service.get_review_count() }} reviews)</span>
           </div>
         </div>
@@ -69,9 +70,9 @@
         <div class="rate-card">
           <div class="rate-label">Hourly Rate</div>
           {% if service.custom_data and service.custom_data.hourly_rate %}
-            <div class="rate-amount">KES {{ "%.0f"|format(service.custom_data.hourly_rate|float) }}</div>
+            <div class="rate-amount">KES {{  "%.0f"|format(service.custom_data.hourly_rate|float) }}</div>
           {% else %}
-            <div class="rate-amount">KES {{ "%.0f"|format(service.price) }}</div>
+            <div class="rate-amount">KES {{  "%.0f"|format(service.price) }}</div>
           {% endif %}
         </div>
 
@@ -191,7 +192,7 @@
       <div class="gallery-section">
         <div class="main-image">
           <img 
-            src="{{ url_for('static', filename='uploads/services/' ~ service.images[0].filename) }}" 
+            src="{{ '/uploads/services/' ~ service.images[0].filename }}" 
             alt="{{ service.title }}"
           >
         </div>
@@ -200,7 +201,7 @@
           {% for img in service.images[1:5] %}
           <div class="thumbnail">
             <img 
-              src="{{ url_for('static', filename='uploads/services/' ~ img.filename) }}" 
+              src="{{ '/uploads/services/' ~ img.filename }}" 
               alt="Work sample {{ loop.index }}"
             >
           </div>
@@ -279,7 +280,7 @@
         {% if service.reviews.all()|length > 0 %}
         <div class="reviews-summary">
           <div class="rating-big">
-            <span class="rating-number">{{ "%.1f"|format(service.get_average_rating()) }}</span>
+            <span class="rating-number">{{  "%.1f"|format(service.get_average_rating()) }}</span>
             <div class="stars-display">
               {% for i in range(5) %}
                 {% if i < service.get_average_rating()|int %}
@@ -299,7 +300,7 @@
             <div class="review-header">
               <div class="reviewer-avatar">
                 {% if review.buyer and review.buyer.avatar %}
-                  <img src="{{ url_for('static', filename='uploads/avatars/' ~ review.buyer.avatar) }}" alt="">
+                  <img src="{{ '/uploads/avatars/' ~ review.buyer.avatar }}" alt="">
                 {% else %}
                   <i class="fas fa-user"></i>
                 {% endif %}
@@ -327,7 +328,7 @@
         
         {% if service.reviews.all()|length > 5 %}
         <a href="#" class="view-all-reviews">
-          View All {{ service.reviews.all()|length }} Reviews
+          View All {{  service.reviews.all()|length }} Reviews
         </a>
         {% endif %}
         {% else %}
@@ -900,6 +901,11 @@
     grid-template-columns: repeat(3, 1fr);
   }
 }
+
+<style>
+
+
+</style>
 </style>
 {% endblock %}
 

@@ -992,7 +992,7 @@ function loadCategoryFields() {
           <div class="existing-media-grid">
             {% for img in images %}
             <div class="media-item existing">
-              <img src="{{ url_for('static', filename='uploads/services/' ~ img) }}" class="media-preview">
+              <img src="{{ '/uploads/services/' ~ img }}" class="media-preview">
               <div class="media-overlay">
                 <button type="button" class="remove-btn" onclick="removeMedia('{{ img }}', 'image')">
                   <i class="fas fa-trash"></i>
@@ -1002,7 +1002,7 @@ function loadCategoryFields() {
             {% endfor %}
             {% for video in videos %}
             <div class="media-item existing video">
-              <video src="{{ url_for('static', filename='uploads/services/' ~ video) }}" class="media-preview" controls></video>
+              <video src="{{ '/uploads/services/' ~ video }}" class="media-preview" controls></video>
               <div class="media-overlay">
                 <button type="button" class="remove-btn" onclick="removeMedia('{{ video }}', 'video')">
                   <i class="fas fa-trash"></i>

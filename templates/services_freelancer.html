@@ -337,7 +337,7 @@
         <!-- Image -->
         <div class="fcat-card-img">
           {% if svc.images and svc.images|length > 0 %}
-            <img src="{{ url_for('static', filename='uploads/services/' ~ svc.images[0].filename) }}"
+            <img src="{{ '/uploads/services/' ~ svc.images[0].filename }}"
                  alt="{{ svc.title }}" loading="lazy">
           {% else %}
             <div class="fcat-card-ph"><i class="{{ cat_icon }}"></i></div>
@@ -380,7 +380,7 @@
           <!-- Seller -->
           <div class="fcat-seller">
             {% if svc.seller and svc.seller.avatar %}
-              <img src="{{ url_for('static', filename='uploads/avatars/' ~ svc.seller.avatar) }}"
+              <img src="{{ '/uploads/avatars/' ~ svc.seller.avatar }}"
                    class="fcat-av" alt="{{ svc.seller.username }}">
             {% else %}
               <div class="fcat-av-ph"><i class="fas fa-user"></i></div>

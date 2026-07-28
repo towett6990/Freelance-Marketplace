@@ -10,7 +10,7 @@
     • Title: "{{ service.title }}"<br>
     • Price: {{ service.price }} {{ service.currency }}<br>
     • Posted by User ID: {{ service.user_id }}<br>
-    • Service User Object: {{ service.user.display_name() if service.user else 'None' }}
+    • Service User Object: {{  service.user.display_name() if service.user else 'None' }}
   </div>
   <div style="background: white; color: black; padding: 10px; border-radius: 5px; margin: 5px 0;">
     <strong>Current User Status:</strong><br>
@@ -35,7 +35,7 @@
   <div class="service-detail-header">
     <h1 class="service-title">{{ service.title }}</h1>
     <div class="service-meta">
-      <span><i class="fas fa-user"></i> {{ service.user.display_name() if service.user else 'Anonymous' }}</span>
+      <span><i class="fas fa-user"></i> {{  service.user.display_name() if service.user else 'Anonymous' }}</span>
       {% if service.category %}
       <span class="service-category-badge">
         <i class="fas fa-tag"></i>
@@ -53,14 +53,14 @@
       {% if images %}
         {% for img in images %}
         <div class="media-item">
-          <img src="{{ url_for('static', filename='uploads/services/' ~ img) }}" alt="Image" />
+          <img src="{{ '/uploads/services/' ~ img }}" alt="Image" />
         </div>
         {% endfor %}
       {% endif %}
       {% if videos %}
         {% for vid in videos %}
         <div class="media-item">
-          <video src="{{ url_for('static', filename='uploads/services/' ~ vid) }}" controls></video>
+          <video src="{{ '/uploads/services/' ~ vid }}" controls></video>
         </div>
         {% endfor %}
       {% endif %}
@@ -80,9 +80,9 @@
   <div class="seller-section">
     <h2 class="section-title"><i class="fas fa-user"></i> Seller Info</h2>
     <div class="seller-card">
-      <img src="{{ url_for('static', filename='uploads/avatars/' ~ service.user.avatar) if service.user and service.user.avatar else url_for('static', filename='default-avatar.png') }}" alt="Avatar" />
+      <img src="{{ '/uploads/avatars/' ~ service.user.avatar) if service.user and service.user.avatar else url_for('static', filename='default-avatar.png' }}" alt="Avatar" />
       <div class="seller-details">
-        <p class="seller-name">{{ service.user.display_name() if service.user else 'Anonymous' }}</p>
+        <p class="seller-name">{{  service.user.display_name() if service.user else 'Anonymous' }}</p>
         {% if service.contact %}
         <p class="seller-contact">
           <i class="fas fa-phone text-blue-400"></i>
@@ -93,7 +93,7 @@
           <div class="seller-stats">
             <p class="seller-rating">
               <i class="fas fa-star text-yellow-400"></i>
-              {{ "%.1f"|format(seller_stats.avg_rating) }} ({{ seller_stats.total_reviews }} reviews)
+              {{  "%.1f"|format(seller_stats.avg_rating) }} ({{ seller_stats.total_reviews }} reviews)
             </p>
             <p class="seller-orders">
               <i class="fas fa-shopping-cart text-green-400"></i>
@@ -107,7 +107,7 @@
         <div class="payment-section">
           <div class="price-display">
             <span class="price-label">Price:</span>
-            <span class="price-amount">{{ service.currency }} {{ "%.2f"|format(service.price) }}</span>
+            <span class="price-amount">{{ service.currency }} {{  "%.2f"|format(service.price) }}</span>
           </div>
           <button type="button" onclick="initiatePayment({{ service.id }}, '{{ service.title }}', {{ service.price }}, '{{ service.currency }}')" class="pay-btn">
             <i class="fas fa-mobile-alt"></i>

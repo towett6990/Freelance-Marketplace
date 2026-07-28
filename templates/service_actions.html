@@ -192,7 +192,7 @@
     <div class="contact-modal-header">
       <div class="contact-modal-title">
         <i class="fas fa-address-card"></i>
-        Contact {{ service.seller.display_name() if service.seller else 'Seller' }}
+        Contact {{  service.seller.display_name() if service.seller else 'Seller' }}
       </div>
       <button class="contact-modal-close" onclick="closeContactModal()">
         <i class="fas fa-times"></i>

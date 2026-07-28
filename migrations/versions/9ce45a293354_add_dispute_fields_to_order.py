@@ -12,13 +12,7 @@ branch_labels = None
 depends_on = None
 
 def upgrade():
-    # Dispute fields were added manually via ALTER TABLE
-    # This migration just records the foreign key for resolved_by
-    with op.batch_alter_table('order', schema=None) as batch_op:
-        batch_op.add_column(sa.Column('dispute_reason', sa.Text(), nullable=True))
-        batch_op.add_column(sa.Column('resolution_note', sa.Text(), nullable=True))
-        batch_op.add_column(sa.Column('resolved_at', sa.DateTime(), nullable=True))
-        batch_op.add_column(sa.Column('resolved_by', sa.Integer(), nullable=True))
+    pass  # skipped
 
 def downgrade():
     with op.batch_alter_table('order', schema=None) as batch_op:

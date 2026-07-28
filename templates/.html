@@ -15,7 +15,7 @@
   <!-- BREADCRUMB -->
   <div class="pd-breadcrumb">
     {% if category %}
-    <a href="{{ url_for('list_' + category.slug.replace('-','_')) }}" class="bc-link"><i class="fas fa-arrow-left"></i> {{ category.name }}</a>
+    <a href="{{  url_for('list_' + category.slug.replace('-','_')) }}" class="bc-link"><i class="fas fa-arrow-left"></i> {{ category.name }}</a>
     {% else %}
     <a href="{{ url_for('list_services') }}" class="bc-link"><i class="fas fa-arrow-left"></i> Listings</a>
     {% endif %}
@@ -29,11 +29,11 @@
     <div class="pd-gallery-col">
       <div class="gallery-main-wrap">
         {% if service.images %}
-          <img src="{{ url_for('static', filename='uploads/services/' ~ service.images[0].filename) }}" class="gallery-main-img" id="mainImg" alt="{{ service.title }}">
+          <img src="{{ '/uploads/services/' ~ service.images[0].filename }}" class="gallery-main-img" id="mainImg" alt="{{ service.title }}">
           {% if service.images and service.images|length > 1 %}
           <div class="gallery-thumbs">
             {% for img in service.images %}
-            <img src="{{ url_for('static', filename='uploads/services/' ~ img.filename) }}"
+            <img src="{{ '/uploads/services/' ~ img.filename }}"
                  class="thumb {% if loop.first %}thumb-active{% endif %}"
                  onclick="document.getElementById('mainImg').src=this.src;document.querySelectorAll('.thumb').forEach(t=>t.classList.remove('thumb-active'));this.classList.add('thumb-active')"
                  alt="{{ loop.index }}">
@@ -52,7 +52,7 @@
         <div class="video-grid">
           {% for vid in service.videos[:3] %}
           <video controls class="video-item">
-            <source src="{{ url_for('static', filename='uploads/services/' ~ vid.filename) }}">
+            <source src="{{ '/uploads/services/' ~ vid.filename }}">
           </video>
           {% endfor %}
         </div>
@@ -76,7 +76,7 @@
         <div class="pd-stars">
           {% for i in range(5) %}<i class="{{ 'fas' if i < avg_rating else 'far' }} fa-star {% if i < avg_rating %}s-on{% else %}s-off{% endif %}"></i>{% endfor %}
         </div>
-        <span class="pd-rat-val">{{ "%.1f"|format(avg_rating) }}</span>
+        <span class="pd-rat-val">{{  "%.1f"|format(avg_rating) }}</span>
         <span class="pd-rev-cnt">({{ service.get_review_count() }} reviews)</span>
       </div>
 
@@ -94,12 +94,12 @@
             {% if val is iterable and val is not string %}
               {# multi-select / list #}
               <div class="spec-item spec-full">
-                <span class="spec-lbl">{{ field.replace('_',' ')|title }}</span>
+                <span class="spec-lbl">{{  field.replace('_',' ')|title }}</span>
                 <div class="spec-tags">{% for v in val %}<span class="spec-tag">{{ v }}</span>{% endfor %}</div>
               </div>
             {% else %}
               <div class="spec-item">
-                <span class="spec-lbl">{{ field.replace('_',' ')|title }}</span>
+                <span class="spec-lbl">{{  field.replace('_',' ')|title }}</span>
                 <span class="spec-val">{{ val }}</span>
               </div>
             {% endif %}
@@ -128,11 +128,11 @@
         <div class="sc-av">{{ (service.seller.username[0] if service.seller else 'S')|upper }}</div>
         <div class="sc-info">
           <span class="sc-name">{{ service.seller.username if service.seller else 'Anonymous' }}</span>
-          <span class="sc-since">Member since {{ service.seller.created_at.strftime('%b %Y') if service.seller and service.seller.created_at else '—' }}</span>
+          <span class="sc-since">Member since {{  service.seller.created_at.strftime('%b %Y') if service.seller and service.seller.created_at else '—' }}</span>
           {% if service.seller and service.seller.is_verified %}<span class="sc-badge"><i class="fas fa-shield-alt"></i> Verified</span>{% endif %}
         </div>
         <div class="sc-rat">
-          <span class="sc-rat-val">{{ "%.1f"|format(avg_rating) }}</span>
+          <span class="sc-rat-val">{{  "%.1f"|format(avg_rating) }}</span>
           <span class="sc-rat-lbl">Rating</span>
         </div>
       </div>
@@ -157,7 +157,7 @@
           <div class="rv-card">
             <div class="rv-top">
               <div class="rv-av">{{ (rv.buyer.username[0] if rv.buyer else 'A')|upper }}</div>
-              <div class="rv-meta"><span class="rv-name">{{ rv.buyer.username if rv.buyer else 'Anonymous' }}</span><span class="rv-date">{{ rv.created_at.strftime('%b %d, %Y') if rv.created_at else '' }}</span></div>
+              <div class="rv-meta"><span class="rv-name">{{ rv.buyer.username if rv.buyer else 'Anonymous' }}</span><span class="rv-date">{{  rv.created_at.strftime('%b %d, %Y') if rv.created_at else '' }}</span></div>
               <div class="rv-stars">{% for i in range(5) %}<i class="{{ 'fas' if i < rv.overall_rating else 'far' }} fa-star {% if i < rv.overall_rating %}s-on{% else %}s-off{% endif %}"></i>{% endfor %}</div>
             </div>
             {% if rv.comment %}<p class="rv-body">{{ rv.comment }}</p>{% endif %}
@@ -177,7 +177,7 @@
         {% for rel in related %}
         {% set rsym = 'KSh' if (rel.currency or 'KES') == 'KES' else '$' %}
         <a href="{{ url_for('service_detail', service_id=rel.id) }}" class="rel-card">
-          {% if rel.images %}<img src="{{ url_for('static', filename='uploads/services/' ~ rel.images[0].filename) }}" alt="">{% else %}<div class="rel-ph"><i class="fas fa-image"></i></div>{% endif %}
+          {% if rel.images %}<img src="{{ '/uploads/services/' ~ rel.images[0].filename }}" alt="">{% else %}<div class="rel-ph"><i class="fas fa-image"></i></div>{% endif %}
           <div class="rel-info">
             <span class="rel-title">{{ rel.title[:45] }}{% if rel.title|length > 45 %}…{% endif %}</span>
             <span class="rel-price">{{ rsym }} {{ "{:,.0f}".format(rel.price|float) }}</span>

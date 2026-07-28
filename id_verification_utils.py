@@ -3,12 +3,26 @@ import re
 import io
 import os
 from PIL import Image, ImageFilter, ImageStat
-import pytesseract
-import face_recognition
-import imagehash
-import cv2
 import numpy as np
-import face_recognition
+import cv2
+
+try:
+    import pytesseract
+    TESSERACT_AVAILABLE = True
+except ImportError:
+    TESSERACT_AVAILABLE = False
+
+try:
+    import face_recognition
+    FACE_RECOGNITION_AVAILABLE = True
+except ImportError:
+    FACE_RECOGNITION_AVAILABLE = False
+
+try:
+    import imagehash
+    IMAGEHASH_AVAILABLE = True
+except ImportError:
+    IMAGEHASH_AVAILABLE = False
 
 
 def ocr_text_from_image(path):
@@ -51,6 +65,8 @@ def face_match_score(id_image_path, selfie_path):
     Uses face_recognition library (dlib). If faces not found, returns None.
     """
     try:
+        if not FACE_RECOGNITION_AVAILABLE:
+            return None
         id_img = face_recognition.load_image_file(id_image_path)
         selfie_img = face_recognition.load_image_file(selfie_path)
 
@@ -81,8 +97,9 @@ def image_tamper_score(path):
     Returns 0.0-1.0 where higher = more likely genuine (not tampered).
     """
     try:
+        if not IMAGEHASH_AVAILABLE:
+            return 0.5
         img = Image.open(path)
-        # EXIF presence helps but is not decisive
         exif = getattr(img, "_getexif", None)
         has_exif = bool(exif and exif())
 
@@ -324,3 +341,4 @@ def validate_id_document_integrity(image_path):
             'score': 0.0,
             'issues': [f'Image analysis failed: {str(e)}']
         }
+

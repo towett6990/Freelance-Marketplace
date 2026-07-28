@@ -442,21 +442,25 @@ document.addEventListener('DOMContentLoaded', function() {
     mergeFilesIntoInput(Array.from(e.dataTransfer.files));
   });
 
+
   // File selection → preview
   input.addEventListener('change', function() {
-    renderPreviews(Array.from(input.files));
+    mergeFilesIntoInput(Array.from(input.files));
   });
 });
 
+var allFiles = [];
 function mergeFilesIntoInput(newFiles) {
-  var input = document.getElementById('mediaInput');
+  newFiles.forEach(function(f) {
+    if (!allFiles.find(function(x){ return x.name===f.name && x.size===f.size; })) {
+      allFiles.push(f);
+    }
+  });
   var dt = new DataTransfer();
-  Array.from(input.files).forEach(function(f) { dt.items.add(f); });
-  newFiles.forEach(function(f) { dt.items.add(f); });
-  input.files = dt.files;
-  renderPreviews(Array.from(input.files));
+  allFiles.forEach(function(f) { dt.items.add(f); });
+  document.getElementById('mediaInput').files = dt.files;
+  renderPreviews(allFiles);
 }
-
 function renderPreviews(files) {
   var grid = document.getElementById('mediaGrid');
   grid.innerHTML = '';

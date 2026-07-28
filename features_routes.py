@@ -226,7 +226,7 @@ def seller_analytics():
     total_earned    = sum(float(p.amount or 0) for p in payments)
     this_month      = datetime.now(timezone.utc).replace(day=1, hour=0, minute=0, second=0, microsecond=0)
     month_earned    = sum(float(p.amount or 0) for p in payments
-                          if p.created_at and p.created_at >= this_month)
+                          if p.created_at and p.created_at.replace(tzinfo=timezone.utc) >= this_month)
     total_orders    = len(payments)
     completed_orders= len(payments)
     pending_orders  = Payment.query.filter_by(seller_id=current_user.id, status='pending').count()
@@ -237,7 +237,7 @@ def seller_analytics():
         m_start = (datetime.now(timezone.utc).replace(day=1, hour=0, minute=0, second=0, microsecond=0) - timedelta(days=i*30)).replace(day=1)
         m_end   = (m_start + timedelta(days=32)).replace(day=1)
         earn    = sum(float(p.amount or 0) for p in payments
-                      if p.created_at and m_start <= p.created_at < m_end)
+                      if p.created_at and m_start <= p.created_at.replace(tzinfo=timezone.utc) < m_end)
         monthly.append({'month': m_start.strftime('%b %Y'), 'earned': earn})
 
     # Favorites count

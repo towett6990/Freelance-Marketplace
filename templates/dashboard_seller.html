@@ -225,7 +225,7 @@ canvas{max-height:200px}
     <!-- Avg Rating -->
     <div class="db-kpi" style="--kpi-color:var(--yellow)">
       <div class="db-kpi-icon"><i class="fas fa-star"></i></div>
-      <div class="db-kpi-val">{{ "%.1f"|format(avg_rating) }}</div>
+      <div class="db-kpi-val">{{  "%.1f"|format(avg_rating) }}</div>
       <div class="db-kpi-lbl">Avg. Rating</div>
       <div class="db-kpi-change neutral">{{ total_reviews }} review{{ 's' if total_reviews != 1 }}</div>
     </div>
@@ -275,7 +275,7 @@ canvas{max-height:200px}
       <div class="db-card-title"><i class="fas fa-star"></i> Ratings</div>
       {% if total_reviews > 0 %}
       <div class="db-rating-big">
-        <div class="db-rating-num">{{ "%.1f"|format(avg_rating) }}</div>
+        <div class="db-rating-num">{{  "%.1f"|format(avg_rating) }}</div>
         <div class="db-rating-stars">
           {% for i in range(1,6) %}
             {% if i <= avg_rating|int %}
@@ -320,7 +320,7 @@ canvas{max-height:200px}
           <div class="db-svc-rank">{{ loop.index }}</div>
           <div class="db-svc-img">
             {% if svc.images and svc.images[0] %}
-              <img src="{{ url_for('static', filename='uploads/services/' ~ svc.images[0].filename) }}"
+              <img src="{{ '/uploads/services/' ~ svc.images[0].filename }}"
                    style="width:40px;height:40px;border-radius:8px;object-fit:cover" alt="">
             {% else %}
               <i class="fas fa-briefcase"></i>
@@ -426,7 +426,7 @@ canvas{max-height:200px}
                 </a>
               </td>
               <td style="color:var(--muted)">
-                {{ order.buyer.display_name() if order.buyer else '—' }}
+                {{  order.buyer.display_name() if order.buyer else '—' }}
               </td>
               <td style="color:var(--cyan);font-weight:600">
                 KSh {{ "{:,.0f}".format(order.amount|float) }}
@@ -438,7 +438,7 @@ canvas{max-height:200px}
                 </span>
               </td>
               <td style="color:var(--muted);font-size:.78rem">
-                {{ order.created_at.strftime('%b %d') if order.created_at else '—' }}
+                {{  order.created_at.strftime('%b %d') if order.created_at else '—' }}
               </td>
             </tr>
             {% endfor %}
@@ -464,13 +464,13 @@ canvas{max-height:200px}
         <div class="db-review-item">
           <div class="db-review-meta">
             {% if review.buyer and review.buyer.avatar %}
-              <img src="{{ url_for('static', filename='uploads/avatars/' ~ review.buyer.avatar) }}"
+              <img src="{{ '/uploads/avatars/' ~ review.buyer.avatar }}"
                    class="db-review-av" alt="">
             {% else %}
               <div class="db-review-av"><i class="fas fa-user"></i></div>
             {% endif %}
             <span class="db-review-name">
-              {{ review.buyer.display_name() if review.buyer else 'Anonymous' }}
+              {{  review.buyer.display_name() if review.buyer else 'Anonymous' }}
             </span>
             <span class="db-review-stars">
               {% for i in range(1,6) %}
@@ -538,11 +538,11 @@ canvas{max-height:200px}
             </td>
             <td>
               <span style="color:var(--yellow)">★</span>
-              <span style="color:#e0e0e0">{{ "%.1f"|format(svc.get_average_rating()) }}</span>
+              <span style="color:#e0e0e0">{{  "%.1f"|format(svc.get_average_rating()) }}</span>
             </td>
             <td style="color:var(--muted)">{{ svc.get_review_count() }}</td>
             <td style="color:var(--muted);font-size:.78rem">
-              {{ svc.created_at.strftime('%b %d, %Y') if svc.created_at else '—' }}
+              {{  svc.created_at.strftime('%b %d, %Y') if svc.created_at else '—' }}
             </td>
             <td>
               <a href="{{ url_for('service_detail', service_id=svc.id) }}"

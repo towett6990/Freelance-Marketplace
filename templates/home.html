@@ -305,7 +305,7 @@
         <a href="{{ url_for('service_detail', service_id=svc.id) }}" class="hm-list-card">
           <div class="hm-list-img">
             {% if svc.images and svc.images|length > 0 %}
-              <img src="{{ url_for('static', filename='uploads/services/' ~ svc.images[0].filename) }}" alt="{{ svc.title }}" loading="lazy">
+              <img src="{{ '/uploads/services/' ~ svc.images[0].filename }}" alt="{{ svc.title }}" loading="lazy">
             {% else %}
               <div class="hm-list-ph">
                 {% if svc.category and svc.category.slug == 'car-sales' %}<i class="fas fa-car"></i>
@@ -323,7 +323,7 @@
             <div class="hm-list-price">{{ sym }} {{ '{:,.0f}'.format(svc.price|float) }}</div>
             <div class="hm-list-meta">
               {% if svc.seller and svc.seller.avatar %}
-                <img src="{{ url_for('static', filename='uploads/avatars/' ~ svc.seller.avatar) }}" class="hm-list-av" alt="seller">
+                <img src="{{ '/uploads/avatars/' ~ svc.seller.avatar }}" class="hm-list-av" alt="seller">
               {% else %}
                 <div class="hm-list-av-ph"><i class="fas fa-user"></i></div>
               {% endif %}

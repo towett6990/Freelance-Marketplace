@@ -132,7 +132,7 @@
   {% if reviews_list and reviews_list|length > 0 %}
   <!-- Summary -->
   <div class="rv-summary">
-    <div class="rv-big-num">{{ "%.1f"|format(service.get_average_rating()) }}</div>
+    <div class="rv-big-num">{{  "%.1f"|format(service.get_average_rating()) }}</div>
     <div>
       <div class="rv-stars-big">
         {% for i in range(5) %}
@@ -156,14 +156,14 @@
       <div class="rv-card-header">
         <div class="rv-av">
           {% if rv.buyer and rv.buyer.avatar %}
-            <img src="{{ url_for('static', filename='uploads/avatars/' ~ rv.buyer.avatar) }}" alt="">
+            <img src="{{ '/uploads/avatars/' ~ rv.buyer.avatar }}" alt="">
           {% else %}
             <i class="fas fa-user"></i>
           {% endif %}
         </div>
         <div>
-          <div class="rv-buyer">{{ rv.buyer.display_name() if rv.buyer else 'Anonymous' }}</div>
-          <div class="rv-date">{{ rv.created_at.strftime('%b %d, %Y') if rv.created_at else '' }}</div>
+          <div class="rv-buyer">{{  rv.buyer.display_name() if rv.buyer else 'Anonymous' }}</div>
+          <div class="rv-date">{{  rv.created_at.strftime('%b %d, %Y') if rv.created_at else '' }}</div>
         </div>
         <div class="rv-stars">
           {% for i in range(5) %}

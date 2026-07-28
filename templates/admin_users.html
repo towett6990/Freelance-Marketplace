@@ -136,9 +136,9 @@
         <td>
           <div class="adm-user-cell">
             {% if u.avatar %}
-              <img src="/static/uploads/avatars/{{ u.avatar }}" style="width:34px;height:34px;border-radius:50%;object-fit:cover">
+              <img src="/uploads/avatars/{{ u.avatar }}" style="width:34px;height:34px;border-radius:50%;object-fit:cover">
             {% else %}
-              <div class="adm-avatar">{{ (u.username or u.email or '?')[0].upper() }}</div>
+              <div class="adm-avatar">{{  (u.username or u.email or '?')[0].upper() }}</div>
             {% endif %}
             <div>
               <div style="color:#e2e8f0;font-weight:600">{{ u.username or '—' }}</div>
@@ -155,7 +155,7 @@
           {% endif %}
         </td>
         <td style="color:#94a3b8">{{ u.services | length }}</td>
-        <td style="color:#475569;font-size:.78rem">{{ u.created_at.strftime('%d %b %Y') if u.created_at else '—' }}</td>
+        <td style="color:#475569;font-size:.78rem">{{  u.created_at.strftime('%d %b %Y') if u.created_at else '—' }}</td>
         <td>
           <div class="adm-actions">
             {% if not u.is_verified %}

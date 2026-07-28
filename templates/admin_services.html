@@ -98,7 +98,7 @@
           <div class="svc-cell">
             {% set imgs = s.images %}
             {% if imgs %}
-              <img src="/static/uploads/services/{{ imgs[0].filename }}" class="svc-thumb">
+              <img src="/uploads/services/{{ imgs[0].filename }}" class="svc-thumb">
             {% else %}
               <div class="svc-thumb" style="display:flex;align-items:center;justify-content:center;color:#334155"><i class="fas fa-image"></i></div>
             {% endif %}
@@ -113,7 +113,7 @@
         <td style="color:#94a3b8">{{ s.seller.username if s.seller else '—' }}</td>
         <td><span class="adm-badge cat">{{ s.category.name if s.category else s.category_old or '—' }}</span></td>
         <td style="color:#00ffc8;font-weight:700">KES {{ "{:,.0f}".format(s.price) }}</td>
-        <td style="color:#475569;font-size:.78rem">{{ s.created_at.strftime('%d %b %Y') if s.created_at else '—' }}</td>
+        <td style="color:#475569;font-size:.78rem">{{  s.created_at.strftime('%d %b %Y') if s.created_at else '—' }}</td>
         <td>
           <div class="adm-actions">
             <a href="{{ url_for('service_detail', service_id=s.id) }}" class="adm-btn view" target="_blank">

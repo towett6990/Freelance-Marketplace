@@ -558,11 +558,16 @@ class Payout(db.Model):
 
     @property
     def image_list(self):
-        """Return list of image filenames"""
+        """Return list of image filenames - checks ServiceImage table first, falls back to JSON column"""
+        if self.images:
+            imgs = [img.filename for img in self.images]
+            if imgs:
+                return imgs
         if self.image_filenames:
             try:
                 import json
-                return json.loads(self.image_filenames)
+                result = json.loads(self.image_filenames)
+                return result if result else []
             except (json.JSONDecodeError, TypeError):
                 return []
         return []

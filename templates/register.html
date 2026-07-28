@@ -98,7 +98,7 @@
     </div>
 
     <form method="POST" action="{{ url_for('register') }}">
-      {{ form.hidden_tag() if form.hidden_tag is defined }}
+      {{  form.hidden_tag() if form.hidden_tag is defined }}
 
       <div class="reg-fg">
         <label class="reg-label">Display Name <span style="color:var(--muted);font-weight:400">(optional)</span></label>

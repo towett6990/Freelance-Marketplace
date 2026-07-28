@@ -17,7 +17,7 @@
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
         <div>
           <label style="color:#94a3b8;font-size:.85rem">Package Name</label>
-          <input name="{{ tier }}_name" value="{{ pkg.name if pkg else tier.title() }}" placeholder="e.g. Starter" style="width:100%;padding:.7rem;background:rgba(255,255,255,.06);border:1px solid rgba(0,255,200,.2);border-radius:8px;color:#fff;margin-top:.3rem">
+          <input name="{{ tier }}_name" value="{{  pkg.name if pkg else tier.title() }}" placeholder="e.g. Starter" style="width:100%;padding:.7rem;background:rgba(255,255,255,.06);border:1px solid rgba(0,255,200,.2);border-radius:8px;color:#fff;margin-top:.3rem">
         </div>
         <div>
           <label style="color:#94a3b8;font-size:.85rem">Price (KES)</label>
@@ -38,8 +38,7 @@
       </div>
       <div style="margin-top:1rem">
         <label style="color:#94a3b8;font-size:.85rem">Features (one per line)</label>
-        <textarea name="{{ tier }}_features" rows="4" placeholder="Feature 1&#10;Feature 2&#10;Feature 3" style="width:100%;padding:.7rem;background:rgba(255,255,255,.06);border:1px solid rgba(0,255,200,.2);border-radius:8px;color:#fff;margin-top:.3rem;resize:vertical">{% if pkg and pkg.features %}{{ pkg.features|join('
-') }}{% endif %}</textarea>
+        <textarea name="{{ tier }}_features" rows="4" placeholder="Feature 1&#10;Feature 2&#10;Feature 3" style="width:100%;padding:.7rem;background:rgba(255,255,255,.06);border:1px solid rgba(0,255,200,.2);border-radius:8px;color:#fff;margin-top:.3rem;resize:vertical">{% if pkg and pkg.features %}{{ pkg.features|join('&#10;') }}{% endif %}</textarea>
       </div>
       {% if pkg %}
       <div style="margin-top:1rem;text-align:right">

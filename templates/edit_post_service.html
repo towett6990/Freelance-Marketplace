@@ -32,7 +32,6 @@
             value="{{ service.title if service else '' }}"
             class="form-input"
             placeholder="Enter a descriptive title for your service"
-            required
           >
         </div>
 
@@ -80,7 +79,6 @@
                 value="{{ service.price if service else '' }}"
                 class="form-input"
                 placeholder="0.00"
-                required
               >
             </div>
           </div>
@@ -139,7 +137,7 @@
           <div id="existing-photos" class="photo-grid">
             {% for img in images %}
             <div class="photo-item">
-              <img src="{{ url_for('static', filename='uploads/services/' ~ img) }}" alt="Service photo">
+              <img src="{{ '/uploads/services/' ~ img }}" alt="Service photo">
               <div class="photo-overlay">
                 <label class="photo-remove">
                   <input type="checkbox" name="remove_images" value="{{ img }}">

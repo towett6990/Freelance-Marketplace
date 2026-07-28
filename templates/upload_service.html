@@ -29,7 +29,7 @@
         <p>{{ service.description }}</p>
         <div class="d-flex flex-wrap gap-3">
           {% for img in service.image_list %}
-            <img src="{{ url_for('static', filename='uploads/services/' + img) }}" class="img-thumbnail" style="max-width:150px;">
+            <img src="{{ '/uploads/services/' + img }}" class="img-thumbnail" style="max-width:150px;">
           {% endfor %}
         </div>
       </div>

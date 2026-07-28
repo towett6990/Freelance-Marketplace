@@ -165,7 +165,7 @@
           <!-- Top banner: first image or gradient -->
           <div class="card-banner">
             {% if dev.images and dev.images|length > 0 %}
-              <img src="{{ url_for('static', filename='uploads/services/' ~ dev.images[0].filename) }}" class="banner-img" alt="{{ dev.title }}">
+              <img src="{{ '/uploads/services/' ~ dev.images[0].filename }}" class="banner-img" alt="{{ dev.title }}">
             {% else %}
               <div class="banner-gradient banner-{{ loop.index0 % 5 }}"></div>
             {% endif %}
@@ -181,7 +181,7 @@
           <div class="card-avatar-row">
             <div class="card-avatar-wrap">
               {% if dev.seller and dev.seller.avatar %}
-                <img src="{{ url_for('static', filename='uploads/avatars/' ~ dev.seller.avatar) }}" class="card-avatar" alt="{{ dev.seller.username }}">
+                <img src="{{ '/uploads/avatars/' ~ dev.seller.avatar }}" class="card-avatar" alt="{{ dev.seller.username }}">
               {% else %}
                 <div class="card-avatar card-avatar-ph">
                   <span>{{ (dev.seller.username[0] if dev.seller else 'D')|upper }}</span>
@@ -194,7 +194,7 @@
                   <i class="{{ 'fas' if i < avg_rating else 'far' }} fa-star {% if i < avg_rating %}star-on{% else %}star-off{% endif %}"></i>
                 {% endfor %}
               </div>
-              <span class="card-rating-num">{{ "%.1f"|format(avg_rating) }}</span>
+              <span class="card-rating-num">{{  "%.1f"|format(avg_rating) }}</span>
               <span class="card-review-cnt">({{ dev.get_review_count() }})</span>
             </div>
           </div>
@@ -230,7 +230,7 @@
           <div class="card-footer">
             <div class="card-rate">
               <span class="rate-tag">Hourly</span>
-              <span class="rate-amt">{{ sym }} {{ "%.0f"|format(rate|float) }}</span>
+              <span class="rate-amt">{{ sym }} {{  "%.0f"|format(rate|float) }}</span>
             </div>
             <div class="card-actions">
               <a href="{{ url_for('service_detail', service_id=dev.id) }}" class="btn-profile">

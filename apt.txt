@@ -1,0 +1,15 @@
+cmake
+g++
+make
+libosmesa6-dev
+libgl1-mesa-glx
+libtesseract-dev
+tesseract-ocr
+libsm6
+libxext6
+libx11-6
+libglib2.0-0
+libxrender-dev
+libgomp1
+libopenblas-dev
+liblapack-dev

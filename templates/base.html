@@ -72,6 +72,28 @@
     
     /* ═══ GLOBAL MOBILE RESPONSIVE FIXES ═══════════════════════════════════ */
     html, body { overflow-x: hidden; max-width: 100vw; }
+    /* Global mobile overflow fixes */
+    * { box-sizing: border-box; }
+    @media (max-width: 768px) {
+      .container, .wrap, .page-wrap, .content-wrap, .inner {
+        max-width: 100%;
+        padding-left: 1rem;
+        padding-right: 1rem;
+      }
+      table { display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; width: 100%; }
+      .grid, [class*=-grid] { grid-template-columns: 1fr; }
+      pre, code { white-space: pre-wrap; word-break: break-all; }
+      img, video, iframe { max-width: 100%; height: auto; }
+      .sidebar, .side-panel { width: 100%; }
+    }
+    /* Global mobile overflow fixes */
+    * { box-sizing: border-box; }
+    @media (max-width: 768px) {
+      .container, .wrap, .page-wrap, .content-wrap, .inner {
+      }
+      table { display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; width: 100%; }
+      pre, code { white-space: pre-wrap; word-break: break-all; }
+    }
     
     /* Minimum sizes for touch targets */
     button, .btn, a.btn, input[type="button"], input[type="submit"] {
@@ -201,6 +223,16 @@
       color: var(--link-color); text-decoration: none; transition: all 0.25s;
       font-weight: 500; font-size: .92rem; white-space: nowrap;
       padding: .3rem .1rem;
+    }
+    .desktop-menu a[href*="login"], .desktop-menu a[href*="register"] {
+      padding: .4rem .9rem;
+      border: 1.5px solid var(--cyan);
+      border-radius: 8px;
+      font-weight: 600;
+    }
+    .desktop-menu a[href*="register"] {
+      background: var(--cyan);
+      color: #0a0e27;
     }
     .desktop-menu a:hover {
       color: var(--link-hover);

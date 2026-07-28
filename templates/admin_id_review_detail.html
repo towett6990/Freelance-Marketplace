@@ -33,7 +33,7 @@
             </div>
             <div style="display: flex; justify-content: space-between;">
               <span style="color: #9ca3af;">Submitted:</span>
-              <span style="color: var(--body-color);">{{ user.last_id_upload_at.strftime("%Y-%m-%d %H:%M") if user.last_id_upload_at else "Unknown" }}</span>
+              <span style="color: var(--body-color);">{{  user.last_id_upload_at.strftime("%Y-%m-%d %H:%M") if user.last_id_upload_at else "Unknown" }}</span>
             </div>
             <div style="display: flex; justify-content: space-between;">
               <span style="color: #9ca3af;">Retry Count:</span>
@@ -53,7 +53,7 @@
         <div style="background: var(--main-bg); border-radius: 0.75rem; padding: 1.5rem; border: 1px solid var(--main-border);">
           <h2 style="font-size: 1.25rem; font-weight: 600; color: var(--heading-color); margin-bottom: 1rem;">ID Document</h2>
           <div style="background: rgba(0,0,0,0.3); border-radius: 0.5rem; padding: 1rem; text-align: center;">
-            <img src="{{ url_for('static', filename='uploads/ids/' + user.id_document) }}"
+            <img src="{{ '/uploads/ids/' + user.id_document }}"
                  alt="ID Document" style="max-width: 100%; height: auto; border-radius: 0.25rem; border: 1px solid #4b5563; margin: 0 auto; display: block;">
             <p style="color: #9ca3af; font-size: 0.875rem; margin-top: 0.5rem;">Click image to view full size</p>
           </div>
@@ -106,28 +106,28 @@
             <div>
               <div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem;">
                 <span style="color: #9ca3af;">Overall Confidence</span>
-                <span style="color: var(--body-color);">{{ "%.2f"|format(user.id_confidence_score) }}/1.00 ({{ confidence_percent }}%)</span>
+                <span style="color: var(--body-color);">{{  "%.2f"|format(user.id_confidence_score) }}/1.00 ({{ confidence_percent }}%)</span>
               </div>
             </div>
 
             <div>
               <div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem;">
                 <span style="color: #9ca3af;">Content Score</span>
-                <span style="color: var(--body-color);">{{ "%.2f"|format(user.id_content_score or 0) }}/1.00 ({{ content_percent }}%)</span>
+                <span style="color: var(--body-color);">{{  "%.2f"|format(user.id_content_score or 0) }}/1.00 ({{ content_percent }}%)</span>
               </div>
             </div>
 
             <div>
               <div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem;">
                 <span style="color: #9ca3af;">Integrity Score</span>
-                <span style="color: var(--body-color);">{{ "%.2f"|format(user.id_integrity_score or 0) }}/1.00 ({{ integrity_percent }}%)</span>
+                <span style="color: var(--body-color);">{{  "%.2f"|format(user.id_integrity_score or 0) }}/1.00 ({{ integrity_percent }}%)</span>
               </div>
             </div>
 
             <div>
               <div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem;">
                 <span style="color: #9ca3af;">Quality Score</span>
-                <span style="color: var(--body-color);">{{ "%.2f"|format(user.id_quality_score or 0) }}/1.00 ({{ quality_percent }}%)</span>
+                <span style="color: var(--body-color);">{{  "%.2f"|format(user.id_quality_score or 0) }}/1.00 ({{ quality_percent }}%)</span>
               </div>
             </div>
 
@@ -136,7 +136,7 @@
             <div>
               <div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem;">
                 <span style="color: #9ca3af;">Face Match Score</span>
-                <span style="color: var(--body-color);">{{ "%.2f"|format(user.id_face_score) }}/1.00 ({{ face_percent }}%)</span>
+                <span style="color: var(--body-color);">{{  "%.2f"|format(user.id_face_score) }}/1.00 ({{ face_percent }}%)</span>
               </div>
             </div>
             {% endif %}
@@ -259,7 +259,7 @@
             <div style="display: flex; align-items: center; justify-content: space-between;">
               <div>
                 <span style="color: var(--body-color); font-weight: 500; text-transform: capitalize;">{{ audit.verification_type }}</span>
-                <span style="color: #9ca3af; margin-left: 0.5rem;">• Confidence: {{ "%.2f"|format(audit.confidence_score) }}</span>
+                <span style="color: #9ca3af; margin-left: 0.5rem;">• Confidence: {{  "%.2f"|format(audit.confidence_score) }}</span>
               </div>
               <span style="color: #9ca3af; font-size: 0.875rem;">{{ audit.created_at.strftime("%Y-%m-%d %H:%M") }}</span>
             </div>

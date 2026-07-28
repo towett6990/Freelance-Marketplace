@@ -122,7 +122,7 @@
   <div class="qa-ask-box">
     <div class="qa-ask-avatar">
       {% if current_user.avatar %}
-        <img src="{{ url_for('static', filename='uploads/avatars/' ~ current_user.avatar) }}"
+        <img src="{{ '/uploads/avatars/' ~ current_user.avatar }}"
              alt="{{ current_user.display_name() }}">
       {% else %}
         <div class="qa-av-ph"><i class="fas fa-user"></i></div>
@@ -157,14 +157,14 @@
         <div class="qa-q-row">
           <div class="qa-q-avatar">
             {% if q.asker and q.asker.avatar %}
-              <img src="{{ url_for('static', filename='uploads/avatars/' ~ q.asker.avatar) }}" alt="">
+              <img src="{{ '/uploads/avatars/' ~ q.asker.avatar }}" alt="">
             {% else %}
               <div class="qa-av-ph sm"><i class="fas fa-user"></i></div>
             {% endif %}
           </div>
           <div class="qa-q-body">
             <div class="qa-meta">
-              <span class="qa-asker">{{ q.asker.display_name() if q.asker else 'Anonymous' }}</span>
+              <span class="qa-asker">{{  q.asker.display_name() if q.asker else 'Anonymous' }}</span>
               <span class="qa-date">{{ q.created_at.strftime('%b %d, %Y') }}</span>
               {% if current_user.is_authenticated and
                     current_user.id in [q.asker_id, service.seller_id] %}
@@ -189,10 +189,10 @@
             <div class="qa-meta">
               <span class="qa-seller-tag">
                 {% if service.seller and service.seller.avatar %}
-                  <img src="{{ url_for('static', filename='uploads/avatars/' ~ service.seller.avatar) }}"
+                  <img src="{{ '/uploads/avatars/' ~ service.seller.avatar }}"
                        class="qa-inline-av" alt="">
                 {% endif %}
-                {{ service.seller.display_name() if service.seller else 'Seller' }}
+                {{  service.seller.display_name() if service.seller else 'Seller' }}
                 <span class="qa-seller-badge"><i class="fas fa-check-circle"></i> Seller</span>
               </span>
               <span class="qa-date">{{ q.answered_at.strftime('%b %d, %Y') }}</span>
